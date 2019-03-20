@@ -1,18 +1,19 @@
 #!/bin/bash
 # [关于]
-#本脚本是客户端懒人脚本， 应用于： https://github.com/{我}/suansuan.git
-#记得给该脚本链接到/usr/local/bin
+#本脚本是ssr客户端懒人脚本， 应用于： https://github.com/{我}/suansuan.git
+#为了方便，记得给该脚本链接到/usr/local/bin
 #
 # [服务端/客户端安装]
-# https://github.com/{我}/suansuan-go
+# https://github.com/{我}/suansuan-go 服务端和客户端源码都在里面
 #
 # [privoxy]
-#需要安装privoxy: apt install privoxy
+# 安装privoxy的作用是将socks5代理转成http/https代理,方便shell命令红杏出墙
+# 安装privoxy: apt install privoxy
 # 修改/etc/privoxy/config:(搜关键字)
-#      listen-address  127.0.0.1:8118        #privoxy的监听地址
-#      forward-socks5   /  127.0.0.1:1080 . #指定socks5的服务端地址。 forward-socks5和forward-socks5t是有区别的，前者dns在服务端解析，后者dns在本地端解析
-# #脚本中用到的pvox脚本文件的内容是：/bin/systemctl "$1" privoxy 
-# 记得给pvox开sudo:  {用户}  ALL=(ALL)  NOPASSWD: /usr/local/bin/pvox
+#      listen-address  127.0.0.1:8118        # privoxy的监听地址,这个地址既是http/https代理的地址
+#      forward-socks5   /  127.0.0.1:1080 .  # 指定socks5的服务端地址。 forward-socks5和forward-socks5t是有区别的，前者dns在服务端解析，后者dns在本地端解析
+# #本脚本中用到的pvox脚本文件的内容是：/bin/systemctl "$1" privoxy 
+# 记得给pvox开sudo:  {普通用户}  ALL=(ALL)  NOPASSWD: /usr/local/bin/pvox
 
 
 
