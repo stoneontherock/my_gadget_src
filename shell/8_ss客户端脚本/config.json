@@ -1,0 +1,9 @@
+{
+    "server":"xx.yyy.com",
+    "server_port":1900,
+    "local_port":1080,
+    "local_address":"127.0.0.1",
+    "password":"pwd",
+    "method": "aes-256-cfb",
+    "timeout":600
+}

@@ -1,0 +1,24 @@
+# ***********
+# CC主配置文件
+# ***********
+
+#发送给浏览器的内嵌js的html模板文件路径
+first_js_html: /home/zh/svn/cc/core/module/anti_cc/parse/example_conf/first_req_js.html
+#发送给浏览器的验证码html模板文件路径
+captcha_html: /home/zh/svn/cc/core/module/anti_cc/parse/example_conf/captcha.html
+
+
+#cookie盐值
+cookie_salt: 'DEADBEEF'
+
+#首次js延迟时间(单位s)
+#first_js_deley_seconds: 4s
+first_js_deley_seconds: 4s
+
+# 1级黑名单(http黑名单)刷新时间，刷新黑名单会执行一级黑名单的刑满释放操作。
+#因为涉及锁机制，该值建议配置大于15秒。后面站点配置文件中的一级黑名单刑期不能小于该值
+blacklist1_check_interval: 20s
+
+# 2级黑名单(iptables黑名单)刷新时间，刷新黑名单会执行一级黑名单的刑满释放操作。
+#因为涉及锁机制，该值建议配置大于15秒。后面站点配置文件中的一级黑名单刑期不能小于该值
+blacklist2_check_interval: 20s

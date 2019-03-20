@@ -1,0 +1,37 @@
+# *********
+# 站点CC规则
+# *********
+
+#    *** 配置范例 ***
+#      # 解释：domain_rule：域名匹配规则，支持正则(regex)和通配符(wildcard)
+#      domain_rule: 'regex=img[0-9].a1.pc'
+#      # 解释： 域名匹配规则下的CC规则，支持首次请求js延迟(name: js)、限制请求频率(name: limit_req)，重定向l(name: redirect)
+#      cc_conf:
+#            # 解释： 首次请求js延迟含义：在among_time时间内验证失败threshold次该ip就会进入1级黑名单(http黑名单)，1级黑名单刑期是prison1_term
+#            # 解释：在1级黑名单刑满释放前验证失败captcha_fail次，就会将该ip加入2级黑名单(iptables黑名单)，2级黑名单刑期是prison2_term，刑满后从iptables规则中释放掉
+#          - {name: js, among_time: 30s, threshold: 31, prison1_term: 32s, captcha_fail: 7, prison2_term: 33s}
+#          - {name: limit_req, among_time: 20s, threshold: 19, prison1_term: 60s, captcha_fail: 5, prison2_term: 57s}
+#      path_rule_list:
+#          - path_rule: 'wildcard=/dyn/*.php'
+#            cc_conf:
+#                  - {name: js, among_time: 30s, threshold: 31, prison1_term: 32s, captcha_fail: 7, prison2_term: 33s}
+#                  - {name: limit_req, among_time: 20s, threshold: 19, prison1_term: 45s, captcha_fail: 5, prison2_term: 60s}
+#          - path_rule: 'wildcard=*/upload'
+#            cc_conf:
+#                  - {name: redirect, redirect_code: 302, redirect_URL: '/helloUPLOAD'}
+#    *** 配置范例 ***
+      
+domain_rule: 'regex=img[0-9].a1.pc'
+cc_conf:
+    - {name: js, among_time: 30s, threshold: 10, prison1_term: 32s, captcha_fail: 7, prison2_term: 33s}
+    - {name: limit_req, among_time: 20s, threshold: 19, prison1_term: 60s, captcha_fail: 5, prison2_term: 120s}
+path_rule_list:
+    - path_rule: 'wildcard=/dyn/*.php'
+      cc_conf:
+            - {name: js, among_time: 30s, threshold: 31, prison1_term: 32s, captcha_fail: 7, prison2_term: 33s}
+            - {name: limit_req, among_time: 20s, threshold: 19, prison1_term: 45s, captcha_fail: 5, prison2_term: 60s}
+    - path_rule: 'wildcard=*/upload'
+      cc_conf:
+            - {name: redirect, redirect_code: 302, redirect_URL: 'https://www.baidu.com/s?wd=301%20302%20307'}
+      
+

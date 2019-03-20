@@ -1,0 +1,10 @@
+<html  lang="zh-cn">
+<img src="{{.PngBase64}}">
+<form enctype="application/x-www-form-urlencoded" action="{{.ReqURI}}" method="POST">
+    <input type="text" name="unknown_code">
+    <input type="submit" value="验证">
+</form>
+<form enctype="application/x-www-form-urlencoded" action="{{.ReqURI}}" method="POST">
+    <input type="submit" value="更新验证码">
+</form>
+</html>

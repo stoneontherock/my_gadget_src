@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+<h1 id="time">4</h1>
+</body>
+<script>
+    var _time = 3;
+    var timeid = self.setInterval("timer()", 1000);
+
+    function timer() {
+        if(_time === 0){
+            self.clearTimeout(timeid);
+            window.location.href = '%s';
+        }
+        document.getElementById('time').innerHTML = _time--;
+    }
+</script>
+</html>

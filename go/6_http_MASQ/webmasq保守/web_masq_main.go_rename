@@ -1,0 +1,12 @@
+package main
+
+import (
+	"os"
+	wm "webmasq"
+)
+
+func main() {
+	wm.InitLog()
+	wm.AddUser("zh", "uohz")
+	wm.Serve(os.Args[1], os.Args[2], os.Args[3])
+}
