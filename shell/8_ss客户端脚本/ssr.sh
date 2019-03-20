@@ -5,12 +5,14 @@
 #
 # [服务端/客户端安装]
 # https://github.com/{我}/suansuan-go 服务端和客户端源码都在里面
+# 本脚本里的ssr_go_client即是上面github地址的ssr go源码编译出来的二进制文件名
+# config.json文件是给ssr_go_client用的
 #
 # [privoxy]
 # 安装privoxy的作用是将socks5代理转成http/https代理,方便shell命令红杏出墙
 # 安装privoxy: apt install privoxy
 # 修改/etc/privoxy/config:(搜关键字)
-#      listen-address  127.0.0.1:8118        # privoxy的监听地址,这个地址既是http/https代理的地址
+#      listen-address  127.0.0.1:8118        # privoxy的监听地址,这个地址即是http/https代理的地址
 #      forward-socks5   /  127.0.0.1:1080 .  # 指定socks5的服务端地址。 forward-socks5和forward-socks5t是有区别的，前者dns在服务端解析，后者dns在本地端解析
 # #本脚本中用到的pvox脚本文件的内容是：/bin/systemctl "$1" privoxy 
 # 记得给pvox开sudo:  {普通用户}  ALL=(ALL)  NOPASSWD: /usr/local/bin/pvox
