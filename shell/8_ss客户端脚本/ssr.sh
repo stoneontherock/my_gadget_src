@@ -37,13 +37,16 @@ function fn_main(){
            cd $app_dir
            nohup ./"${CLIENT_BIN}" -c config.json >/dev/null 2>&1 &
         )
+		$proxy_switch  manual
 
         if [ -z "$(ps -eo cmd |grep "${CLIENT_BIN}"  |grep -v grep)"  ] 
         then
-            printf "\e[031mfailed\e[0m\n"
-            exit 1
+            printf "\e[031mfailed, try again...\e[0m\n"
+	        $(readlink -m $0) off; $(readlink -m $0) on 
+	        exit_code=$?
+	        echo "exit code: $exit_code"
+            exit $exit_code 
         fi
-        $proxy_switch  manual
         ;;
     "off")
         sudo -u root systemctl stop privoxy
