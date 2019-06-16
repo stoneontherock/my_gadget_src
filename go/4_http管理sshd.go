@@ -7,7 +7,7 @@ After=multi-user.target
 
 [Service]
 ExecStart=/root/ssh_ctl
-Restart=always
+Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target

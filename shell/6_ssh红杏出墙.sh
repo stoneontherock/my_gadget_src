@@ -1,12 +1,18 @@
 #!/bin/bash
-function fn_main(){
+function fn_do(){
     case "$1" in 
         "on")
+	    if [ $# -ne 5 ]
+	    then
+		    echo "$0 on <host> <port> <user> <str>"
+		    return 100
+	    fi
             gsettings set org.gnome.system.proxy mode manual 
-            ps=$(ps -eo cmd |grep -v grep |grep 1080)
+            ps=$(ps -eo cmd |grep -v grep |grep ":1080")
             if [ -z "$ps" ]
             then
-                ssh -oStrictHostKeyChecking=no  -Nf -D 127.0.0.1:1080  -p3389 zh@ze.ddns.net
+		shift 1
+		ssh_tunel "$@" || return $?
             fi
             ;;
         "off") 
@@ -17,13 +23,44 @@ function fn_main(){
 		    kill $pid
 	    fi
             ;;
-        *) echo "Usage: pxy <on|off>"
+        *) echo "Usage: $0 <on|off>"
     esac
 }
 
-if [ $(id -u) -eq 0 ]
-then
-    su -l zh -c "$(readlink -m $0) $@" 
-else
-    fn_main "$@"
-fi
+function ssh_tunel(){
+	local host="$1"
+	local port="$2"
+	local user="$3"
+	local pstr="$4"
+
+	/usr/bin/expect <<< "set timeout 10
+	spawn ssh -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -Nf -D127.0.0.1:1080 -p$port $user@$host
+	set ssh_id \$spawn_id
+        exp_internal 1
+	expect {
+	   -nocase \"yes/no\" { exp_send \"yes\r\"; exp_continue; }
+	   \"password: \" { exp_send \"$pstr\r\"; send_user \"send pstr to \$ssh_id\n\" } 
+	   timeout { send_error \"ERROR:timeout\"; close \$ssh_id; exit 11; }
+        }
+	wait \$ssh_id
+	sleep 3
+	"
+	return $?
+}
+
+function fn_main(){
+    if [ $(id -u) -eq 0 ]
+    then
+        su -l zh -c "$(readlink -m $0) $@" 
+    else
+        fn_do "$@"
+	local ret=$?
+	if [ $ret -ne 0 ]
+	then
+		printf "\e[31mfailed\e[0m\n"
+		exit $ret 
+	fi
+    fi
+}
+
+fn_main "$@"
