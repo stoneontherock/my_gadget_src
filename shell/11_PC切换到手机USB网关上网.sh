@@ -57,5 +57,10 @@ function fn_main(){
     esac
 }
 
+if [ $(id -un) != root ]
+then
+    echo "需要root权限！"
+    exit 2
+fi
 fn_main "$@"
 
