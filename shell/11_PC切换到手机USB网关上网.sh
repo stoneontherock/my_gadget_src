@@ -2,6 +2,7 @@
 
 USB_INTERFACE=""
 USB_GW="192.168.42.129"
+UA='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36'
 
 function fn_wait_usb_iface(){
     while :
@@ -24,7 +25,7 @@ function fn_set_gw_to_usb(){
     ip route |grep 'default via'
     sed -i 's/^/#/; /nameserver '$USB_GW'/d' /etc/resolv.conf
     echo "nameserver $USB_GW" >>/etc/resolv.conf
-    cat /etc/resolv.conf
+    get_info
 }
 
 function fn_del_usb_gw(){
@@ -35,8 +36,16 @@ function fn_del_usb_gw(){
         echo "usb gw has been deleted."
     fi
 
-    fgrep -q $USB_GW /etc/resolv.conf  && sed -i 's/^#//;/nameserver '$USB_GW'/d' /etc/resolv.conf
+    fgrep -q $USB_GW /etc/resolv.conf  && sed -ri 's/^#+n/n/;/nameserver '$USB_GW'/d' /etc/resolv.conf
+    get_info
+}
+
+function get_info(){
+    echo -e "\n----resolv.conf-----"
     cat /etc/resolv.conf
+
+    echo -e "\n----location-----"
+    curl -sG -A "${UA}"  https://ip.cn |egrep -o 'IP：.*GeoIP[^<]+' |egrep -o '(([0-9]{1,3}\.){3}[0-9]+)|GeoIP.*'
 }
 
 function fn_main(){
