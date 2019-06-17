@@ -23,7 +23,7 @@ function fn_set_gw_to_usb(){
     ip route del default via ${USB_GW} dev ${USB_INTERFACE} >/dev/null 2>&1
     ip route add default via ${USB_GW} dev ${USB_INTERFACE} proto static metric 10
     ip route |grep 'default via'
-    sed -i 's/^/#/; /nameserver '$USB_GW'/d' /etc/resolv.conf
+    sed -i 's/^name/#name/; /nameserver '$USB_GW'/d' /etc/resolv.conf
     echo "nameserver $USB_GW" >>/etc/resolv.conf
     get_info
 }
@@ -36,7 +36,7 @@ function fn_del_usb_gw(){
         echo "usb gw has been deleted."
     fi
 
-    fgrep -q $USB_GW /etc/resolv.conf  && sed -ri 's/^#+n/n/;/nameserver '$USB_GW'/d' /etc/resolv.conf
+    fgrep -q $USB_GW /etc/resolv.conf  && sed -ri 's/^#name/name/;/nameserver '$USB_GW'/d' /etc/resolv.conf
     get_info
 }
 
