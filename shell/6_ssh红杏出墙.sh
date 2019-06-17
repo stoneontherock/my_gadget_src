@@ -12,7 +12,18 @@ function fn_do(){
             if [ -z "$ps" ]
             then
 		shift 1
-		ssh_tunel "$@" || return $?
+		local ok=false
+		for ((i=0;i<10;i++))
+		do
+		    ssh_tunel "$@" 
+		    ps -eo cmd  |grep -v grep|grep -q 1:1080 && { ok=true;break; }
+		    echo -n "."
+		    sleep 0.2
+	        done
+		if [ "$ok" == true ]
+		then
+			echo "connected!"
+		fi
             fi
             ;;
         "off") 
@@ -36,16 +47,15 @@ function ssh_tunel(){
 	/usr/bin/expect <<< "set timeout 10
 	spawn ssh -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -Nf -D127.0.0.1:1080 -p$port $user@$host
 	set ssh_id \$spawn_id
-        exp_internal 1
+        #exp_internal 1
 	expect {
 	   -nocase \"yes/no\" { exp_send \"yes\r\"; exp_continue; }
 	   \"password: \" { exp_send \"$pstr\r\"; send_user \"send pstr to \$ssh_id\n\" } 
 	   timeout { send_error \"ERROR:timeout\"; close \$ssh_id; exit 11; }
         }
 	wait \$ssh_id
-	sleep 3
-	"
-	return $?
+	" >/dev/null 2>&1
+	#return $?
 }
 
 function fn_main(){
