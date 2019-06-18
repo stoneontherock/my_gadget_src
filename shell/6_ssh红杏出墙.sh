@@ -4,7 +4,7 @@ function fn_do(){
         "on")
 	    if [ $# -ne 5 ]
 	    then
-		    echo "$0 on <host> <port> <user> <str>"
+		    echo "$0 on <host> <port> <user> <pstr>"
 		    return 100
 	    fi
             gsettings set org.gnome.system.proxy mode manual 
@@ -25,6 +25,7 @@ function fn_do(){
 			echo "connected!"
 		fi
             fi
+            ps -ef |grep -v grep |grep "1:1080"
             ;;
         "off") 
             gsettings set org.gnome.system.proxy mode none
@@ -34,7 +35,7 @@ function fn_do(){
 		    kill $pid
 	    fi
             ;;
-        *) echo "Usage: $0 <on|off>"
+        *) echo "Usage: $0 [on <host> <ssh_port> <ssh_user> <ssh_pwd>]|off"
     esac
 }
 
@@ -50,7 +51,7 @@ function ssh_tunel(){
         #exp_internal 1
 	expect {
 	   -nocase \"yes/no\" { exp_send \"yes\r\"; exp_continue; }
-	   \"password: \" { exp_send \"$pstr\r\"; send_user \"send pstr to \$ssh_id\n\" } 
+	   \"password: \" { exp_send {$pstr}; exp_send \"\r\"; send_user \"send pstr to \$ssh_id\n\" } 
 	   timeout { send_error \"ERROR:timeout\"; close \$ssh_id; exit 11; }
         }
 	wait \$ssh_id
