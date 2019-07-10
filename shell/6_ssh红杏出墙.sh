@@ -35,7 +35,7 @@ function fn_do(){
 		    kill $pid
 	    fi
             ;;
-        *) echo "Usage: $0 [on <host> <ssh_port> <ssh_user> <ssh_pwd>]|off"
+        *) echo "Usage: $0 {on <host> <ssh_port> <ssh_user> <ssh_pwd>|off}"
     esac
 }
 
@@ -62,7 +62,7 @@ function ssh_tunel(){
 function fn_main(){
     if [ $(id -u) -eq 0 ]
     then
-        su -l zh -c "$(readlink -m $0) $@" 
+        su -l zh -c "$(readlink -m $0) $*" 
     else
         fn_do "$@"
 	local ret=$?
