@@ -36,7 +36,7 @@ func init() {
 
 	dirNameFunc := func(path string) string {
 		path = strings.TrimRight(path, "/")
-		return filepath.Dir(path) + "/"
+		return filepath.Dir(path)
 	}
 	dirTemplate, err = template.New("dirTemp").Funcs(template.FuncMap{"dirName": dirNameFunc}).Parse(HTML_DIR)
 	errFatal(err)
@@ -96,6 +96,7 @@ func listFS(wr http.ResponseWriter, req *http.Request, path string) {
 
 	if fi.Mode().IsRegular() {
 		http.ServeFile(wr, req, path)
+		log.Printf("%q 下载了 %q, %d字节", clientIP(req.RemoteAddr), path, fi.Size())
 		return
 	}
 
@@ -164,7 +165,7 @@ func uploadFiles(wr http.ResponseWriter, req *http.Request, path string) {
 		if err != nil {
 			uplFail++
 		} else {
-			log.Printf("%s upload %q success\n", req.RemoteAddr[:strings.LastIndex(req.RemoteAddr, ":")], fname)
+			log.Printf("%s upload %q success\n", clientIP(req.RemoteAddr), fname)
 			upSucc++
 		}
 		srcFile.Close() //这里是循环，避免用defer *.Close()
@@ -173,6 +174,10 @@ func uploadFiles(wr http.ResponseWriter, req *http.Request, path string) {
 
 	fmt.Fprintf(wr, "<h1>上传失败:%d, 成功:%d</h1> <p>%s</p> <script language='javascript' type='text/javascript'> setTimeout(\"javascript:location.href='%s'\", %d000); </script>",
 		uplFail, upSucc, rename, path, 1+len(strings.Split(rename, "</br>")))
+}
+
+func clientIP(remoteAddr string) string {
+	return remoteAddr[:strings.LastIndex(remoteAddr, ":")]
 }
 
 func renderHTMLErr(wr io.Writer, errStr string) {
@@ -295,7 +300,7 @@ const (
 {{- $data := . -}}
 <header>
     <form id="上传form" enctype="multipart/form-data" action="{{$data.Path}}" method="POST">
-        <input type="file" multiple name="uploadFiles"/>
+        <abbr title="可以按Ctrl键选择多个文件"><input type="file" multiple name="uploadFiles"/></abbr>
         <input type="submit" value="批量上传" />
     </form>
     <a class="a返回" href="/"  class="name"><b>&#8634; 返回根目录</b></a><br />
@@ -315,7 +320,7 @@ const (
         {{end}}
         {{- range $index,$file := $data.Files -}}
             <tr>
-                <td class="col1"><a href="{{$data.Path}}/{{$file.Name}}"  class="文件列表">&bull; {{$file.Name}}</a></td>
+                <td class="col1"><a href="{{$data.Path}}/{{$file.Name}}" title="下载纯文本文件: 右键->链接另存为" class="文件列表">&bull; {{$file.Name}}</a></td>
                 <td class="col2">{{$file.Size}}</td>
             </tr>
         {{end}}
