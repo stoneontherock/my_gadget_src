@@ -161,11 +161,11 @@ func uploadFiles(wr http.ResponseWriter, req *http.Request, path string) {
 			return
 		}
 
-		_, err = io.Copy(dstFile, srcFile)
+		n, err := io.Copy(dstFile, srcFile)
 		if err != nil {
 			uplFail++
 		} else {
-			log.Printf("%s upload %q success\n", clientIP(req.RemoteAddr), fname)
+			log.Printf("%q 上传 %q 成功, %d字节\n", clientIP(req.RemoteAddr), fname, n)
 			upSucc++
 		}
 		srcFile.Close() //这里是循环，避免用defer *.Close()
@@ -280,8 +280,11 @@ const (
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <style type="text/css">
-        #上传form{
-            height: 2em;
+        #上传{
+            background-color: #EEE;
+            border: 1px solid gray;
+            border-radius: 0.2em;
+            width: 350px;
         }
         #文件表格{
             width: 100%;
@@ -299,18 +302,21 @@ const (
 <body>
 {{- $data := . -}}
 <header>
-    <form id="上传form" enctype="multipart/form-data" action="{{$data.Path}}" method="POST">
-        <abbr title="可以按Ctrl键选择多个文件"><input type="file" multiple name="uploadFiles"/></abbr>
-        <input type="submit" value="批量上传" />
-    </form>
+    <div id="上传">
+        <form enctype="multipart/form-data" action="{{$data.Path}}" method="POST">
+            <abbr title="可以按Ctrl键选择多个文件"><input type="file" multiple name="uploadFiles"/></abbr>
+            <input style="float:right" type="submit" value="批量上传文件" />
+        </form>
+    </div>
+    <br />
     <a class="a返回" href="/"  class="name"><b>&#8634; 返回根目录</b></a><br />
     <a class="a返回" href="{{dirName $data.Path}}"  class="name"><b>&#8634; 返回上层目录</b></a>
 </header>
 
 <article>
-    <br />
+    <hr>
     <table id="文件表格">
-        <thead><th style="border-bottom:1px dotted red; text-align:left">文件/目录</th><th style="border-bottom:1px dotted red; text-align:right">大小</th></thead>
+        <thead style="background-color: #EEEEFF;"><th style="text-align:left; text-shadow">目录名/文件名</th><th style="text-align:right">大小</th></thead>
         <tbody>
         {{- range $index,$dir := $data.Dirs -}}
             <tr>
@@ -326,6 +332,7 @@ const (
         {{end}}
         </tbody>
     </table>
+    <hr>
 </article>
 </body>
 </html>
