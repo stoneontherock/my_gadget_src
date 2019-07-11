@@ -43,7 +43,7 @@ func init() {
 }
 
 func main() {
-	log.Printf("监听地址:%s  web根目录:%s", *addr, *rootDir)
+	log.Printf("当前监听地址:%s  当前web根目录:%s", *addr, *rootDir)
 	log.Println("通过-a命令行选项修改监听地址, 例如: -a 192.168.1.100:8000 或 -a :8000")
 	log.Println("通过-d命令行选项修改WEB根目录, 例如: -d /tmp")
 	println()
@@ -280,10 +280,14 @@ const (
         }
         #文件表格{
             width: 100%;
+            border-collapse: collapse;
         }
-        td.col1{border-bottom:1px dotted red;text-align: left}
-        td.col2{border-bottom:1px dotted red;text-align: right}
-        a.文件列表{text-decoration:none;}
+        tr:nth-child(even){
+            background-color: #EEE;
+        }
+        td.col1{text-align: left}
+        td.col2{text-align: right}
+        a.文件列表{text-decoration:none; }
     </style>
     <title>WEB文件管理</title>
 </head>
@@ -311,7 +315,7 @@ const (
         {{end}}
         {{- range $index,$file := $data.Files -}}
             <tr>
-                <td class="col1"><a href="{{$data.Path}}/{{$file.Name}}"  title="下载文本文件:右键=>另存为" class="文件列表">&bull; {{$file.Name}}</a></td>
+                <td class="col1"><a href="{{$data.Path}}/{{$file.Name}}"  class="文件列表">&bull; {{$file.Name}}</a></td>
                 <td class="col2">{{$file.Size}}</td>
             </tr>
         {{end}}
