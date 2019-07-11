@@ -278,8 +278,6 @@ const (
         #上传form{
             height: 2em;
         }
-        .a返回{text-decoration-line: underline}
-
         #文件表格{
             width: 100%;
         }
