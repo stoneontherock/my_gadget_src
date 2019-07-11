@@ -304,8 +304,8 @@ const (
 <header>
     <div id="上传">
         <form enctype="multipart/form-data" action="{{$data.Path}}" method="POST">
-            <abbr title="可以按Ctrl键选择多个文件"><input type="file" multiple name="uploadFiles"/></abbr>
-            <input style="float:right" type="submit" value="批量上传文件" />
+            <abbr title="可以按Ctrl键选择多个文件"><input type="file" multiple name="uploadFiles"/>
+            <input style="float:right" type="submit" value="批量上传文件" /></abbr>
         </form>
     </div>
     <br />
