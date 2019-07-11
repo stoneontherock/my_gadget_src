@@ -36,7 +36,7 @@ func init() {
 
 	dirNameFunc := func(path string) string {
 		path = strings.TrimRight(path, "/")
-		return filepath.Dir(path) + "/"
+		return filepath.Dir(path)
 	}
 	dirTemplate, err = template.New("dirTemp").Funcs(template.FuncMap{"dirName": dirNameFunc}).Parse(HTML_DIR)
 	errFatal(err)
@@ -295,7 +295,7 @@ const (
 {{- $data := . -}}
 <header>
     <form id="上传form" enctype="multipart/form-data" action="{{$data.Path}}" method="POST">
-        <input type="file" multiple name="uploadFiles"/>
+        <abbr title="可以按Ctrl键选择多个文件"><input type="file" multiple name="uploadFiles"/></abbr>
         <input type="submit" value="批量上传" />
     </form>
     <a class="a返回" href="/"  class="name"><b>&#8634; 返回根目录</b></a><br />
@@ -315,7 +315,7 @@ const (
         {{end}}
         {{- range $index,$file := $data.Files -}}
             <tr>
-                <td class="col1"><a href="{{$data.Path}}/{{$file.Name}}"  class="文件列表">&bull; {{$file.Name}}</a></td>
+                <td class="col1"><a href="{{$data.Path}}/{{$file.Name}}" title="下载纯文本文件: 右键->链接另存为" class="文件列表">&bull; {{$file.Name}}</a></td>
                 <td class="col2">{{$file.Size}}</td>
             </tr>
         {{end}}
