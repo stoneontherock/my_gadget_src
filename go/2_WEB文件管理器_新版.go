@@ -200,7 +200,7 @@ func (fl fiList) Swap(i, j int) {
 	fl[i], fl[j] = fl[j], fl[i]
 }
 
-func renderHTMLDir(wr io.Writer, rootDir string, fis []os.FileInfo) {
+func renderHTMLDir(wr io.Writer, path string, fis []os.FileInfo) {
 	fs := make([]os.FileInfo, len(fis))
 	ds := make([]os.FileInfo, len(fis))
 	f := 0
@@ -219,7 +219,7 @@ func renderHTMLDir(wr io.Writer, rootDir string, fis []os.FileInfo) {
 	}
 
 	var fl fsList
-	fl.Path = rootDir
+	fl.Path = path
 	fl.Files = fs[:f]
 	fl.Dirs = ds[:d]
 
