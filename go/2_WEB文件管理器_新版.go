@@ -95,8 +95,8 @@ func listFS(wr http.ResponseWriter, req *http.Request, path string) {
 	}
 
 	if fi.Mode().IsRegular() {
-		http.ServeFile(wr, req, path)
 		log.Printf("%q 下载了 %q, %d字节", clientIP(req.RemoteAddr), path, fi.Size())
+		http.ServeFile(wr, req, path)
 		return
 	}
 
@@ -240,6 +240,7 @@ func getPath(path string) (string, error) {
 	if p == "/" {
 		p = *rootDir
 	}
+	p = filepath.Clean(p)
 
 	if !strings.HasPrefix(p, *rootDir) {
 		return "", fmt.Errorf("不能访问%s", p)
