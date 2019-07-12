@@ -283,11 +283,16 @@ const (
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <style type="text/css">
-        #上传{
-            background-color: #EEE;
+        form{
+            background-color: #EEEEEE;
+            position: relative;
             border: 1px solid gray;
             border-radius: 0.2em;
-            width: 332px;
+            width:332px;
+        }
+        #上传按钮{
+            position: absolute;
+            float: right;
         }
         #文件表格{
             width: 100%;
@@ -305,14 +310,12 @@ const (
 <body>
 {{- $data := . -}}
 <header>
-    <div id="上传">
-        <form enctype="multipart/form-data" action="{{$data.Path}}" method="POST">
-            <abbr title="可以按Ctrl键选择多个文件">
-                <input type="file" multiple name="uploadFiles" required>
-                <input style="float:right" type="submit" value="批量上传文件">
-            </abbr>
-        </form>
-    </div>
+    <form enctype="multipart/form-data" action="{{$data.Path}}" method="POST">
+    	<abbr title="可以按Ctrl键选择多个文件">
+		<input type="file" multiple name="uploadFiles" required>
+		<input id="上传按钮" type="submit" value="批量上传文件">
+	</abbr>
+    </form>
     <br />
     <a class="a返回" href="/"  class="name"><b>&#8634; 返回根目录</b></a><br />
     <a class="a返回" href="{{dirName $data.Path}}"  class="name"><b>&#8634; 返回上层目录</b></a>
