@@ -151,7 +151,7 @@ func uploadFiles(wr http.ResponseWriter, req *http.Request, path string) {
 		}
 
 		if fileHeader.Filename != fname {
-			rename = rename + fmt.Sprintf("%-s&nbsp&nbsp<b>上传文件重名，上传文件被重命名为:</b>&nbsp&nbsp%-s </br>", fileHeader.Filename, fname)
+			rename = rename + fmt.Sprintf("%-s&nbsp&nbsp<b>上传文件重名，上传文件被重命名为:</b>&nbsp&nbsp%-s <br />", fileHeader.Filename, fname)
 		}
 
 		dstFile, err := os.Create(fname) //创建上传文件
@@ -173,7 +173,7 @@ func uploadFiles(wr http.ResponseWriter, req *http.Request, path string) {
 	}
 
 	fmt.Fprintf(wr, "<h1>上传失败:%d, 成功:%d</h1> <p>%s</p> <script language='javascript' type='text/javascript'> setTimeout(\"javascript:location.href='%s'\", %d000); </script>",
-		uplFail, upSucc, rename, path, 1+len(strings.Split(rename, "</br>")))
+		uplFail, upSucc, rename, path, 1+len(strings.Split(rename, "<br />")))
 }
 
 func clientIP(remoteAddr string) string {
@@ -263,11 +263,13 @@ const (
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta http-equiv="Refresh" content="3; url=/">
     <title>Web文件管理</title>
 </head>
 <body>
-<strong>{{.}}<br />正在跳转到根目录...</strong>
-<script language='javascript' type='text/javascript'> setTimeout("javascript:location.href='/'", 3000); </script>
+<strong">{{.}}</strong>
+<br />
+<p>正在跳转到根目录...</p>
 </body>
 </html>
 `
@@ -285,7 +287,7 @@ const (
             background-color: #EEE;
             border: 1px solid gray;
             border-radius: 0.2em;
-            width: 350px;
+            width: 332px;
         }
         #文件表格{
             width: 100%;
@@ -305,8 +307,10 @@ const (
 <header>
     <div id="上传">
         <form enctype="multipart/form-data" action="{{$data.Path}}" method="POST">
-            <abbr title="可以按Ctrl键选择多个文件"><input type="file" multiple name="uploadFiles"/>
-            <input style="float:right" type="submit" value="批量上传文件" /></abbr>
+            <abbr title="可以按Ctrl键选择多个文件">
+                <input type="file" multiple name="uploadFiles" required>
+                <input style="float:right" type="submit" value="批量上传文件">
+            </abbr>
         </form>
     </div>
     <br />
