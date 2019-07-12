@@ -243,7 +243,7 @@ func getPath(path string) (string, error) {
 	p = filepath.Clean(p)
 
 	if !strings.HasPrefix(p, *rootDir) {
-		return "", fmt.Errorf("不能访问%s", p)
+		return "", fmt.Errorf("无权访问%s", p)
 	}
 	return p, nil
 }
@@ -267,7 +267,7 @@ const (
     <title>Web文件管理</title>
 </head>
 <body>
-<strong">{{.}}</strong>
+<strong>{{.}}</strong>
 <br />
 <p>正在跳转到根目录...</p>
 </body>
