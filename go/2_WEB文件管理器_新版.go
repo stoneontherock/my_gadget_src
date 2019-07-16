@@ -317,7 +317,7 @@ const (
     <br />
     <a class="a返回" href="/"  class="name"><b>&#8634; 返回web根目录</b></a><br />
     <a class="a返回" href="{{dirName $data.Path}}"  class="name"><b>&#8634; 返回上层目录</b></a>
-	<div style="color: #104E8B"><span style="font-weight: bold">当前目录:</span> {{$data.Path}}</div>
+    <div style="color: #104E8B"><span style="font-weight: bold">当前目录:</span> {{$data.Path}}/</div>
 </header>
 
 <article>
