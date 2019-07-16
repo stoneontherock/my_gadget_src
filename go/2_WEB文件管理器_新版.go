@@ -255,8 +255,7 @@ func errFatal(err error) {
 }
 
 const (
-	HTML_ERR = `
-<!doctype html>
+	HTML_ERR = `<!doctype html>
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
@@ -274,8 +273,7 @@ const (
 </html>
 `
 
-	HTML_DIR = `
-<!doctype html>
+	HTML_DIR = `<!doctype html>
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
@@ -308,7 +306,7 @@ const (
     <title>WEB文件管理</title>
 </head>
 <body>
-{{- $data := . -}}
+{{ $data := . -}}
 <header>
     <form enctype="multipart/form-data" action="{{$data.Path}}" method="POST">
     	<abbr title="可以按Ctrl键选择多个文件">
@@ -317,8 +315,9 @@ const (
 	</abbr>
     </form>
     <br />
-    <a class="a返回" href="/"  class="name"><b>&#8634; 返回根目录</b></a><br />
+    <a class="a返回" href="/"  class="name"><b>&#8634; 返回web根目录</b></a><br />
     <a class="a返回" href="{{dirName $data.Path}}"  class="name"><b>&#8634; 返回上层目录</b></a>
+	<div style="color: #104E8B"><span style="font-weight: bold">当前目录:</span> {{$data.Path}}</div>
 </header>
 
 <article>
