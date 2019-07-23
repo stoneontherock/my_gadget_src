@@ -296,12 +296,12 @@ const (
             width: 100%;
             border-collapse: collapse;
         }
-        tr:nth-child(even){
+        #文件表格 tr:nth-child(even){
             background-color: #EEE;
         }
-        td:nth-child(odd){text-align: left;}
-        td:nth-child(even){text-align: right;}
-        td>a{text-decoration:none; }
+        #文件表格 td:nth-child(odd){text-align: left;}
+        #文件表格 td:nth-child(even){text-align: right;}
+        #文件表格 td>a{text-decoration:none; }
     </style>
     <title>WEB文件管理</title>
 </head>
