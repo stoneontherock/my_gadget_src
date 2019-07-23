@@ -1,42 +1,46 @@
 #!/bin/bash
 function fn_do(){
-    case "$1" in 
-        "on")
-	    if [ $# -ne 5 ]
-	    then
-		    echo "$0 on <host> <port> <user> <pstr>"
-		    return 100
-	    fi
-            gsettings set org.gnome.system.proxy mode manual 
-            ps=$(ps -eo cmd |grep -v grep |grep ":1080")
-            if [ -z "$ps" ]
-            then
+	case "$1" in 
+	"on")
+		if [ $# -ne 5 ]
+		then
+			echo "$0 on <host> <port> <user> <pstr>"
+			return 100
+		fi
+		gsettings set org.gnome.system.proxy mode manual 
+		ps=$(ps -ef |grep -v grep |grep "1:1080")
+		if [ -n "$ps" ]
+		then
+			echo "$ps"
+			return 0
+		fi
+
 		shift 1
-		local ok=false
+		local ok=101
 		for ((i=0;i<10;i++))
 		do
-		    ssh_tunel "$@" 
-		    ps -eo cmd  |grep -v grep|grep -q 1:1080 && { ok=true;break; }
-		    echo -n "."
-		    sleep 0.2
-	        done
-		if [ "$ok" == true ]
+			ssh_tunel "$@" 
+			if [ $? -eq 33 ] 
+			then
+				printf "\e[31mincorrect password!\n\e[0m"
+				return 33
+			fi
+			ps -ef |grep -v grep|grep 1:1080 && { ok=0;break; }
+			echo -n "."
+			sleep 0.1
+		done
+		return $ok
+		;;
+	"off") 
+		gsettings set org.gnome.system.proxy mode none
+		pid=$(ps -eo pid,cmd |awk '/:1080/ && !/awk/{print $1}' |xargs)
+		if [ -n "$pid" ]
 		then
-			echo "connected!"
+			kill $pid
 		fi
-            fi
-            ps -ef |grep -v grep |grep "1:1080"
-            ;;
-        "off") 
-            gsettings set org.gnome.system.proxy mode none
-	    pid=$(ps -eo pid,cmd |awk '/:1080/ && !/awk/{print $1}' |xargs)
-	    if [ -n "$pid" ]
-	    then
-		    kill $pid
-	    fi
-            ;;
-        *) echo "Usage: $0 {on <host> <ssh_port> <ssh_user> <ssh_pwd>|off}"
-    esac
+		;;
+	*) echo "Usage: $0 {on <host> <ssh_port> <ssh_user> <ssh_pwd>|off}"
+	esac
 }
 
 function ssh_tunel(){
@@ -46,32 +50,37 @@ function ssh_tunel(){
 	local pstr="$4"
 
 	/usr/bin/expect <<< "set timeout 10
-	spawn ssh -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -Nf -D127.0.0.1:1080 -p$port $user@$host
-	set ssh_id \$spawn_id
-        #exp_internal 1
+	spawn bash -c \"ssh -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -Nf -D127.0.0.1:1080 -p$port $user@$host; echo ssh_tunel_ok\"
+	#exp_internal 1
 	expect {
-	   -nocase \"yes/no\" { exp_send \"yes\r\"; exp_continue; }
-	   \"password: \" { exp_send {$pstr}; exp_send \"\r\"; send_user \"send pstr to \$ssh_id\n\" } 
-	   timeout { send_error \"ERROR:timeout\"; close \$ssh_id; exit 11; }
-        }
-	wait \$ssh_id
+		-nocase \"yes/no\" { exp_send \"yes\r\"; exp_continue; }
+		timeout { send_error \"ERROR:timeout1\"; exit 11; }
+		\"password: \" { exp_send {$pstr}; exp_send \"\r\"; send_user \"passwd has been sent\n\" } 
+	}
+	expect {
+		timeout { send_error \"ERROR:timeout2\"; exit 12; }
+		\"ssh_tunel_ok\" { send_user \"SSH_TUNEL_OK!\n\"; } 
+		\"password: \" { send_error \"password incorrect!\n\"; exit 33; } 
+	}
+	exit 0
 	" >/dev/null 2>&1
-	#return $?
+	return $?
 }
 
 function fn_main(){
-    if [ $(id -u) -eq 0 ]
-    then
-        su -l zh -c "$(readlink -m $0) $*" 
-    else
-        fn_do "$@"
-	local ret=$?
-	if [ $ret -ne 0 ]
+	if [ $(id -u) -eq 0 ]
 	then
-		printf "\e[31mfailed\e[0m\n"
-		exit $ret 
+		su -l zh -c "$(readlink -m $0) $*" 
+	else
+		fn_do "$@" 
+		if [ $? -eq 0 ]
+		then
+			printf "\e[1;32mDONE!\n\e[0m"
+		else
+			printf "\e[31mfailed\n\e[0m"
+		fi
 	fi
-    fi
 }
 
 fn_main "$@"
+exit $?
