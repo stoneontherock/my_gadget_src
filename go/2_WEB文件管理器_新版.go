@@ -299,9 +299,9 @@ const (
         tr:nth-child(even){
             background-color: #EEE;
         }
-        td.col1{text-align: left}
-        td.col2{text-align: right}
-        a.文件列表{text-decoration:none; }
+        td:nth-child(odd){text-align: left;}
+        td:nth-child(even){text-align: right;}
+        td>a{text-decoration:none; }
     </style>
     <title>WEB文件管理</title>
 </head>
@@ -309,31 +309,31 @@ const (
 {{ $data := . -}}
 <header>
     <form enctype="multipart/form-data" action="{{$data.Path}}" method="POST">
-    	<abbr title="可以按Ctrl键选择多个文件">
-		<input type="file" multiple name="uploadFiles" required>
-		<input id="上传按钮" type="submit" value="批量上传文件">
-	</abbr>
+        <abbr title="可以按Ctrl键选择多个文件">
+            <input type="file" multiple name="uploadFiles" required>
+            <input id="上传按钮" type="submit" value="批量上传文件">
+        </abbr>
     </form>
     <br />
-    <a class="a返回" href="/"  class="name"><b>&#8634; 返回web根目录</b></a><br />
-    <a class="a返回" href="{{dirName $data.Path}}"  class="name"><b>&#8634; 返回上层目录</b></a>
+    <a href="/"><b>&#8634; 返回web根目录</b></a><br />
+    <a href="{{dirName $data.Path}}"><b>&#8634; 返回上层目录</b></a>
     <div style="color: #104E8B"><span style="font-weight: bold">当前目录:</span> {{$data.Path}}/</div>
 </header>
 
 <article>
     <hr>
     <table id="文件表格">
-        <thead style="background-color: #EEEEFF;"><th style="text-align:left; text-shadow">目录名/文件名</th><th style="text-align:right">大小</th></thead>
+        <thead style="background-color: #EEEEFF;"><th style="text-align:left;">目录名/文件名</th><th style="text-align:right">大小</th></thead>
         <tbody>
         {{- range $index,$dir := $data.Dirs -}}
             <tr>
-                <td class="col1"><a href="{{$data.Path}}/{{$dir.Name}}/"  title="点击打开目录" class="文件列表">&bull; {{$dir.Name}}/</a></td>
+                <td class="col1"><a href="{{$data.Path}}/{{$dir.Name}}/"  title="点击打开目录">&bull; {{$dir.Name}}/</a></td>
                 <td class="col2">{{$dir.Size}}</td>
             </tr>
         {{end}}
         {{- range $index,$file := $data.Files -}}
             <tr>
-                <td class="col1"><a href="{{$data.Path}}/{{$file.Name}}" title="下载纯文本文件: 右键->链接另存为" class="文件列表">&bull; {{$file.Name}}</a></td>
+                <td class="col1"><a href="{{$data.Path}}/{{$file.Name}}" title="下载纯文本文件: 右键->链接另存为">&bull; {{$file.Name}}</a></td>
                 <td class="col2">{{$file.Size}}</td>
             </tr>
         {{end}}
