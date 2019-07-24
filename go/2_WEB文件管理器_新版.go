@@ -87,6 +87,8 @@ func listFS(wr http.ResponseWriter, req *http.Request, path string) {
 	if fi.Mode().IsDir() {
 		hf, err := http.Dir(path).Open("")
 		errFatal(err)
+		defer hf.Close()
+
 		fis, err := hf.Readdir(-1)
 		errFatal(err)
 
