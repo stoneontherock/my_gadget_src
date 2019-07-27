@@ -43,9 +43,9 @@ func init() {
 }
 
 func main() {
-	log.Printf("当前监听地址:%s  当前web根目录:%s", *addr, *rootDir)
 	log.Println("通过-a命令行选项修改监听地址, 例如: -a 192.168.1.100:8000 或 -a :8000")
 	log.Println("通过-d命令行选项修改WEB根目录, 例如: -d /tmp")
+	log.Printf("*** 当前监听地址:%s  当前web根目录:%s ***", *addr, *rootDir)
 	println()
 	serve()
 }
