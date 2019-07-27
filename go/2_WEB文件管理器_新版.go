@@ -227,6 +227,9 @@ func renderHTMLDir(wr io.Writer, path string, fis []os.FileInfo) {
 
 	var fl fsList
 	fl.Path = path
+	if fl.Path == "/" {
+		fl.Path = "." //修复根目录作为web root时url不可用的bug
+	}
 	fl.Files = fs[:f]
 	fl.Dirs = ds[:d]
 
