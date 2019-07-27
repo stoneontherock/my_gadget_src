@@ -92,9 +92,7 @@ func listFS(wr http.ResponseWriter, req *http.Request, path string) {
 		}
 		defer hf.Close()
 
-		fis, err := hf.Readdir(-1)
-		errFatal(err)
-
+		fis, _ := hf.Readdir(-1) //这里忽略err是为了把能列出的文件/目录列出来
 		renderHTMLDir(wr, path, fis)
 		return
 	}
