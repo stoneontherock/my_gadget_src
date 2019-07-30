@@ -340,7 +340,7 @@ const (
 
 <script>
 	function pickup(mid) {
-        let dur = prompt("勾起多少分钟后放下？",30);
+        let dur = prompt("捕获多少分钟后释放？",30);
         let req = new XMLHttpRequest();
 
         req.onreadystatechange=function(){
