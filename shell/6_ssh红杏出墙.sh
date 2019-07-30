@@ -16,7 +16,6 @@ function fn_do(){
 		fi
 
 		shift 1
-		local ok=101
 		for ((i=0;i<10;i++))
 		do
 			ssh_tunel "$@" 
@@ -25,11 +24,11 @@ function fn_do(){
 				printf "\e[31mincorrect password!\n\e[0m"
 				return 33
 			fi
-			ps -ef |grep -v grep|grep 1:1080 && { ok=0;break; }
+			ps -ef |grep -v grep|grep 1:1080 && { return 0; break; }
 			echo -n "."
-			sleep 0.1
+			sleep 0.3
 		done
-		return $ok
+		return 99
 		;;
 	"off") 
 		gsettings set org.gnome.system.proxy mode none
@@ -50,7 +49,7 @@ function ssh_tunel(){
 	local pstr="$4"
 
 	/usr/bin/expect <<< "set timeout 10
-	spawn bash -c \"ssh -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -Nf -D127.0.0.1:1080 -p$port $user@$host; echo ssh_tunel_ok\"
+	spawn bash -c \"ssh -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -Nf -D127.0.0.1:1080 -p$port $user@$host; echo CMD_END \"
 	#exp_internal 1
 	expect {
 		-nocase \"yes/no\" { exp_send \"yes\r\"; exp_continue; }
@@ -59,10 +58,10 @@ function ssh_tunel(){
 	}
 	expect {
 		timeout { send_error \"ERROR:timeout2\"; exit 12; }
-		\"ssh_tunel_ok\" { send_user \"SSH_TUNEL_OK!\n\"; } 
+		\"CMD_END\" { send_user \"SSH_TUNEL_OK!\n\"; exit 0; } 
 		\"password: \" { send_error \"password incorrect!\n\"; exit 33; } 
 	}
-	exit 0
+	exit 34
 	" >/dev/null 2>&1
 	return $?
 }
