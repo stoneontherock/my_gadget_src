@@ -13,6 +13,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var addr *string
@@ -107,6 +108,7 @@ func listFS(wr http.ResponseWriter, req *http.Request, path string) {
 }
 
 func uploadFiles(wr http.ResponseWriter, req *http.Request, path string) {
+	begin := time.Now()
 	err := os.Chdir(path)
 	errFatal(err)
 
@@ -119,6 +121,7 @@ func uploadFiles(wr http.ResponseWriter, req *http.Request, path string) {
 		return
 	}
 
+	var totalSize int64
 	for _, fileHeader := range req.MultipartForm.File["uploadFiles"] {
 		srcFile, err := fileHeader.Open()
 		if err != nil {
@@ -170,13 +173,19 @@ func uploadFiles(wr http.ResponseWriter, req *http.Request, path string) {
 		} else {
 			log.Printf("%q 上传 %q 成功, %d字节\n", clientIP(req.RemoteAddr), fname, n)
 			upSucc++
+			totalSize += n
 		}
 		srcFile.Close() //这里是循环，避免用defer *.Close()
 		dstFile.Close()
 	}
 
-	fmt.Fprintf(wr, "<h1>上传失败:%d, 成功:%d</h1> <p>%s</p> <script language='javascript' type='text/javascript'> setTimeout(\"javascript:location.href='%s'\", %d000); </script>",
-		uplFail, upSucc, rename, path, 1+len(strings.Split(rename, "<br />")))
+	var dur = float64(time.Now().Sub(begin)) / float64(time.Second)
+	var totalMB = float64(totalSize) / 1024.0 / 1024.0
+	var speed = totalMB / dur
+	log.Printf("平均速率:%.2f MB/s, 耗时%.2fs, 总大小%.2f MB  %d\n", speed, dur, totalMB, time.Now().Sub(begin))
+
+	fmt.Fprintf(wr, "<h1>平均速率: %.2fMB/s,  耗时:%.2fs,  总大小: %.2fMB,  上传失败:%d, 成功:%d, </h1> <p>%s</p> <script language='javascript' type='text/javascript'> setTimeout(\"javascript:location.href='%s'\", %d000); </script>",
+		speed, dur, totalMB, uplFail, upSucc, rename, path, 3+len(strings.Split(rename, "<br />")))
 }
 
 func clientIP(remoteAddr string) string {
