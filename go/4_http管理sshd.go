@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"os/exec"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -69,7 +70,7 @@ func sshCMD(wr http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	cmd := req.PostFormValue("cmd")
+	cmd := strings.Replace(req.PostFormValue("cmd"), "\r\n", "\n", -1)
 	stdout, stderr := runCMD(30, cmd)
 	fmt.Fprintln(wr, stdout+"----------------------------------------\n"+stderr)
 }
