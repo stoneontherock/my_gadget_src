@@ -71,6 +71,7 @@ func fs(wr http.ResponseWriter, req *http.Request) {
 		return
 	case "POST":
 		uploadFiles(wr, req, path)
+		return
 	default:
 		http.Error(wr, "不支持的方法", http.StatusMethodNotAllowed)
 		return
