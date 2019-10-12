@@ -25,14 +25,25 @@ function fn_main(){
 	s3=$(sed -n "$(rand $l)p" "$plist")
 	s4=$(sed -n "$(rand $l)p" "$plist")
 	s5=$(sed -n "$(rand $l)p" "$plist")
+	s6=$(sed -n "$(rand $l)p" "$plist")
+	s7=$(sed -n "$(rand $l)p" "$plist")
+	s8=$(sed -n "$(rand $l)p" "$plist")
 	echo -e "* $s1\n* $s2\n* $s3\n* $s4\n* $s5\n"
 
 	cd "$mdir" >/dev/null 
-	mpg123 "$s1" "$s2" "$s3" "$s4" "$s5">/dev/null 2>&1 &
+	mpg123 "$s1" "$s2" "$s3" "$s4" "$s5" "$s6" "$s7" "$s8" >/dev/null 2>&1 &
 	pid=$!
 
 	cd - >/dev/null
-	sleep 1140 #19分钟
+        # volume up
+	for i in {70..90}  #要根据音响箱大小来确定范围。
+	do
+		#这里的numid和name等参数要根据命令"amixer contents"确定(找到volume那项) 	
+		amixer cset numid=1,iface=MIXER,name='PCM Playback Volume' ${i}%  
+		sleep 10
+	done
+
+	sleep 900
 	kill $pid
 	/sbin/poweroff
 }
