@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package grpcchannel;
+
+service Channel {
+     rpc Report(Ping) returns (stream Pong) {}
+     rpc CmdResult(CmdOutput) returns (EmptyResp) {}
+     rpc RProxyController(RPxyReq) returns (stream RPxyResp) {}
+//     rpc ListFile(FileList) returns (EmptyResp) {}
+//     rpc FileUp(stream FileDataUp) returns (EmptyResp) {}
+}
+
+// shared empty response
+message EmptyResp {
+}
+
+//Ping IN
+message Ping {
+    string mid = 1;
+    string hostname = 2;
+    string os = 3;
+}
+
+//ping out
+message Pong {
+    string action = 1;
+    bytes  data = 2;
+}
+
+//cmd
+message CmdOutput {
+    sint32 return_code = 1;
+    string stdout = 2;
+    string stderr = 3;
+    string mid    = 4;
+}
+
+
+// rpxy Req
+message RPxyReq {
+   string mid = 1;
+   string port2 = 2;  //client-> server
+   string addr3 = 3;
+   int32  num_of_conn2 = 4;
+}
+
+// rpxy resp
+message RPxyResp {
+    string port2 = 1;  //client-> server
+    string addr3 = 2;
+    int32  num_of_conn2 = 3;
+}
+
+//listFile
+//message File {
+//    string name = 1;
+//    int32  size = 2;
+//}
+
+//listFile
+//message FileList {
+//    string mid = 1;
+//    string err = 2;
+//    string path = 3;
+//    repeated File fs = 4;
+//}
+
+//file up
+//message FileDataUp {
+//    string mid = 1;
+//    string err = 2;
+//    bytes data = 3;
+//}
