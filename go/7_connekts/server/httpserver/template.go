@@ -43,13 +43,13 @@ func respJSAlert(c *gin.Context, code int, errStr string) {
 }
 
 func humanReadableSize(sz int32) string {
-	switch  {
+	switch {
 	case sz < 1024:
 		return strconv.Itoa(int(sz))
 	case sz >= 1024 && sz < 1024*1024:
-		return fmt.Sprintf("%.1fkB",float64(sz)/1024)
+		return fmt.Sprintf("%.1fkB", float64(sz)/1024)
 	case sz >= 1024*1024:
-		return fmt.Sprintf("%.1fMB",float64(sz)/1024/1024)
+		return fmt.Sprintf("%.1fMB", float64(sz)/1024/1024)
 	}
 
 	return "0"
@@ -65,7 +65,7 @@ func filepathURLEscape(dir, base, mid string, fsize int32) string {
 		return fmt.Sprintf("/connekt/list_file?mid=%s&path=%s", mid, url.QueryEscape(pth))
 	}
 
-	return fmt.Sprintf("/connekt/file_up?mid=%s&path=%s&size=%d", mid, url.QueryEscape(pth),fsize)
+	return fmt.Sprintf("/connekt/file_up?mid=%s&path=%s&size=%d", mid, url.QueryEscape(pth), fsize)
 }
 
 const (
@@ -149,43 +149,43 @@ const (
 </html>
 `
 
-//	LIST_FILE_HTML = `
-//<!doctype html>
-//<html lang="zh">
-//<head>
-//   <meta charset="UTF-8">
-//   <meta name="viewport"
-//         content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-//   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-//   <title>alives</title>
-//</head>
-//<body>
-//{{ $data := . -}}
-//<header>
-//   <h1>当前路径:{{- $data.Path -}}</h1>
-//   <hr>
-//</header>
-//
-//<article>
-//    {{- with $data.Fs -}}
-//    <table id="文件表格">
-//        <thead style="background-color: #EEEEFF;"><th style="text-align:left;">目录名/文件名</th><th style="text-align:right">大小</th></thead>
-//        <tbody>
-//        {{- range $index,$f := $data.Fs -}}
-//            <tr>
-//                <td class="col1"><a href="{{- filepathURLEscape $data.Path $f.Name $data.Mid $f.Size -}}"> &bull; {{- $f.Name -}} </a></td>
-//                <td class="col2">{{- humanReadableSize $f.Size -}}</td>
-//            </tr>
-//        {{end}}
-//        </tbody>
-//    </table>
-//    {{- else -}}
-//        <h3>{{- $data.Err -}}</h3>
-//    {{- end -}}
-//</article>
-//</body>
-//</html>
-//`
+	//	LIST_FILE_HTML = `
+	//<!doctype html>
+	//<html lang="zh">
+	//<head>
+	//   <meta charset="UTF-8">
+	//   <meta name="viewport"
+	//         content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+	//   <meta http-equiv="X-UA-Compatible" content="ie=edge">
+	//   <title>alives</title>
+	//</head>
+	//<body>
+	//{{ $data := . -}}
+	//<header>
+	//   <h1>当前路径:{{- $data.Path -}}</h1>
+	//   <hr>
+	//</header>
+	//
+	//<article>
+	//    {{- with $data.Fs -}}
+	//    <table id="文件表格">
+	//        <thead style="background-color: #EEEEFF;"><th style="text-align:left;">目录名/文件名</th><th style="text-align:right">大小</th></thead>
+	//        <tbody>
+	//        {{- range $index,$f := $data.Fs -}}
+	//            <tr>
+	//                <td class="col1"><a href="{{- filepathURLEscape $data.Path $f.Name $data.Mid $f.Size -}}"> &bull; {{- $f.Name -}} </a></td>
+	//                <td class="col2">{{- humanReadableSize $f.Size -}}</td>
+	//            </tr>
+	//        {{end}}
+	//        </tbody>
+	//    </table>
+	//    {{- else -}}
+	//        <h3>{{- $data.Err -}}</h3>
+	//    {{- end -}}
+	//</article>
+	//</body>
+	//</html>
+	//`
 
 	LIST_HOSTS_HTML = `
 <!doctype html>

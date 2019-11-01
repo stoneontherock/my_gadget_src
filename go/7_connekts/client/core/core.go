@@ -11,14 +11,14 @@ import (
 var staticInfo = static()
 
 func Reporter(addr string) {
-	i:=0
+	i := 0
 	for {
 		i++
 		println(i)
 		time.Sleep(10e9)
 		conn, err := grpc.Dial(addr, grpc.WithInsecure()) //如果需要授权认证或tls加密，则可以使用DialOptions来设置grpc.Dial
 		if err != nil {
-			log.Errorf("grpc.Dial: %v", err)
+			log.Errorf("grpc.Dial: %v\n", err)
 			continue
 		}
 		reportDo(conn)
@@ -60,16 +60,14 @@ func handlePong(pong gc.Pong, cc gc.ChannelClient) {
 	case "cmd":
 		handleCMD(&pong, cc)
 	case "rpxy":
-		handleRPxy(&pong,cc,"")
+		handleRPxy(&pong, cc, "")
 	//case "list_file":
 	//	handleListFile(&pong,cc)
 	//case "file_up":
 	//	handleFileUp(&pong,cc)
 	case "filesystem":
-		handleFilesystem(&pong,cc)
+		handleFilesystem(&pong, cc)
 	default:
 		println("不支持的acton\n")
 	}
 }
-
-

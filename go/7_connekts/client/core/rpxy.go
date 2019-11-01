@@ -8,13 +8,12 @@ import (
 	"connekts/server/panicerr"
 	"context"
 	"encoding/json"
-	"github.com/sirupsen/logrus"
 	"net"
 )
 
 var conn2Pool chan net.Conn
 
-func handleRPxy(pong *gc.Pong, cc gc.ChannelClient, addr3 string ) {
+func handleRPxy(pong *gc.Pong, cc gc.ChannelClient, addr3 string) {
 	var reportResp gc.RPxyResp
 	err := json.Unmarshal(pong.Data, &reportResp)
 	if err != nil {
@@ -30,7 +29,7 @@ func handleRPxy(pong *gc.Pong, cc gc.ChannelClient, addr3 string ) {
 	log.Infof("请求rpxy控制端...\n")
 	stream, err := cc.RProxyController(ctx, &gc.RPxyReq{Mid: staticInfo.MachineID, Port2: reportResp.Port2, Addr3: reportResp.Addr3, NumOfConn2: reportResp.NumOfConn2})
 	if err != nil {
-		logrus.Errorf("gc.RProxyController失败,%v", err)
+		log.Errorf("gc.RProxyController失败,%v\n", err)
 		cancel()
 		return
 	}
@@ -39,23 +38,23 @@ func handleRPxy(pong *gc.Pong, cc gc.ChannelClient, addr3 string ) {
 	for {
 		resp, err := stream.Recv()
 		if err != nil {
-			logrus.Errorf("stream.Recv失败,%v", err)
+			log.Errorf("stream.Recv失败,%v\n", err)
 			cancel()
 			break
 		}
 		log.Infof("收到控制端下发的连接任务:%+v\n", resp)
 
 		rcLen := len(conn2Pool)
-		logrus.Infof("rcLen=%d", rcLen)
+		log.Infof("rcLen=%d\n", rcLen)
 		nc := int(resp.NumOfConn2)
 		if rcLen <= nc/2 {
 			genRconn(resp.Port2, nc-rcLen)
 		}
 
-		logrus.Infof("收到服务端连接请求,要求建立中转: conn2Addr=%s", resp.Port2)
+		log.Infof("收到服务端连接请求,要求建立中转: conn2Addr=%s\n", resp.Port2)
 		if addr3 != "" {
 			go bridge(addr3)
-		}else{
+		} else {
 			go bridge(resp.Addr3)
 		}
 	}
@@ -64,7 +63,7 @@ func handleRPxy(pong *gc.Pong, cc gc.ChannelClient, addr3 string ) {
 func bridge(addr3 string) {
 	conn3, err := net.Dial("tcp", addr3)
 	panicerr.Handle(err, "连接近端"+addr3)
-	logrus.Infof("近端连接已经建立:%s", conn3.LocalAddr())
+	log.Infof("近端连接已经建立:%s\n", conn3.LocalAddr())
 
 	conn2 := <-conn2Pool
 	go common.CopyData(conn2, conn3, "2->3", false)
@@ -76,8 +75,8 @@ func genRconn(port2 string, cnt int) {
 	for i := 0; i < cnt; i++ {
 		conn2, err := net.Dial("tcp", addr2)
 		panicerr.Handle(err, "连接远端:"+addr2)
-		logrus.Infof("远端连接已经建立:%s->%s conn2=%p", conn2.LocalAddr(), conn2.RemoteAddr(), conn2)
+		log.Infof("远端连接已经建立:%s->%s conn2=%p\n", conn2.LocalAddr(), conn2.RemoteAddr(), conn2)
 		conn2Pool <- conn2
-		logrus.Infof("conn2已经放入池子 conn2=%p", conn2)
+		log.Infof("conn2已经放入池子 conn2=%p\n", conn2)
 	}
 }

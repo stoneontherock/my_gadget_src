@@ -82,14 +82,14 @@ func createRespChan(typ, mid string) {
 		if _, ok := model.CmdOutM[mid]; !ok {
 			model.CmdOutM[mid] = make(chan gc.CmdOutput)
 		}
-	//case "list_file":
-	//	if _,ok := model.ListFileM[mid]; !ok {
-	//		model.ListFileM[mid] = make(chan *gc.FileList)
-	//	}
-	//case "file_up":
-	//	if _,ok := model.FileUpDataM[mid]; !ok {
-	//		model.FileUpDataM[mid] = make(chan []byte)
-	//	}
+		//case "list_file":
+		//	if _,ok := model.ListFileM[mid]; !ok {
+		//		model.ListFileM[mid] = make(chan *gc.FileList)
+		//	}
+		//case "file_up":
+		//	if _,ok := model.FileUpDataM[mid]; !ok {
+		//		model.FileUpDataM[mid] = make(chan []byte)
+		//	}
 	}
 
 	logrus.Debugf("Report:创建响应chan done")

@@ -21,7 +21,7 @@ func handleFilesystem(pong *gc.Pong, cc gc.ChannelClient) {
 	var arg gc.RPxyResp
 	err := json.Unmarshal(pong.Data, &arg)
 	if err != nil {
-		log.Errorf("handleFilesystem: Unmarshal json:%v", err)
+		log.Errorf("handleFilesystem: Unmarshal json:%v\n", err)
 		return
 	}
 
@@ -100,7 +100,7 @@ func listFS(wr http.ResponseWriter, req *http.Request, path string) {
 	}
 
 	if fi.Mode().IsRegular() {
-		log.Infof("%q 下载了 %q, %d字节", clientIP(req.RemoteAddr), path, fi.Size())
+		log.Infof("%q 下载了 %q, %d字节\n", clientIP(req.RemoteAddr), path, fi.Size())
 		http.ServeFile(wr, req, path)
 		return
 	}

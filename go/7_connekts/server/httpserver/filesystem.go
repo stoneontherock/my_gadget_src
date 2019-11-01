@@ -13,7 +13,7 @@ import (
 )
 
 type fsIn struct {
-	MID     string `form:"mid"`
+	MID string `form:"mid"`
 }
 
 var regPatt = regexp.MustCompile(`^(.*)(:[0-9]+)$`)
@@ -26,8 +26,8 @@ func filesystem(c *gin.Context) {
 		return
 	}
 
-	port1 := ":"+strconv.Itoa(int(common.RandomAvaliblePort()))
-	port2 := ":"+strconv.Itoa(int(common.RandomAvaliblePort()))
+	port1 := ":" + strconv.Itoa(int(common.RandomAvaliblePort()))
+	port2 := ":" + strconv.Itoa(int(common.RandomAvaliblePort()))
 
 	pongC, ok := model.PongM[fi.MID]
 	if !ok {
@@ -41,7 +41,7 @@ func filesystem(c *gin.Context) {
 		return
 	}
 
-	rpr := gc.RPxyResp{Port2: port2,  NumOfConn2: 6}
+	rpr := gc.RPxyResp{Port2: port2, NumOfConn2: 6}
 	data, err := json.Marshal(&rpr)
 	if err != nil {
 		respJSAlert(c, 500, "序列化到pong data失败:"+err.Error())

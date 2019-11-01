@@ -34,8 +34,6 @@ func CopyData(src, dst net.Conn, dir string, serverCloseSocket bool) {
 		logrus.Errorf("copyData: dst.CloseRead() dir=%s, err=%v  src=%p,dst=%p\n", dir, err, src, dst)
 	}
 
-
-
 	if serverCloseSocket {
 		err = src.(*net.TCPConn).Close()
 		if err != nil {
@@ -48,12 +46,12 @@ func CopyData(src, dst net.Conn, dir string, serverCloseSocket bool) {
 	}
 }
 
-func init(){
+func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
 func IsPortAvalible(port int) bool {
-	lis,err := net.Listen("tcp",":"+strconv.Itoa(port))
+	lis, err := net.Listen("tcp", ":"+strconv.Itoa(port))
 	if err != nil {
 		return false
 	}
@@ -65,7 +63,7 @@ func IsPortAvalible(port int) bool {
 func RandomAvaliblePort() int32 {
 	var port int32
 	for {
-		port = rand.Int31n(1001)+45535
+		port = rand.Int31n(1001) + 45535
 		if IsPortAvalible(int(port)) {
 			break
 		}

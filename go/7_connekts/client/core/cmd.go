@@ -10,7 +10,6 @@ import (
 	"time"
 )
 
-
 func handleCMD(pong *gc.Pong, cc gc.ChannelClient) {
 	println("cmd:", string(pong.Data))
 	var cmd common.CmdPong
@@ -19,7 +18,7 @@ func handleCMD(pong *gc.Pong, cc gc.ChannelClient) {
 		log.Errorf("Unmarshal:%v\n", err)
 		return
 	}
-	rc, stdout, stderr := runcmd.Run(cmd.Cmd,cmd.Timeout)
+	rc, stdout, stderr := runcmd.Run(cmd.Cmd, cmd.Timeout)
 
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*60)
 	defer cancel()

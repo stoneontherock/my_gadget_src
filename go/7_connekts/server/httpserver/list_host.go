@@ -18,7 +18,7 @@ func listHosts(c *gin.Context) {
 	li := lahIn{Order: "asc"}
 	err := c.BindQuery(&li)
 	if err != nil {
-		respJSAlert(c,400,"参数错误:" + err.Error())
+		respJSAlert(c, 400, "参数错误:"+err.Error())
 		return
 	}
 
@@ -44,14 +44,13 @@ func listHosts(c *gin.Context) {
 	var total int
 	err = q.Find(&cis).Offset(-1).Limit(-1).Count(&total).Error
 	if err != nil {
-		respJSAlert(c,400,"db.Find.Count:" + err.Error())
+		respJSAlert(c, 400, "db.Find.Count:"+err.Error())
 		return
 	}
 
 	err = listHostsTmpl.Execute(c.Writer, &cis)
-	if err!= nil {
-		respJSAlert(c,400,"模板渲染出错" + err.Error())
+	if err != nil {
+		respJSAlert(c, 400, "模板渲染出错"+err.Error())
 		return
 	}
 }
-

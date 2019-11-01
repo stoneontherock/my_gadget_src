@@ -25,7 +25,7 @@ var dirTemplate *template.Template
 func init() {
 	binDir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
 	addr = flag.String("a", ":80", "http监听地址,例如: ':8000'或'192.168.0.100:8000'")
-	rootDir = flag.String("d", binDir, "http监听地址,例如: ':8000'或'192.168.0.100:8000'")
+	rootDir = flag.String("d", binDir, "web根目录,例如: '/tmp'")
 	flag.Parse()
 
 	var err error

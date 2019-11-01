@@ -14,16 +14,16 @@ import (
 )
 
 // Run 带timeout执行系统命令，超时就杀死子进程
-func Run(cmd string,tmout int) (int, string, string) {
-	log.Infof("=== del === cmd:+%v len=%d\n",cmd,len(cmd))
+func Run(cmd string, tmout int) (int, string, string) {
+	log.Infof("=== del === cmd:+%v len=%d\n", cmd, len(cmd))
 
 	var c *exec.Cmd
 
-	if strings.Contains(cmd,"...") {
-		cmds := strings.Split(cmd,"...")
+	if strings.Contains(cmd, "...") {
+		cmds := strings.Split(cmd, "...")
 		c = exec.Command(cmds[0], cmds[1:]...)
-	}else{
-		c = exec.Command("/bin/bash","-c", cmd)
+	} else {
+		c = exec.Command("/bin/bash", "-c", cmd)
 	}
 
 	var stdout bytes.Buffer

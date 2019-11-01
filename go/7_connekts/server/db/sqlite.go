@@ -1,8 +1,8 @@
 package db
 
 import (
-	"connekts/server/panicerr"
 	"connekts/server/model"
+	"connekts/server/panicerr"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"log"

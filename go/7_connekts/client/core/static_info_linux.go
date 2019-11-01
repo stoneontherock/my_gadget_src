@@ -16,8 +16,8 @@ func static() model.StaticInfo {
 		si.MachineID = "sample_machine_id"
 	}
 
-	_, kernel, _ := runcmd.Run("uname...-r",10)
-	_, hostname, _ := runcmd.Run( "hostname",10)
+	_, kernel, _ := runcmd.Run("uname...-r", 10)
+	_, hostname, _ := runcmd.Run("hostname", 10)
 
 	si.OS = "linux " + strings.ReplaceAll(kernel, "\n", "")
 	si.Hostname = strings.ReplaceAll(hostname, "\n", "")

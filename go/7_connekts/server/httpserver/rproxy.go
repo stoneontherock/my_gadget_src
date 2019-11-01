@@ -12,10 +12,10 @@ import (
 )
 
 type rproxyIn struct {
-	MID       string `form:"mid"` // binding:"hexadecimal"`
-	NumOfConn2 int32 `form:"num_of_conn2"`
-	Port1     string `form:"port1"` // binding:"numeric"`
-	Addr3     string `form:"addr3"` //` binding:"numeric"`
+	MID        string `form:"mid"` // binding:"hexadecimal"`
+	NumOfConn2 int32  `form:"num_of_conn2"`
+	Port1      string `form:"port1"` // binding:"numeric"`
+	Addr3      string `form:"addr3"` //` binding:"numeric"`
 }
 
 func rProxy(c *gin.Context) {
@@ -26,13 +26,13 @@ func rProxy(c *gin.Context) {
 		return
 	}
 
-	if ri.Port1 == ""  {
+	if ri.Port1 == "" {
 		rPxyTmpl.Execute(c.Writer, ri.MID)
 		return
 	}
 
-	ri.Port1= ":"+ri.Port1
-	port2 := ":"+strconv.Itoa(int(common.RandomAvaliblePort()))
+	ri.Port1 = ":" + ri.Port1
+	port2 := ":" + strconv.Itoa(int(common.RandomAvaliblePort()))
 
 	pongC, ok := model.PongM[ri.MID]
 	if !ok {
@@ -40,13 +40,13 @@ func rProxy(c *gin.Context) {
 		return
 	}
 
-	err = grpcserver.RProxyListen(ri.MID,ri.Port1,port2,int(ri.NumOfConn2))
+	err = grpcserver.RProxyListen(ri.MID, ri.Port1, port2, int(ri.NumOfConn2))
 	if err != nil {
 		respJSAlert(c, 500, "创建bridge listener 失败:"+err.Error())
 		return
 	}
 
-	rpr := gc.RPxyResp{Port2:port2,Addr3:ri.Addr3,NumOfConn2:ri.NumOfConn2}
+	rpr := gc.RPxyResp{Port2: port2, Addr3: ri.Addr3, NumOfConn2: ri.NumOfConn2}
 	data, err := json.Marshal(&rpr)
 	if err != nil {
 		respJSAlert(c, 500, "序列化到pong data失败:"+err.Error())
