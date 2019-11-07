@@ -49,7 +49,7 @@ function ssh_tunel(){
 	local pstr="$4"
 
 	/usr/bin/expect <<< "set timeout 10
-	spawn bash -c \"ssh -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -Nf -D127.0.0.1:1080 -p$port $user@$host; echo CMD_END \"
+	spawn bash -c \"ssh -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -fq -NTD127.0.0.1:1080 -p$port $user@$host; echo CMD_END \"
 	#exp_internal 1
 	expect {
 		-nocase \"yes/no\" { exp_send \"yes\r\"; exp_continue; }
