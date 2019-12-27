@@ -16,13 +16,13 @@ function fn_do(){
 		fi
 
 		shift 1
-		for ((i=0;i<10;i++))
+		for ((i=0;i<2;i++))
 		do
 			ssh_tunel "$@" 
-			if [ $? -eq 33 ] 
+			if [ $? -eq 30 ] 
 			then
 				printf "\e[31mincorrect password!\n\e[0m"
-				return 33
+				return 30 
 			fi
 			ps -ef |grep -v grep|grep 1:1080 && { return 0; break; }
 			echo -n "."
@@ -53,41 +53,35 @@ function ssh_tunel(){
 if { $argc < 4 } {
     send_user " ERROR : Invalid arguments.\n"
     send_user " Usage : $argv0 host port user pwd\n"
-    exit 1 
+    exit 10 
 }
 
 lassign $argv host port user pstr
-#set host [ lindex $argv 0 ]
-#set port [ lindex $argv 1 ]
-#set user [ lindex $argv 2 ]
-#set pstr [ lindex $argv 3 ]
-#set timeout 10
+set timeout 15
 
-spawn bash -c "ssh -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -fq -NTD127.0.0.1:1080 -p$port $user@$host; echo CMD_END "
+spawn bash -c "ssh -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -fq -NTD127.0.0.1:1080 -p$port $user@$host && echo TUNNEL_OK || echo TUNNEL_FAIL" 
 #exp_internal 1
+set ask_pw 0
 expect {
 	-nocase "yes/no" { 
 		exp_send "yes\r";
 		exp_continue;
 	 }
 
-	"CMD_END" { send_user "SSH_TUNEL_OK!\n"; exit 0; } 
+	"TUNNEL_OK" { send_user "TUNNEL_OK!\n"; exit 0; } 
+	"TUNNEL_FAIL" { send_error "TUNNEL_FAIL!\n"; exit 20; } 
 
 	"password: " {
-		 exp_send "$pstr\r"
-		 send_user "passwd has been sent\n"
-		 expect  { 
-			"password: " {
-				send_error "password incorrect!\n";
-				exit 10;
-			}
-
-			"CMD_END" { send_user "SSH_TUNEL_OK!\n"; exit 0; } 
-			default { send_user "ERROR: eof or timeout,0\n"; exit 20; } 
-		 } 
+		 incr ask_pw
+		 if {$ask_pw == 1} {
+		 	exp_send "$pstr\r"
+			exp_continue
+		 }
+		 send_error "password incorrect!\n";
+		 exit 30;
 	 } 
 
-	default { send_user "ERROR: eof or timeout,1\n"; exit 30; } 
+	default { send_user "ERROR: eof or timeout,1\n"; exit 40; } 
 }' | /usr/bin/expect -f - "$host" "$port" "$user" "$pstr" >/dev/null 2>&1
 	return $?
 }
