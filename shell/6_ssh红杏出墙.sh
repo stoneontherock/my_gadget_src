@@ -48,21 +48,47 @@ function ssh_tunel(){
 	local user="$3"
 	local pstr="$4"
 
-	/usr/bin/expect <<< "set timeout 10
-	spawn bash -c \"ssh -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -fq -NTD127.0.0.1:1080 -p$port $user@$host; echo CMD_END \"
-	#exp_internal 1
-	expect {
-		-nocase \"yes/no\" { exp_send \"yes\r\"; exp_continue; }
-		timeout { send_error \"ERROR:timeout1\"; exit 11; }
-		\"password: \" { exp_send {$pstr}; exp_send \"\r\"; send_user \"passwd has been sent\n\" } 
-	}
-	expect {
-		timeout { send_error \"ERROR:timeout2\"; exit 12; }
-		\"CMD_END\" { send_user \"SSH_TUNEL_OK!\n\"; exit 0; } 
-		\"password: \" { send_error \"password incorrect!\n\"; exit 33; } 
-	}
-	exit 34
-	" >/dev/null 2>&1
+	echo '
+#!/usr/bin/expect
+if { $argc < 4 } {
+    send_user " ERROR : Invalid arguments.\n"
+    send_user " Usage : $argv0 host port user pwd\n"
+    exit 1 
+}
+
+lassign $argv host port user pstr
+#set host [ lindex $argv 0 ]
+#set port [ lindex $argv 1 ]
+#set user [ lindex $argv 2 ]
+#set pstr [ lindex $argv 3 ]
+#set timeout 10
+
+spawn bash -c "ssh -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -fq -NTD127.0.0.1:1080 -p$port $user@$host; echo CMD_END "
+#exp_internal 1
+expect {
+	-nocase "yes/no" { 
+		exp_send "yes\r";
+		exp_continue;
+	 }
+
+	"CMD_END" { send_user "SSH_TUNEL_OK!\n"; exit 0; } 
+
+	"password: " {
+		 exp_send "$pstr\r"
+		 send_user "passwd has been sent\n"
+		 expect  { 
+			"password: " {
+				send_error "password incorrect!\n";
+				exit 10;
+			}
+
+			"CMD_END" { send_user "SSH_TUNEL_OK!\n"; exit 0; } 
+			default { send_user "ERROR: eof or timeout,0\n"; exit 20; } 
+		 } 
+	 } 
+
+	default { send_user "ERROR: eof or timeout,1\n"; exit 30; } 
+}' | /usr/bin/expect -f - "$host" "$port" "$user" "$pstr" >/dev/null 2>&1
 	return $?
 }
 
