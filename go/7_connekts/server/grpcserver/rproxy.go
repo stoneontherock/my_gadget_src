@@ -4,9 +4,7 @@ import (
 	"connekts/common"
 	gc "connekts/grpcchannel"
 	"connekts/server/model"
-	"connekts/server/panicerr"
 	"github.com/sirupsen/logrus"
-	"net"
 )
 
 func (s *server) RProxyController(req *gc.RPxyReq, stream gc.Channel_RProxyControllerServer) error {
@@ -33,42 +31,5 @@ func (s *server) RProxyController(req *gc.RPxyReq, stream gc.Channel_RProxyContr
 
 		go common.CopyData(conn1, conn2, "1->2", false)
 		go common.CopyData(conn2, conn1, "1<-2", true)
-	}
-}
-
-func RProxyListen(mid, port1, port2 string, numOfConn2 int) error {
-	connC1 := make(chan *net.TCPConn)
-	conn2Pool := make(chan *net.TCPConn, numOfConn2)
-
-	model.RPxyConn1M[mid] = connC1
-	model.RPxyConn2M[mid] = conn2Pool
-
-	taddr1, err := net.ResolveTCPAddr("tcp", port1)
-	if err != nil {
-		return err
-	}
-
-	taddr2, err := net.ResolveTCPAddr("tcp", port2)
-	if err != nil {
-		return err
-	}
-
-	go listen(taddr1, connC1)
-	go listen(taddr2, conn2Pool)
-
-	return nil
-}
-
-func listen(addr *net.TCPAddr, connC chan *net.TCPConn) {
-	lis, err := net.ListenTCP("tcp", addr)
-	panicerr.Handle(err, "监听1侧失败:"+addr.String())
-
-	for {
-		conn, err := lis.AcceptTCP()
-		if err != nil {
-			logrus.Warnf("lis.Accept:addr=%s err:%v", addr, err)
-			continue
-		}
-		connC <- conn
 	}
 }

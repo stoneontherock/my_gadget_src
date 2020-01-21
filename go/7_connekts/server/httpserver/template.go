@@ -2,12 +2,8 @@ package httpserver
 
 import (
 	"connekts/server/panicerr"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"html/template"
-	"net/url"
-	"strconv"
-	"strings"
 	tt "text/template"
 )
 
@@ -22,50 +18,23 @@ func init() {
 	cmdOutTmpl, err = tt.New("cmd").Parse(CMD_HTML)
 	panicerr.Handle(err, "模板CMD_HTML解析错误.")
 
-	rPxyTmpl, err = template.New("rpxy").Parse(RPXY_HTML)
-	panicerr.Handle(err, "模板RPXY_HTML解析错误.")
+	AddRPxyTmpl, err = template.New("rpxy").Parse(ADD_RPXY_HTML)
+	panicerr.Handle(err, "模板ADD_RPXY_HTML解析错误.")
 
-	//f := template.FuncMap{"filepathURLEscape": filepathURLEscape,"humanReadableSize":humanReadableSize}
-	//listFileTmpl, err = template.New("listFS").Funcs(f).Parse(LIST_FILE_HTML)
-	//panicerr.Handle(err, "模板LIST_FILE_HTML解析错误.")
+	listRProxiedTmpl, err = template.New("rpxy").Parse(LIST_RPROXIED_HTML)
+	panicerr.Handle(err, "模板LIST_RPXY_HTML解析错误.")
 }
 
 var (
-	errTmlp       *template.Template
-	listHostsTmpl *template.Template
-	cmdOutTmpl    *tt.Template
-	rPxyTmpl      *template.Template
-	listFileTmpl  *template.Template
+	errTmlp          *template.Template
+	listHostsTmpl    *template.Template
+	cmdOutTmpl       *tt.Template
+	AddRPxyTmpl      *template.Template
+	listRProxiedTmpl *template.Template
 )
 
 func respJSAlert(c *gin.Context, code int, errStr string) {
 	errTmlp.Execute(c.Writer, struct{ ERR string }{errStr})
-}
-
-func humanReadableSize(sz int32) string {
-	switch {
-	case sz < 1024:
-		return strconv.Itoa(int(sz))
-	case sz >= 1024 && sz < 1024*1024:
-		return fmt.Sprintf("%.1fkB", float64(sz)/1024)
-	case sz >= 1024*1024:
-		return fmt.Sprintf("%.1fMB", float64(sz)/1024/1024)
-	}
-
-	return "0"
-}
-
-func filepathURLEscape(dir, base, mid string, fsize int32) string {
-	if !strings.HasSuffix(dir, "/") {
-		dir += "/"
-	}
-
-	pth := dir + base
-	if strings.HasSuffix(base, "/") {
-		return fmt.Sprintf("/connekt/list_file?mid=%s&path=%s", mid, url.QueryEscape(pth))
-	}
-
-	return fmt.Sprintf("/connekt/file_up?mid=%s&path=%s&size=%d", mid, url.QueryEscape(pth), fsize)
 }
 
 const (
@@ -119,7 +88,7 @@ const (
 </html>
 `
 
-	RPXY_HTML = `
+	ADD_RPXY_HTML = `
 <!doctype html>
 <html lang="zh">
 <head>
@@ -130,62 +99,97 @@ const (
     <title>alives</title>
 </head>
 <body>
+{{ $data := . -}}
 <header>
     <h1>rpxy</h1>
     <a href="/connekt/list_hosts">HOME</a>
+    <hr>
 </header>
 
 <article>
     <form action="/connekt/rpxy" method="POST">
-        <input type="hidden"  name="mid" value="{{.}}" />
+        <input type="hidden"  name="mid" value="{{- $data.MID -}}" />
         conn2连接数:<input type="text" name="num_of_conn2" value="1" placeholder='conn2连接数'/><br />
         port1:<input type="text" name="port1" placeholder='用户访问端端口号'/><br />
         addr3:<input type="text" name="addr3" placeholder='客户端需要反代的tcp地址'/><br />
+		label:<input type="text" name="label" placeholder='标签'/><br />
         <input type="submit" value="rpxy" />
         <br />
     </form>
+    <hr>
+	{{- with $data.Labels -}}
+	<h2>rproxied</h2> <br/>
+	<table id="rpxy table">
+	    <thead style="background-color: #EEEEFF;"><th style="text-align:left;">label</th><th style="text-align:right">del</th></thead>
+	    <tbody>
+	          {{- range $index,$lab := $data.Labels -}}
+					<tr>
+	              		 <td class="col1">{{- $lab -}}</td>
+						 <td class="col2"> 
+							<form action="/connekt/del_rproxied" method="POST">
+                        		<input type="hidden"  name="mid" value="{{- $data.MID -}}" />
+                        		<input type="hidden"  name="label" value="{{- $lab -}}" />
+								<input type="submit" value="✖️" />
+		                    </form>
+						 </td>
+					</tr>
+	          {{- end -}}
+	    </tbody>
+	</table>
+	{{- end -}}
 </article>
 </body>
 </html>
 `
 
-	//	LIST_FILE_HTML = `
-	//<!doctype html>
-	//<html lang="zh">
-	//<head>
-	//   <meta charset="UTF-8">
-	//   <meta name="viewport"
-	//         content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-	//   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-	//   <title>alives</title>
-	//</head>
-	//<body>
-	//{{ $data := . -}}
-	//<header>
-	//   <h1>当前路径:{{- $data.Path -}}</h1>
-	//   <hr>
-	//</header>
-	//
-	//<article>
-	//    {{- with $data.Fs -}}
-	//    <table id="文件表格">
-	//        <thead style="background-color: #EEEEFF;"><th style="text-align:left;">目录名/文件名</th><th style="text-align:right">大小</th></thead>
-	//        <tbody>
-	//        {{- range $index,$f := $data.Fs -}}
-	//            <tr>
-	//                <td class="col1"><a href="{{- filepathURLEscape $data.Path $f.Name $data.Mid $f.Size -}}"> &bull; {{- $f.Name -}} </a></td>
-	//                <td class="col2">{{- humanReadableSize $f.Size -}}</td>
-	//            </tr>
-	//        {{end}}
-	//        </tbody>
-	//    </table>
-	//    {{- else -}}
-	//        <h3>{{- $data.Err -}}</h3>
-	//    {{- end -}}
-	//</article>
-	//</body>
-	//</html>
-	//`
+	LIST_RPROXIED_HTML = `
+	<!doctype html>
+	<html lang="zh">
+	<head>
+	  <meta charset="UTF-8">
+	  <meta name="viewport"
+	        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+	  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+	  <title>alives</title>
+	</head>
+	<body>
+	{{ $data := . -}}
+	<header>
+	  <a href="/connekt/list_hosts">HOME</a>
+      <br />
+	  <h1>总数:{{- len $data -}}</h1>
+	  <hr>
+	</header>
+	
+	<article>
+	   {{- with $data -}}
+	   <table id="rpxy table">
+	       <thead style="background-color: #EEEEFF;"><th style="text-align:left;">mid</th><th style="text-align:right">label</th></thead>
+	       <tbody>
+	          {{- range $mid,$labs := $data -}}
+					 {{- range $index,$lab := $labs -}}
+						<tr>
+	               		 <td class="col1">{{- $mid -}}</td>
+	              		 <td class="col2">{{- $lab -}}</td>
+						 <td class="col3"> 
+							<form action="/connekt/del_rproxied" method="POST">
+                        		<input type="hidden"  name="mid" value="{{- $mid -}}" />
+                        		<input type="hidden"  name="label" value="{{- $lab -}}" />
+								<input type="submit" value="✖️" />
+		                    </form>
+						 </td>
+						</tr>
+					{{- end -}}
+	          {{- end -}}
+	       </tbody>
+	   </table>
+	   {{- else -}}
+	       <h3>{{- $data.Err -}}</h3>
+	   {{- end -}}
+	</article>
+	</body>
+	</html>
+	`
 
 	LIST_HOSTS_HTML = `
 <!doctype html>
@@ -217,7 +221,7 @@ const (
                 <td>{{$rec.WanIP}}</td>
                 <td>{{ if eq $rec.Pickup 1 }}
                         picking up
-                    {{ else if eq $rec.Pickup 2 }}
+                    {{ else if ge $rec.Pickup 2 }}
                         ready
                     {{ else }}
                         free
@@ -229,6 +233,7 @@ const (
                         <input type="submit" value="drop" />
                     </form>
                 </td>
+
                 {{ if lt $rec.Pickup 1 }}
                 <td><form action="/connekt/change_pickup" method="POST">
                         <input type="hidden"  name="mid" value="{{$rec.ID}}" />
@@ -237,7 +242,8 @@ const (
                     </form>
                 </td>
                 {{end}}
-                {{ if eq $rec.Pickup 2 }}
+
+                {{ if ge $rec.Pickup 2 }}
                 <td><form action="/connekt/cmd" method="POST">
                         <input type="hidden"  name="mid" value="{{$rec.ID}}" />
                         <input type="submit" value="cmd" />
@@ -248,20 +254,13 @@ const (
                         <input type="submit" value="rpxy" />
                     </form>
                 </td>
-                <!-- list_file 用不到
-				<td><form action="/connekt/list_file" method="GET">
-                        <input type="hidden"  name="mid" value="{{$rec.ID}}" />
-                        <input type="hidden"  name="path" value="/" />
-                        <input type="submit" value="listFS" />
-                    </form>
-                </td>
-                -->
                 <td><form action="/connekt/filesystem" method="GET">
                         <input type="hidden"  name="mid" value="{{$rec.ID}}" />
                         <input type="submit" value="filesystem" />
                     </form>
                 </td>
                 {{end}}
+
             </tr>
         {{end}}
         </tbody>

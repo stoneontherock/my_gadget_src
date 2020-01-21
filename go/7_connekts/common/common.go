@@ -50,8 +50,8 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-func IsPortAvalible(port int) bool {
-	lis, err := net.Listen("tcp", ":"+strconv.Itoa(port))
+func IsPortAvalible(port string) bool {
+	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		return false
 	}
@@ -64,7 +64,7 @@ func RandomAvaliblePort() int32 {
 	var port int32
 	for {
 		port = rand.Int31n(1001) + 45535
-		if IsPortAvalible(int(port)) {
+		if IsPortAvalible(":"+strconv.Itoa(int(port))) {
 			break
 		}
 	}

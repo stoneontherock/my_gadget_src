@@ -14,6 +14,7 @@ type delHostIn struct {
 	MID string `form:"mid" binding:"required"`
 }
 
+//todo 还有很多需要删，待写
 func delHost(c *gin.Context) {
 	var dhi delHostIn
 	err := c.ShouldBindWith(&dhi, binding.FormPost)

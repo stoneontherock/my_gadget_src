@@ -10,7 +10,7 @@ type ClientInfo struct {
 	WanIP    string `gorm:"varchar(46)"`
 	Hostname string `gorm:"varchar(64)"`
 	OS       string `gorm:"varchar(32)"`
-	Pickup   int8
+	Pickup   int8  //1表示申请捡起,2表示已经捡起
 	CreateAt int64
 	UpdateAt int64
 }

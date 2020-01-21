@@ -2,14 +2,12 @@ package httpserver
 
 import (
 	"connekts/common"
-	"connekts/server/grpcserver"
+	gc "connekts/grpcchannel"
 	"connekts/server/model"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"regexp"
 	"strconv"
-
-	gc "connekts/grpcchannel"
 )
 
 type fsIn struct {
@@ -35,7 +33,7 @@ func filesystem(c *gin.Context) {
 		return
 	}
 
-	err = grpcserver.RProxyListen(fi.MID, port1, port2, 6)
+	err = listen2Side(fi.MID,"filesystem", port1, port2, 6)
 	if err != nil {
 		respJSAlert(c, 500, "创建bridge listener 失败:"+err.Error())
 		return

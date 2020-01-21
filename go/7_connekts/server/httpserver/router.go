@@ -17,13 +17,17 @@ func newEngine() *gin.Engine {
 
 	c := router.Group(prefix)
 	{
-		c.POST("/cmd", command)
 		c.GET("/list_hosts", listHosts)
-		c.POST("/change_pickup", pickup)
 		c.POST("/del_host", delHost)
+
+		c.POST("/cmd", command)
+
+		c.POST("/change_pickup", pickup)
+
 		c.POST("/rpxy", rProxy)
-		//c.GET("/list_file", listFile)
-		//c.GET("/file_up", fileUpload)
+		c.GET("/list_rproxied", list_rproxied)
+		c.POST("/del_rproxied", del_rproxied)
+
 		c.GET("/filesystem", filesystem)
 	}
 
