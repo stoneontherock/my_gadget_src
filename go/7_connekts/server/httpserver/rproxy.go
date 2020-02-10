@@ -82,7 +82,7 @@ func rProxy(c *gin.Context) {
 
 	pongC <- gc.Pong{Action: "rpxy", Data: data}
 
-	c.JSON(200, "done")
+	c.Redirect(303,"./list_rproxied")
 }
 
 func listen2Side(mid, label, port1, port2 string, numOfConn2 int) error {

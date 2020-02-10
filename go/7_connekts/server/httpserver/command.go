@@ -68,3 +68,5 @@ func command(c *gin.Context) {
 
 	respJSAlert(c, 400, "等待cmdout超时")
 }
+
+

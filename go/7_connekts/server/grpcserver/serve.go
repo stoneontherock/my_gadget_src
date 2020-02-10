@@ -26,7 +26,7 @@ func getClientIPAddr(ctx context.Context) string {
 type server struct{}
 
 func Serve() {
-	lis, err := net.Listen("tcp", ":32767") //1.指定监听地址:端口号
+	lis, err := net.Listen("tcp", ":65000") //1.指定监听地址:端口号
 	panicerr.Handle(err, "grpcserver:Serve:net.Listen")
 
 	s := grpc.NewServer()                  //2.新建gRPC实例

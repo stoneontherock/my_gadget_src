@@ -270,4 +270,18 @@ const (
 </body>
 </html>
 `
+	LOGIN_HTML = `
+<html>
+<head>
+ <meta charset="UTF-8">
+</head>
+<body>
+<form action="/login" method="POST">
+	<input type="text"  name="user" required />
+	<input type="password"  name="pv" required />
+    <input type="submit" value="登录" />
+</form>
+</body>
+</html>
+`
 )

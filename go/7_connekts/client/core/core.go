@@ -10,12 +10,12 @@ import (
 
 var staticInfo = static()
 
-func Reporter(addr string) {
+func Reporter(addr string, reportInterval time.Duration) {
 	i := 0
 	for {
 		i++
 		println(i)
-		time.Sleep(10e9)
+		time.Sleep(reportInterval)
 		conn, err := grpc.Dial(addr, grpc.WithInsecure()) //如果需要授权认证或tls加密，则可以使用DialOptions来设置grpc.Dial
 		if err != nil {
 			log.Errorf("grpc.Dial: %v\n", err)

@@ -5,7 +5,6 @@ import (
 	"connekts/client/model"
 	"connekts/common"
 	gc "connekts/grpcchannel"
-	"connekts/server/panicerr"
 	"context"
 	"encoding/json"
 	"net"
@@ -47,7 +46,7 @@ func handleRPxy(pong *gc.Pong, cc gc.ChannelClient, addr3 string) {
 		rcLen := len(conn2Pool)
 		log.Infof("rcLen=%d\n", rcLen)
 		nc := int(resp.NumOfConn2)
-		if rcLen <= nc/2 {
+		if rcLen <= nc/2 { //todo 注意地板除的情况
 			genRconn(resp.Port2, nc-rcLen)
 		}
 
@@ -62,7 +61,10 @@ func handleRPxy(pong *gc.Pong, cc gc.ChannelClient, addr3 string) {
 
 func bridge(addr3 string) {
 	conn3, err := net.Dial("tcp", addr3)
-	panicerr.Handle(err, "连接近端"+addr3)
+	if err != nil {
+		log.Errorf("连接近端失败,addr3:" + addr3)
+		return
+	}
 	log.Infof("近端连接已经建立:%s\n", conn3.LocalAddr())
 
 	conn2 := <-conn2Pool
@@ -74,7 +76,10 @@ func genRconn(port2 string, cnt int) {
 	addr2 := model.ServerIPAddr + port2
 	for i := 0; i < cnt; i++ {
 		conn2, err := net.Dial("tcp", addr2)
-		panicerr.Handle(err, "连接远端:"+addr2)
+		if err != nil {
+			log.Errorf("连接远端失败,addr2:" + addr2)
+			return
+		}
 		log.Infof("远端连接已经建立:%s->%s conn2=%p\n", conn2.LocalAddr(), conn2.RemoteAddr(), conn2)
 		conn2Pool <- conn2
 		log.Infof("conn2已经放入池子 conn2=%p\n", conn2)
