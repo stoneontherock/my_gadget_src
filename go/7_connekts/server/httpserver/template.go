@@ -200,8 +200,18 @@ const (
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>alives</title>
+    <script>
+	    function parseUnixTime(){
+        	var t = document.getElementById("updateAt");
+			if (t == null) {
+				return;
+			}
+        	var d = new Date(parseInt(t.innerText)*1000);
+        	t.innerHTML = d.getMonth()+"-"+d.getDate()+" "+d.getHours()+":"+d.getMinutes()+":"+d.getSeconds();
+    	}
+	</script>
 </head>
-<body>
+<body onload="parseUnixTime()">
 {{ $data := . -}}
 <header>
     <h1>All hosts</h1>
@@ -227,7 +237,7 @@ const (
                         free
                     {{ end }}
                 </td>
-                <td>{{$rec.UpdateAt}}</td>
+                <td id="updateAt">{{$rec.UpdateAt}}</td>
                 <td><form action="/connekt/del_host" method="POST">
                         <input type="hidden"  name="mid" value="{{$rec.ID}}" />
                         <input type="submit" value="drop" />

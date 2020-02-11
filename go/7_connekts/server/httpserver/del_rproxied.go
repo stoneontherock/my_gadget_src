@@ -33,5 +33,5 @@ func del_rproxied(c *gin.Context) {
 		}
 	}
 
-	c.JSON(200, "done")
+	c.Redirect(303, "./list_rproxied")
 }
