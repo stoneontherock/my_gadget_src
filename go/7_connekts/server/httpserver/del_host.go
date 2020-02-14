@@ -1,7 +1,7 @@
 package httpserver
 
 import (
-	gc "connekts/grpcchannel"
+	"connekts/grpcchannel"
 	"connekts/server/db"
 	"connekts/server/model"
 	"github.com/gin-gonic/gin"
@@ -29,9 +29,11 @@ func delHost(c *gin.Context) {
 		return
 	}
 
+	closeConnection("", dhi.MID)
+
 	pongC, ok := model.PongM[dhi.MID]
 	if ok {
-		pongC <- gc.Pong{Action: "fin"}
+		pongC <- grpcchannel.Pong{Action: "fin"}
 		time.Sleep(time.Millisecond * 10)
 		delete(model.PongM, dhi.MID)
 	}

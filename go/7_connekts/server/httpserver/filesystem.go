@@ -2,12 +2,13 @@ package httpserver
 
 import (
 	"connekts/common"
-	gc "connekts/grpcchannel"
+	"connekts/grpcchannel"
 	"connekts/server/model"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 type fsIn struct {
@@ -24,6 +25,18 @@ func filesystem(c *gin.Context) {
 		return
 	}
 
+	host := regPatt.ReplaceAllString(c.Request.Host, "$1")
+	for pLabel,_ := range model.RPxyConnResM[fi.MID] {
+		if strings.HasPrefix(pLabel,"filesystem") {
+			ss := strings.Split(pLabel,":")
+			if len(ss) != 2 {
+				continue
+			}
+			c.Redirect(303, "http://" + host + ss[1] + "/")
+			return
+		}
+	}
+
 	port1 := ":" + strconv.Itoa(int(common.RandomAvaliblePort()))
 	port2 := ":" + strconv.Itoa(int(common.RandomAvaliblePort()))
 
@@ -33,22 +46,20 @@ func filesystem(c *gin.Context) {
 		return
 	}
 
-	err = listen2Side(fi.MID,"filesystem", port1, port2, 6)
+	err = listen2Side(fi.MID, "filesystem", port1, port2, 6)
 	if err != nil {
 		respJSAlert(c, 500, "创建bridge listener 失败:"+err.Error())
 		return
 	}
 
-	rpr := gc.RPxyResp{Port2: port2, NumOfConn2: 6}
+	rpr := grpcchannel.RPxyResp{Port2: port2, NumOfConn2: 6}
 	data, err := json.Marshal(&rpr)
 	if err != nil {
 		respJSAlert(c, 500, "序列化到pong data失败:"+err.Error())
 		return
 	}
 
-	pongC <- gc.Pong{Action: "filesystem", Data: data}
+	pongC <- grpcchannel.Pong{Action: "filesystem", Data: data}
 
-	host := regPatt.ReplaceAllString(c.Request.Host, "$1")
-	//c.Writer.WriteString(host+port1)
-	c.Redirect(307, "http://"+host+port1+"/")
+	c.Redirect(303, "http://" + host + port1 + "/")
 }

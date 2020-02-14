@@ -8,7 +8,7 @@ import (
 
 func Handle(err error, strs ...string) {
 	if err != nil {
-		fmt.Printf("%s:%v\n", strings.Join(strs, "# "), err)
-		logrus.Panicf("%s:%v", strings.Join(strs, "# "), err)
+		logrus.Errorf("%s:%v", strings.Join(strs, "# "), err)
+		panic(fmt.Sprintf("%s:%v\n", strings.Join(strs, "# "), err))
 	}
 }

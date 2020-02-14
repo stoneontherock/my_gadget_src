@@ -2,7 +2,7 @@ package httpserver
 
 //
 //import (
-//	gc "connekts/grpcchannel"
+//	"connekts/grpcchannel"
 //	"connekts/server/model"
 //	"github.com/gin-gonic/gin"
 //	"github.com/gin-gonic/gin/binding"
@@ -24,9 +24,9 @@ package httpserver
 //		return
 //	}
 //
-//	pongC <- gc.Pong{Action:"list_file",Data:[]byte(li.Path)}
+//	pongC <- grpcchannel.Pong{Action:"list_file",Data:[]byte(li.Path)}
 //
-//	var flC chan *gc.FileList
+//	var flC chan *grpcchannel.FileList
 //	for i:=0; i<=20;i++ {
 //		flC,ok = model.ListFileM[li.MID]
 //		if ok {

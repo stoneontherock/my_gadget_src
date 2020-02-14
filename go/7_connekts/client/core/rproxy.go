@@ -4,16 +4,17 @@ import (
 	"connekts/client/log"
 	"connekts/client/model"
 	"connekts/common"
-	gc "connekts/grpcchannel"
+	"connekts/grpcchannel"
 	"context"
 	"encoding/json"
 	"net"
 )
 
 var conn2Pool chan net.Conn
+var port2ConnM = make(map[string][]net.Conn)
 
-func handleRPxy(pong *gc.Pong, cc gc.ChannelClient, addr3 string) {
-	var reportResp gc.RPxyResp
+func handleRPxy(pong *grpcchannel.Pong, cc grpcchannel.ChannelClient, fsAddr3 string) {
+	var reportResp grpcchannel.RPxyResp
 	err := json.Unmarshal(pong.Data, &reportResp)
 	if err != nil {
 		log.Errorf("handleRPxy:Unmarshal:pong.Data:%v\n", err)
@@ -26,9 +27,9 @@ func handleRPxy(pong *gc.Pong, cc gc.ChannelClient, addr3 string) {
 	ctx, cancel := context.WithCancel(context.TODO())
 
 	log.Infof("请求rpxy控制端...\n")
-	stream, err := cc.RProxyController(ctx, &gc.RPxyReq{Mid: staticInfo.MachineID, Port2: reportResp.Port2, Addr3: reportResp.Addr3, NumOfConn2: reportResp.NumOfConn2})
+	stream, err := cc.RProxyController(ctx, &grpcchannel.RPxyReq{Mid: staticInfo.MachineID, Port2: reportResp.Port2, Addr3: reportResp.Addr3, NumOfConn2: reportResp.NumOfConn2})
 	if err != nil {
-		log.Errorf("gc.RProxyController失败,%v\n", err)
+		log.Errorf("grpcchannel.RProxyController失败,%v\n", err)
 		cancel()
 		return
 	}
@@ -51,21 +52,23 @@ func handleRPxy(pong *gc.Pong, cc gc.ChannelClient, addr3 string) {
 		}
 
 		log.Infof("收到服务端连接请求,要求建立中转: conn2Addr=%s\n", resp.Port2)
-		if addr3 != "" {
-			go bridge(addr3)
+		if fsAddr3 != "" {
+			fileSystemListener.port = resp.Port2
+			go bridge(fsAddr3, resp.Port2)
 		} else {
-			go bridge(resp.Addr3)
+			go bridge(resp.Addr3, resp.Port2)
 		}
 	}
 }
 
-func bridge(addr3 string) {
+func bridge(addr3, port2 string) {
 	conn3, err := net.Dial("tcp", addr3)
 	if err != nil {
 		log.Errorf("连接近端失败,addr3:" + addr3)
 		return
 	}
 	log.Infof("近端连接已经建立:%s\n", conn3.LocalAddr())
+	port2ConnM[port2] = append(port2ConnM[port2], conn3)
 
 	conn2 := <-conn2Pool
 	go common.CopyData(conn2, conn3, "2->3", false)
@@ -81,7 +84,25 @@ func genRconn(port2 string, cnt int) {
 			return
 		}
 		log.Infof("远端连接已经建立:%s->%s conn2=%p\n", conn2.LocalAddr(), conn2.RemoteAddr(), conn2)
+		port2ConnM[port2] = append(port2ConnM[port2], conn2)
 		conn2Pool <- conn2
 		log.Infof("conn2已经放入池子 conn2=%p\n", conn2)
+	}
+}
+
+func handleCloseConnections(pong *grpcchannel.Pong) {
+	port2 := string(pong.Data)
+	if fileSystemListener.port == port2 {
+		fileSystemListener.listener.Close()
+	}
+
+	//log.Infof("**** port2ConnM=%v pong.Data=%v\n", port2ConnM, port2)
+	connList, ok := port2ConnM[port2]
+	if !ok {
+		return
+	}
+	for _, conn := range connList {
+		log.Infof("关闭conn %p\n", conn)
+		conn.Close()
 	}
 }

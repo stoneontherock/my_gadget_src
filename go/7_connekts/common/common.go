@@ -23,7 +23,7 @@ func CopyData(src, dst net.Conn, dir string, serverCloseSocket bool) {
 		}
 	}
 
-	logrus.Infof("copy数据,dir=%s 成功, %d Bytes, src=%p, dst=%p", dir, n, src, dst)
+	logrus.Infof("copy数据,dir=%s 成功, %d Bytes, src=%p(%s), dst=%p(%s)", dir, n, src, src.LocalAddr(), dst, dst.LocalAddr())
 
 	err = src.(*net.TCPConn).CloseWrite()
 	if err != nil {
@@ -64,7 +64,7 @@ func RandomAvaliblePort() int32 {
 	var port int32
 	for {
 		port = rand.Int31n(1001) + 45535
-		if IsPortAvalible(":"+strconv.Itoa(int(port))) {
+		if IsPortAvalible(":" + strconv.Itoa(int(port))) {
 			break
 		}
 	}

@@ -1,7 +1,7 @@
 package httpserver
 
 //import (
-//	gc "connekts/grpcchannel"
+//	"connekts/grpcchannel"
 //	"connekts/server/model"
 //	"github.com/gin-gonic/gin"
 //	"github.com/sirupsen/logrus"
@@ -39,9 +39,9 @@ package httpserver
 //	logrus.Debugf("content-length=%s, fi.Size=%d",c.GetHeader("Content-Length"),fi.Size)
 //
 //
-//	model.FileUpDataM[fi.MID] = make(chan *gc.FileDataUp)
+//	model.FileUpDataM[fi.MID] = make(chan *grpcchannel.FileDataUp)
 //	pth := []byte(fi.FilePath)
-//	pongC <- gc.Pong{Action: "file_up", Data: []byte(pth)}
+//	pongC <- grpcchannel.Pong{Action: "file_up", Data: []byte(pth)}
 //
 //	for i := 0; i < 100; i++ {
 //		time.Sleep(time.Millisecond * 10)

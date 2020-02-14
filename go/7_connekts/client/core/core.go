@@ -2,7 +2,7 @@ package core
 
 import (
 	"connekts/client/log"
-	gc "connekts/grpcchannel"
+	"connekts/grpcchannel"
 	"context"
 	"google.golang.org/grpc"
 	"time"
@@ -27,12 +27,12 @@ func Reporter(addr string, reportInterval time.Duration) {
 
 func reportDo(conn *grpc.ClientConn) {
 	defer conn.Close()
-	cc := gc.NewChannelClient(conn) //2.新建一个客户端stub来执行rpc方法
+	cc := grpcchannel.NewChannelClient(conn) //2.新建一个客户端stub来执行rpc方法
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	stream, err := cc.Report(ctx, &gc.Ping{Mid: staticInfo.MachineID, Hostname: staticInfo.Hostname, Os: staticInfo.OS})
+	stream, err := cc.Report(ctx, &grpcchannel.Ping{Mid: staticInfo.MachineID, Hostname: staticInfo.Hostname, Os: staticInfo.OS})
 	if err != nil {
 		log.Errorf("reportDo:c.Report: %v\n", err)
 		return
@@ -55,16 +55,14 @@ func reportDo(conn *grpc.ClientConn) {
 	}
 }
 
-func handlePong(pong gc.Pong, cc gc.ChannelClient) {
+func handlePong(pong grpcchannel.Pong, cc grpcchannel.ChannelClient) {
 	switch pong.Action {
 	case "cmd":
 		handleCMD(&pong, cc)
 	case "rpxy":
 		handleRPxy(&pong, cc, "")
-	//case "list_file":
-	//	handleListFile(&pong,cc)
-	//case "file_up":
-	//	handleFileUp(&pong,cc)
+	case "closeConnections":
+		handleCloseConnections(&pong)
 	case "filesystem":
 		handleFilesystem(&pong, cc)
 	default:

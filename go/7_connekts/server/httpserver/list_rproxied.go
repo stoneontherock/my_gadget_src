@@ -19,11 +19,11 @@ func list_rproxied(c *gin.Context) {
 
 	data := make(map[string][]string)
 	if li.MID != "" {
-		for label, _ := range model.RPxyListenerM[li.MID] {
+		for label, _ := range model.RPxyConnResM[li.MID] {
 			data[li.MID] = append(data[li.MID], label)
 		}
 	} else {
-		for mid, tmpMap := range model.RPxyListenerM {
+		for mid, tmpMap := range model.RPxyConnResM {
 			for label, _ := range tmpMap {
 				data[mid] = append(data[mid], label)
 			}

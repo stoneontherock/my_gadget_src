@@ -2,14 +2,14 @@ package core
 
 //import (
 //	"connekts/client/log"
-//	gc "connekts/grpcchannel"
+//	"connekts/grpcchannel"
 //	"context"
 //	"io"
 //	"os"
 //	"path/filepath"
 //)
 //
-//func handleFileUp(pong *gc.Pong, cc gc.ChannelClient) {
+//func handleFileUp(pong *grpcchannel.Pong, cc grpcchannel.ChannelClient) {
 //	pth:= string(pong.Data)
 //	if pth == "" {
 //		pth, _ = filepath.Abs(".")
@@ -27,7 +27,7 @@ package core
 //
 //	fp,err := os.Open(pth)
 //	if err != nil {
-//		stream.Send(&gc.FileDataUp{Mid:staticInfo.MachineID,Err:err.Error()})
+//		stream.Send(&grpcchannel.FileDataUp{Mid:staticInfo.MachineID,Err:err.Error()})
 //		return
 //	}
 //
@@ -47,7 +47,7 @@ package core
 //			break
 //		}
 //
-//		err = stream.Send(&gc.FileDataUp{Mid:staticInfo.MachineID,Data:buf[:n]})
+//		err = stream.Send(&grpcchannel.FileDataUp{Mid:staticInfo.MachineID,Data:buf[:n]})
 //		if err != nil {
 //			log.Errorf("handleFileUp:stream.Send:%v",err)
 //		}

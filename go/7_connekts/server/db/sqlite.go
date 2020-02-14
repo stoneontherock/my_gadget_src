@@ -19,7 +19,7 @@ func InitSQLite() {
 	DB.AutoMigrate(&model.ClientInfo{})
 
 	DB.SetLogger(log.New(os.Stdout, "", log.LstdFlags))
-	DB.LogMode(true) //todo :Debug, 发布后改为false
+	//DB.LogMode(true) //todo :Debug, 发布后改为false
 
 	err = DB.DB().Ping()
 	panicerr.Handle(err, "InitSQLite:Ping()")

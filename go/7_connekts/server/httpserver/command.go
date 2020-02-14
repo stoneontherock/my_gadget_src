@@ -2,7 +2,7 @@ package httpserver
 
 import (
 	"connekts/common"
-	gc "connekts/grpcchannel"
+	"connekts/grpcchannel"
 	"connekts/server/model"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
@@ -51,11 +51,11 @@ func command(c *gin.Context) {
 	ch, ok := model.CmdOutM[ci.MID]
 
 	logrus.Debugf("command:发送pongC...")
-	pongC <- gc.Pong{Action: "cmd", Data: data}
+	pongC <- grpcchannel.Pong{Action: "cmd", Data: data}
 	logrus.Debugf("command:发送pongC done, cmdout ch addr:%p, ok:%t", ch, ok)
 	//time.Sleep(time.Millisecond)
 
-	var cmdOutC chan gc.CmdOutput
+	var cmdOutC chan grpcchannel.CmdOutput
 	for i := 0; i < ci.Timeout*1000; i++ {
 		time.Sleep(time.Millisecond)
 		cmdOutC, ok = model.CmdOutM[ci.MID]

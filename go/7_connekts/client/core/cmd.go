@@ -4,13 +4,13 @@ import (
 	"connekts/client/log"
 	"connekts/client/runcmd"
 	"connekts/common"
-	gc "connekts/grpcchannel"
+	"connekts/grpcchannel"
 	"context"
 	"encoding/json"
 	"time"
 )
 
-func handleCMD(pong *gc.Pong, cc gc.ChannelClient) {
+func handleCMD(pong *grpcchannel.Pong, cc grpcchannel.ChannelClient) {
 	println("cmd:", string(pong.Data))
 	var cmd common.CmdPong
 	err := json.Unmarshal(pong.Data, &cmd)
@@ -23,7 +23,7 @@ func handleCMD(pong *gc.Pong, cc gc.ChannelClient) {
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*60)
 	defer cancel()
 
-	_, err = cc.CmdResult(ctx, &gc.CmdOutput{ReturnCode: int32(rc), Stdout: stdout, Stderr: stderr, Mid: staticInfo.MachineID})
+	_, err = cc.CmdResult(ctx, &grpcchannel.CmdOutput{ReturnCode: int32(rc), Stdout: stdout, Stderr: stderr, Mid: staticInfo.MachineID})
 	if err != nil {
 		log.Errorf("cc.CmdResult:%v\n", err)
 		return

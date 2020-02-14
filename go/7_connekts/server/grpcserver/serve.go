@@ -1,7 +1,7 @@
 package grpcserver
 
 import (
-	gc "connekts/grpcchannel"
+	"connekts/grpcchannel"
 	"connekts/server/panicerr"
 	"context"
 	"google.golang.org/grpc"
@@ -30,7 +30,7 @@ func Serve() {
 	panicerr.Handle(err, "grpcserver:Serve:net.Listen")
 
 	s := grpc.NewServer()                  //2.新建gRPC实例
-	gc.RegisterChannelServer(s, &server{}) //3.在gRPC服务器注册我们的服务实现。参数2是接口(满足服务定义的方法)。在.pb.go文件中搜索Register关键字即可找到这个函数签名
+	grpcchannel.RegisterChannelServer(s, &server{}) //3.在gRPC服务器注册我们的服务实现。参数2是接口(满足服务定义的方法)。在.pb.go文件中搜索Register关键字即可找到这个函数签名
 	err = s.Serve(lis)
 	panicerr.Handle(err, "grpcserver:Serve:s.Serve")
 }

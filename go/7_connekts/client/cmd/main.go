@@ -23,7 +23,7 @@ func main() {
 
 	interval, _ := strconv.Atoi(os.Getenv("INTERVAL"))
 	if interval <= 0 {
-		interval = 20e9 //默认20秒
+		interval = 30 //默认30秒
 	}
-	core.Reporter(model.ServerTCPAddr, time.Duration(interval))
+	core.Reporter(model.ServerTCPAddr, time.Duration(interval)*time.Second)
 }

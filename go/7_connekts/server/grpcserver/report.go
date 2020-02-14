@@ -1,7 +1,7 @@
 package grpcserver
 
 import (
-	gc "connekts/grpcchannel"
+	"connekts/grpcchannel"
 	"connekts/server/db"
 	"connekts/server/model"
 	"github.com/jinzhu/gorm"
@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func (s *server) Report(ping *gc.Ping, stream gc.Channel_ReportServer) error {
+func (s *server) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_ReportServer) error {
 	wanIP := getClientIPAddr(stream.Context())
 
 	ci := model.ClientInfo{ID: ping.Mid}
@@ -29,7 +29,7 @@ func (s *server) Report(ping *gc.Ping, stream gc.Channel_ReportServer) error {
 	//不存在chan, 就初始化 pong chan
 	pongC, ok := model.PongM[ping.Mid]
 	if !ok {
-		pongC = make(chan gc.Pong)
+		pongC = make(chan grpcchannel.Pong)
 		model.PongM[ping.Mid] = pongC
 	}
 
@@ -80,11 +80,11 @@ func createRespChan(typ, mid string) {
 	switch typ {
 	case "cmd": //cmd需要反馈到前端，所以需要创建map
 		if _, ok := model.CmdOutM[mid]; !ok {
-			model.CmdOutM[mid] = make(chan gc.CmdOutput)
+			model.CmdOutM[mid] = make(chan grpcchannel.CmdOutput)
 		}
 		//case "list_file":
 		//	if _,ok := model.ListFileM[mid]; !ok {
-		//		model.ListFileM[mid] = make(chan *gc.FileList)
+		//		model.ListFileM[mid] = make(chan *grpcchannel.FileList)
 		//	}
 		//case "file_up":
 		//	if _,ok := model.FileUpDataM[mid]; !ok {
@@ -105,8 +105,8 @@ func ChangePickup(mid string, pickup int) error {
 	return nil
 }
 
-func sendFin(stream gc.Channel_ReportServer) {
-	err := stream.Send(&gc.Pong{Action: "fin"})
+func sendFin(stream grpcchannel.Channel_ReportServer) {
+	err := stream.Send(&grpcchannel.Pong{Action: "fin"})
 	if err != nil {
 		logrus.Warnf("Report:send fin:%v", err)
 	}

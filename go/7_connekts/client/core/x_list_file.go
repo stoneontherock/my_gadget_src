@@ -3,7 +3,7 @@ package core
 //
 //import (
 //	"connekts/client/log"
-//	gc "connekts/grpcchannel"
+//	"connekts/grpcchannel"
 //	"context"
 //	"io/ioutil"
 //	"os"
@@ -12,7 +12,7 @@ package core
 //)
 //
 //
-//func handleListFile(pong *gc.Pong, cc gc.ChannelClient) {
+//func handleListFile(pong *grpcchannel.Pong, cc grpcchannel.ChannelClient) {
 //	pth:= string(pong.Data)
 //	if pth == "" {
 //		pth, _ = filepath.Abs(".")
@@ -22,7 +22,7 @@ package core
 //	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*60)
 //	defer cancel()
 //
-//	var fl *gc.FileList
+//	var fl *grpcchannel.FileList
 //	fl = lsDir(pth)
 //	fl.Mid = staticInfo.MachineID
 //	fl.Path = pth
@@ -37,8 +37,8 @@ package core
 //
 //
 ////获取目录/文件列表
-//func lsDir(dir string) *gc.FileList {
-//	var fsList gc.FileList
+//func lsDir(dir string) *grpcchannel.FileList {
+//	var fsList grpcchannel.FileList
 //
 //	var fi []os.FileInfo
 //	fi, err := ioutil.ReadDir(dir)
@@ -49,7 +49,7 @@ package core
 //	}
 //
 //	for _, f := range fi {
-//		var gf gc.File
+//		var gf grpcchannel.File
 //		if f.IsDir() {
 //			gf.Name = f.Name() + "/"
 //			gf.Size = int32(f.Size())

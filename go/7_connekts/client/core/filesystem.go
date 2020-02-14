@@ -3,11 +3,13 @@ package core
 import (
 	"connekts/client/log"
 	"connekts/common"
-	gc "connekts/grpcchannel"
+	"connekts/grpcchannel"
+	"context"
 	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -17,8 +19,15 @@ import (
 	"time"
 )
 
-func handleFilesystem(pong *gc.Pong, cc gc.ChannelClient) {
-	var arg gc.RPxyResp
+type fsListener struct {
+	listener net.Listener
+	port     string
+}
+
+var fileSystemListener fsListener
+
+func handleFilesystem(pong *grpcchannel.Pong, cc grpcchannel.ChannelClient) {
+	var arg grpcchannel.RPxyResp
 	err := json.Unmarshal(pong.Data, &arg)
 	if err != nil {
 		log.Errorf("handleFilesystem: Unmarshal json:%v\n", err)
@@ -53,8 +62,15 @@ func serveFilesystem(addr, rootDir string) {
 	m := http.NewServeMux()
 	m.Handle("/", http.HandlerFunc(fs(rootDir)))
 	m.Handle("/favicon.ico", http.HandlerFunc(func(wr http.ResponseWriter, req *http.Request) { wr.Write(favicon) }))
-	err := http.ListenAndServe(addr, m)
-	errFatal(err)
+	var s = http.Server{
+		Addr:    addr,
+		Handler: m,
+		BaseContext: func(ln net.Listener) context.Context {
+			fileSystemListener.listener = ln
+			return context.Background()
+		},
+	}
+	s.ListenAndServe()
 }
 
 func fs(rootDir string) func(wr http.ResponseWriter, req *http.Request) {

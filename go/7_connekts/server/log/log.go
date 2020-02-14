@@ -2,6 +2,7 @@ package log
 
 import (
 	"connekts/server/panicerr"
+	"fmt"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"log"
@@ -35,11 +36,17 @@ func InitLog() {
 		LocalTime:  true,
 		Compress:   true,
 	}
-	_ = jack //todo
-	logrus.SetOutput(os.Stdout)
+
+	fmt.Printf("DEBUG MODE:%t\n", os.Getenv("DEBUG") == "true")
+	if os.Getenv("DEBUG") == "true" {
+		logrus.SetOutput(os.Stdout)
+		logrus.SetLevel(logrus.Level(5 - 0)) // debug
+	} else {
+		logrus.SetOutput(jack)
+		logrus.SetLevel(logrus.Level(5 - 1)) //info
+	}
 
 	logrus.SetFormatter(fmtr)
 
-	logrus.SetLevel(logrus.Level(5 - 0)) //todo debug:0 info:1
 	return
 }

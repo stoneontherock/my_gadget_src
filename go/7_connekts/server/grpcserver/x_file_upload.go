@@ -1,14 +1,14 @@
 package grpcserver
 
 //import (
-//	gc "connekts/grpcchannel"
+//	"connekts/grpcchannel"
 //	"connekts/server/model"
 //	"github.com/sirupsen/logrus"
 //	"io"
 //)
 //
-//func (s *server) FileUp(stream gc.Channel_FileUpServer) error {
-//	var dataC chan *gc.FileDataUp
+//func (s *server) FileUp(stream grpcchannel.Channel_FileUpServer) error {
+//	var dataC chan *grpcchannel.FileDataUp
 //	var ok bool
 //
 //	for {

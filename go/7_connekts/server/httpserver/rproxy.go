@@ -2,9 +2,8 @@ package httpserver
 
 import (
 	"connekts/common"
-	gc "connekts/grpcchannel"
+	"connekts/grpcchannel"
 	"connekts/server/model"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/sirupsen/logrus"
@@ -30,17 +29,18 @@ func rProxy(c *gin.Context) {
 		return
 	}
 
+	//如果port1为空，则列出当前mid的rproxy
 	if ri.Port1 == "" {
 		data := struct {
-			MID   string
+			MID    string
 			Labels []string
 		}{
 			MID: ri.MID,
 		}
 
-		if rp, ok := model.RPxyListenerM[ri.MID]; ok {
+		if rp, ok := model.RPxyConnResM[ri.MID]; ok {
 			for label, _ := range rp {
-				logrus.Debugf("**** label:%s",label)
+				//logrus.Debugf("**** label:%s", label)
 				data.Labels = append(data.Labels, label)
 			}
 		}
@@ -73,23 +73,23 @@ func rProxy(c *gin.Context) {
 		return
 	}
 
-	rpr := gc.RPxyResp{Port2: port2, Addr3: ri.Addr3, NumOfConn2: ri.NumOfConn2}
+	rpr := grpcchannel.RPxyResp{Port2: port2, Addr3: ri.Addr3, NumOfConn2: ri.NumOfConn2}
 	data, err := json.Marshal(&rpr)
 	if err != nil {
 		respJSAlert(c, 500, "序列化到pong data失败:"+err.Error())
 		return
 	}
 
-	pongC <- gc.Pong{Action: "rpxy", Data: data}
+	pongC <- grpcchannel.Pong{Action: "rpxy", Data: data}
 
-	c.Redirect(303,"./list_rproxied")
+	c.Redirect(303, "./list_rproxied")
 }
 
 func listen2Side(mid, label, port1, port2 string, numOfConn2 int) error {
-	connC1 := make(chan *net.TCPConn)
+	conn1Ch := make(chan *net.TCPConn) //1端连接的chan
 	conn2Pool := make(chan *net.TCPConn, numOfConn2)
 
-	model.RPxyConn1M[mid] = connC1
+	model.RPxyConn1M[mid] = conn1Ch
 	model.RPxyConn2M[mid] = conn2Pool
 
 	taddr1, err := net.ResolveTCPAddr("tcp", port1)
@@ -102,37 +102,26 @@ func listen2Side(mid, label, port1, port2 string, numOfConn2 int) error {
 		return err
 	}
 
-	lisC := make(chan *net.TCPListener)
-	go listen(taddr1, connC1, lisC)
-	go listen(taddr2, conn2Pool, lisC)
-
-	lis1, ok := <-lisC
-	if !ok {
-		return fmt.Errorf("监听port1(%s)或port2(%s)失败", port1, port2)
+	if _, ok := model.RPxyConnResM[mid]; !ok {
+		model.RPxyConnResM[mid] = make(map[string][]interface{})
 	}
 
-	lis2, ok := <-lisC
-	if !ok {
-		return fmt.Errorf("监听port1(%s)或port2(%s)失败", port1, port2)
-	}
-
-	if _, ok := model.RPxyListenerM[mid]; !ok {
-		model.RPxyListenerM[mid] = make(map[string][]*net.TCPListener)
-	}
-	model.RPxyListenerM[mid][label+"【"+port1+"】"] = []*net.TCPListener{lis1, lis2}
-	close(lisC)
+	pLabel := label + port1
+	model.RPxyConnResM[mid][pLabel] = append(model.RPxyConnResM[mid][pLabel], taddr2.String())
+	go listen(taddr1, conn1Ch, mid, pLabel)
+	go listen(taddr2, conn2Pool, mid, pLabel)
 
 	return nil
 }
 
-func listen(addr *net.TCPAddr, connC chan<- *net.TCPConn, lisC chan<- *net.TCPListener) {
+func listen(addr *net.TCPAddr, connCh chan<- *net.TCPConn, mid, label string) {
 	lis, err := net.ListenTCP("tcp", addr)
 	if err != nil {
-		logrus.Errorf("监听1侧失败:%s. err:%v", addr.String(), err)
-		close(lisC)
+		logrus.Errorf("listen:监听失败:%s. err:%v", addr.String(), err)
 		return
 	}
-	lisC <- lis
+	logrus.Debugf("listen:监听成功,%s, listener引用的内存地址:%p", addr, lis)
+	model.RPxyConnResM[mid][label] = append(model.RPxyConnResM[mid][label], lis)
 
 	for {
 		conn, err := lis.AcceptTCP()
@@ -144,6 +133,8 @@ func listen(addr *net.TCPAddr, connC chan<- *net.TCPConn, lisC chan<- *net.TCPLi
 			continue
 		}
 
-		connC <- conn
+		logrus.Debugf("listen:连接到来,%s->%s 连接引用的内存地址%p", conn.RemoteAddr(), addr, conn)
+		model.RPxyConnResM[mid][label] = append(model.RPxyConnResM[mid][label], conn)
+		connCh <- conn
 	}
 }

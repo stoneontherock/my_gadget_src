@@ -51,7 +51,7 @@ func auth(c *gin.Context) {
 	login := false
 	defer func() {
 		if !login {
-			c.Redirect(303, "/login")
+			c.Redirect(307, "/login")
 		}
 	}()
 
