@@ -26,13 +26,13 @@ func filesystem(c *gin.Context) {
 	}
 
 	host := regPatt.ReplaceAllString(c.Request.Host, "$1")
-	for pLabel,_ := range model.RPxyConnResM[fi.MID] {
-		if strings.HasPrefix(pLabel,"filesystem") {
-			ss := strings.Split(pLabel,":")
+	for pLabel, _ := range model.RPxyConnResM[fi.MID] {
+		if strings.HasPrefix(pLabel, "filesystem") {
+			ss := strings.Split(pLabel, ":")
 			if len(ss) != 2 {
 				continue
 			}
-			c.Redirect(303, "http://" + host + ss[1] + "/")
+			c.Redirect(303, "http://"+host+":"+ss[1]+"/")
 			return
 		}
 	}
@@ -61,5 +61,5 @@ func filesystem(c *gin.Context) {
 
 	pongC <- grpcchannel.Pong{Action: "filesystem", Data: data}
 
-	c.Redirect(303, "http://" + host + port1 + "/")
+	c.Redirect(303, "http://"+host+port1+"/")
 }
