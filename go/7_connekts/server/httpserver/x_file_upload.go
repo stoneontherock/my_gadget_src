@@ -1,8 +1,8 @@
 package httpserver
 
 //import (
-//	"connekts/grpcchannel"
-//	"connekts/server/model"
+//	"line/grpcchannel"
+//	"line/server/model"
 //	"github.com/gin-gonic/gin"
 //	"github.com/sirupsen/logrus"
 //	"path/filepath"

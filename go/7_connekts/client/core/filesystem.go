@@ -1,10 +1,10 @@
 package core
 
 import (
-	"connekts/client/log"
-	"connekts/common"
-	"connekts/grpcchannel"
-	"context"
+	"line/client/log"
+	"line/client/model"
+	"line/common"
+	"line/grpcchannel"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -13,18 +13,20 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 )
 
-type fsListener struct {
-	listener net.Listener
-	port     string
+type fsServer struct {
+	server *http.Server
+	port2  string
 }
 
-var fileSystemListener fsListener
+var filesystemServer fsServer
+var winDiskIndex = 0
 
 func handleFilesystem(pong *grpcchannel.Pong, cc grpcchannel.ChannelClient) {
 	var arg grpcchannel.RPxyResp
@@ -36,7 +38,12 @@ func handleFilesystem(pong *grpcchannel.Pong, cc grpcchannel.ChannelClient) {
 
 	port := strconv.Itoa(int(common.RandomAvaliblePort()))
 	addr3 := "127.0.0.1:" + port
-	go serveFilesystem(addr3, "/")
+	webRoot := "/"
+	if runtime.GOOS == "windows" {
+		webRoot = model.WinDiskList[winDiskIndex]
+		winDiskIndex = (winDiskIndex + 1) % len(model.WinDiskList)
+	}
+	go serveFilesystem(addr3, webRoot)
 
 	handleRPxy(pong, cc, addr3)
 }
@@ -62,15 +69,24 @@ func serveFilesystem(addr, rootDir string) {
 	m := http.NewServeMux()
 	m.Handle("/", http.HandlerFunc(fs(rootDir)))
 	m.Handle("/favicon.ico", http.HandlerFunc(func(wr http.ResponseWriter, req *http.Request) { wr.Write(favicon) }))
-	var s = http.Server{
-		Addr:    addr,
+	filesystemServer.server = &http.Server{
 		Handler: m,
-		BaseContext: func(ln net.Listener) context.Context {
-			fileSystemListener.listener = ln
-			return context.Background()
-		},
+		//go 1.11的http.Server没有BaseContext字段
+		//BaseContext: func(ln net.Listener) context.Context {
+		//	fileSystemListener.listener = ln
+		//	return context.Background()
+		//},
 	}
-	s.ListenAndServe()
+
+	ln, err := net.Listen("tcp", addr)
+	if err != nil {
+		return
+	}
+	err = filesystemServer.server.Serve(ln)
+	if err != nil {
+		log.Errorf("Server.Serves()失败,%v\n", err)
+		return
+	}
 }
 
 func fs(rootDir string) func(wr http.ResponseWriter, req *http.Request) {
@@ -340,7 +356,7 @@ const (
 <body>
 {{ $data := . -}}
 <header>
-  <form enctype="multipart/form-data" action="{{$data.Path}}" method="POST">
+  <form enctype="multipart/form-data" action="{{$data.Path}}" method="GET">
       <abbr title="可以按Ctrl键选择多个文件">
           <input type="file" multiple name="uploadFiles" required>
           <input id="上传按钮" type="submit" value="批量上传文件">

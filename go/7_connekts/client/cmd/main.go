@@ -1,8 +1,8 @@
 package main
 
 import (
-	"connekts/client/core"
-	"connekts/client/model"
+	"line/client/core"
+	"line/client/model"
 	"net"
 	"os"
 	"strconv"

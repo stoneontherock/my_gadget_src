@@ -1,8 +1,8 @@
 package grpcserver
 
 import (
-	"connekts/grpcchannel"
-	"connekts/server/panicerr"
+	"line/grpcchannel"
+	"line/server/panicerr"
 	"context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/peer"

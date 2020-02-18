@@ -1,7 +1,7 @@
 package httpserver
 
 import (
-	"connekts/server/grpcserver"
+	"line/server/grpcserver"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
@@ -13,7 +13,7 @@ type pickupIn struct {
 
 func pickup(c *gin.Context) {
 	var pi pickupIn
-	err := c.ShouldBindWith(&pi, binding.FormPost)
+	err := c.ShouldBindWith(&pi, binding.Form)
 	if err != nil {
 		c.JSON(400, gin.H{"msg": "参数错误:" + err.Error()})
 		return

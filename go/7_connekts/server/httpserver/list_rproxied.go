@@ -1,7 +1,7 @@
 package httpserver
 
 import (
-	"connekts/server/model"
+	"line/server/model"
 	"github.com/gin-gonic/gin"
 )
 

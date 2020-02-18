@@ -1,7 +1,7 @@
 package httpserver
 
 import (
-	"connekts/server/panicerr"
+	"line/server/panicerr"
 	"github.com/gin-gonic/gin"
 	"html/template"
 	tt "text/template"
@@ -34,6 +34,7 @@ var (
 )
 
 func respJSAlert(c *gin.Context, code int, errStr string) {
+	c.Status(code)
 	errTmlp.Execute(c.Writer, struct{ ERR string }{errStr})
 }
 
@@ -42,6 +43,7 @@ const (
 <html>
 <script>
 	alert("{{.ERR}}");
+	location.href = "./list_hosts"
 </script>
 </html>
 `
@@ -60,13 +62,14 @@ const (
 {{ $data := . -}}
 <header>
     <h1>cmd</h1>
-	<a href="/connekt/list_hosts">HOME</a>
+	<a href="/line/list_hosts">HOME</a>
 </header>
 
 <article>
-    <form action="/connekt/cmd" method="POST">
+    <form action="/line/cmd" method="GET">
         <input type="hidden"  name="mid" value="{{$data.MID}}" />
-        <input type="text" name="timeout" value="60" />seconds timeout<br/>
+        <input type="text" name="timeout" value="30" />seconds timeout<br/>
+        <input type="checkbox" name="inShell" value="true" checked/>exec in shell<br/>
         <textarea  rows="5" cols="100" name="cmd" placeholder='非shell环境执行需要用"..."分隔命令参数'></textarea> <br />
         <input type="submit" value="run" />
         <br />
@@ -102,12 +105,12 @@ const (
 {{ $data := . -}}
 <header>
     <h1>rpxy</h1>
-    <a href="/connekt/list_hosts">HOME</a>
+    <a href="/line/list_hosts">HOME</a>
     <hr>
 </header>
 
 <article>
-    <form action="/connekt/rpxy" method="POST">
+    <form action="/line/rpxy" method="GET">
         <input type="hidden"  name="mid" value="{{- $data.MID -}}" />
         conn2连接数:<input type="text" name="num_of_conn2" value="1" placeholder='conn2连接数'/><br />
         port1:<input type="text" name="port1" placeholder='用户访问端端口号'/><br />
@@ -126,7 +129,7 @@ const (
 					<tr>
 	              		 <td class="col1">{{- $lab -}}</td>
 						 <td class="col2"> 
-							<form action="/connekt/del_rproxied" method="POST">
+							<form action="/line/del_rproxied" method="GET">
                         		<input type="hidden"  name="mid" value="{{- $data.MID -}}" />
                         		<input type="hidden"  name="label" value="{{- $lab -}}" />
 								<input type="submit" value="✖️" />
@@ -155,7 +158,7 @@ const (
 	<body>
 	{{ $data := . -}}
 	<header>
-	  <a href="/connekt/list_hosts">HOME</a>
+	  <a href="/line/list_hosts">HOME</a>
       <br />
 	  <h1>总数:{{- len $data -}}</h1>
 	  <hr>
@@ -172,7 +175,7 @@ const (
 	               		 <td class="col1">{{- $mid -}}</td>
 	              		 <td class="col2">{{- $lab -}}</td>
 						 <td class="col3"> 
-							<form action="/connekt/del_rproxied" method="POST">
+							<form action="/line/del_rproxied" method="GET">
                         		<input type="hidden"  name="mid" value="{{- $mid -}}" />
                         		<input type="hidden"  name="label" value="{{- $lab -}}" />
 								<input type="submit" value="✖️" />
@@ -202,12 +205,11 @@ const (
     <title>alives</title>
     <script>
 	    function parseUnixTime(){
-        	var t = document.getElementById("updateAt");
-			if (t == null) {
-				return;
-			}
-        	var d = new Date(parseInt(t.innerText)*1000);
-        	t.innerHTML = d.getMonth()+"-"+d.getDate()+" "+d.getHours()+":"+d.getMinutes()+":"+d.getSeconds();
+	        let ups = document.getElementsByClassName("updateAt");
+    	    for (i=0;i<ups.length;i++) {
+        	    let d = new Date(parseInt(ups[i].innerText)*1000);
+            	ups[i].innerHTML = d.getMonth()+"-"+d.getDate()+" "+d.getHours()+":"+d.getMinutes()+":"+d.getSeconds();
+        	}
     	}
 	</script>
 </head>
@@ -237,15 +239,15 @@ const (
                         free
                     {{ end }}
                 </td>
-                <td id="updateAt">{{$rec.UpdateAt}}</td>
-                <td><form action="/connekt/del_host" method="POST">
+                <td class="updateAt">{{$rec.UpdateAt}}</td>
+                <td><form action="/line/del_host" method="GET">
                         <input type="hidden"  name="mid" value="{{$rec.ID}}" />
                         <input type="submit" value="drop" />
                     </form>
                 </td>
 
                 {{ if lt $rec.Pickup 1 }}
-                <td><form action="/connekt/change_pickup" method="POST">
+                <td><form action="/line/change_pickup" method="GET">
                         <input type="hidden"  name="mid" value="{{$rec.ID}}" />
                         <input type="hidden"  name="pickup" value="1" />
                         <input type="submit" value="picking up" />
@@ -254,17 +256,17 @@ const (
                 {{end}}
 
                 {{ if ge $rec.Pickup 2 }}
-                <td><form action="/connekt/cmd" method="POST">
+                <td><form action="/line/cmd" method="GET">
                         <input type="hidden"  name="mid" value="{{$rec.ID}}" />
                         <input type="submit" value="cmd" />
                     </form>
                 </td>
-                <td><form action="/connekt/rpxy" method="POST">
+                <td><form action="/line/rpxy" method="GET">
                         <input type="hidden"  name="mid" value="{{$rec.ID}}" />
                         <input type="submit" value="rpxy" />
                     </form>
                 </td>
-                <td><form action="/connekt/filesystem" method="GET">
+                <td><form action="/line/filesystem" method="GET">
                         <input type="hidden"  name="mid" value="{{$rec.ID}}" />
                         <input type="submit" value="filesystem" />
                     </form>
@@ -286,7 +288,7 @@ const (
  <meta charset="UTF-8">
 </head>
 <body>
-<form action="/login" method="POST">
+<form action="/login" method="GET">
 	<input type="text"  name="user" required />
 	<input type="password"  name="pv" required />
     <input type="submit" value="登录" />

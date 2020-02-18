@@ -1,8 +1,8 @@
 package core
 
 //import (
-//	"connekts/client/log"
-//	"connekts/grpcchannel"
+//	"line/client/log"
+//	"line/grpcchannel"
 //	"context"
 //	"io"
 //	"os"

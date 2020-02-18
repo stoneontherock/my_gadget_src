@@ -1,14 +1,17 @@
 package core
 
 import (
-	"connekts/client/log"
-	"connekts/client/runcmd"
-	"connekts/common"
-	"connekts/grpcchannel"
+	"line/client/log"
+	"line/client/runcmd"
+	"line/common"
+	"line/grpcchannel"
 	"context"
 	"encoding/json"
+	"regexp"
 	"time"
 )
+
+var repRegex = regexp.MustCompile(`[ \r\t]+`)
 
 func handleCMD(pong *grpcchannel.Pong, cc grpcchannel.ChannelClient) {
 	println("cmd:", string(pong.Data))
@@ -18,7 +21,21 @@ func handleCMD(pong *grpcchannel.Pong, cc grpcchannel.ChannelClient) {
 		log.Errorf("Unmarshal:%v\n", err)
 		return
 	}
-	rc, stdout, stderr := runcmd.Run(cmd.Cmd, cmd.Timeout)
+
+	var rc int
+	var stdout, stderr string
+	if cmd.Cmd == "" {
+		rc = 0
+		stderr = "命令不能为空"
+	} else {
+		var strs []string
+		if cmd.InShell {
+			strs = []string{cmd.Cmd}
+		} else {
+			strs = repRegex.Split(cmd.Cmd, -1)
+		}
+		rc, stdout, stderr = runcmd.Run(cmd.Timeout, strs...)
+	}
 
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*60)
 	defer cancel()
@@ -29,3 +46,5 @@ func handleCMD(pong *grpcchannel.Pong, cc grpcchannel.ChannelClient) {
 		return
 	}
 }
+
+

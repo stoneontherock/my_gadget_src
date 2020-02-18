@@ -3,9 +3,9 @@
 package core
 
 import (
-	"connekts/client/machineid"
-	"connekts/client/model"
-	"connekts/client/runcmd"
+	"line/client/machineid"
+	"line/client/model"
+	"line/client/runcmd"
 	"strings"
 )
 
@@ -16,10 +16,10 @@ func static() model.StaticInfo {
 		si.MachineID = "sample_machine_id"
 	}
 
-	_, kernel, _ := runcmd.Run("uname...-r", 10)
-	_, hostname, _ := runcmd.Run("hostname", 10)
+	_, kernel, _ := runcmd.Run(10, "uname", "-r")
+	_, hostname, _ := runcmd.Run(10, "hostname")
 
-	si.OS = "linux " + strings.ReplaceAll(kernel, "\n", "")
-	si.Hostname = strings.ReplaceAll(hostname, "\n", "")
+	si.OS = "linux " + strings.Replace(kernel, "\n", "",-1)
+	si.Hostname = strings.Replace(hostname, "\n", "",-1)
 	return si
 }

@@ -1,9 +1,9 @@
 package httpserver
 
 import (
-	"connekts/common"
-	"connekts/grpcchannel"
-	"connekts/server/model"
+	"line/common"
+	"line/grpcchannel"
+	"line/server/model"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/sirupsen/logrus"
@@ -23,7 +23,7 @@ type rproxyIn struct {
 
 func rProxy(c *gin.Context) {
 	var ri rproxyIn
-	err := c.ShouldBindWith(&ri, binding.FormPost)
+	err := c.ShouldBindWith(&ri, binding.Form)
 	if err != nil {
 		respJSAlert(c, 400, "参数错误:"+err.Error())
 		return
@@ -55,7 +55,7 @@ func rProxy(c *gin.Context) {
 
 	port1 := ":" + ri.Port1
 	if !common.IsPortAvalible(port1) {
-		respJSAlert(c, 400, "port1被占用:")
+		respJSAlert(c, 400, "port1不可用:")
 		return
 	}
 

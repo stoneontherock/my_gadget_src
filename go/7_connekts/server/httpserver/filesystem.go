@@ -1,9 +1,9 @@
 package httpserver
 
 import (
-	"connekts/common"
-	"connekts/grpcchannel"
-	"connekts/server/model"
+	"line/common"
+	"line/grpcchannel"
+	"line/server/model"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"regexp"

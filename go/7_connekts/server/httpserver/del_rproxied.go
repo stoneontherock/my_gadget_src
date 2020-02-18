@@ -12,7 +12,7 @@ type delRpxyIn struct {
 
 func del_rproxied(c *gin.Context) {
 	var di delRpxyIn
-	err := c.ShouldBindWith(&di, binding.FormPost)
+	err := c.ShouldBindWith(&di, binding.Form)
 	if err != nil {
 		respJSAlert(c, 400, "参数错误:"+err.Error())
 		return

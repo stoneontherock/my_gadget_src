@@ -1,7 +1,7 @@
 package httpserver
 
 import (
-	"connekts/server/panicerr"
+	"line/server/panicerr"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-const prefix = "/connekt"
+const prefix = "/line"
 
 func newEngine() *gin.Engine {
 	gin.SetMode(gin.DebugMode) //todo: release
@@ -25,15 +25,15 @@ func newEngine() *gin.Engine {
 	c := router.Group(prefix)
 	{
 		c.GET("/list_hosts", listHosts)
-		c.POST("/del_host", delHost)
+		c.GET("/del_host", delHost)
 
-		c.POST("/cmd", command)
+		c.GET("/cmd", command)
 
-		c.POST("/change_pickup", pickup)
+		c.GET("/change_pickup", pickup)
 
-		c.POST("/rpxy", rProxy)
+		c.GET("/rpxy", rProxy)
 		c.GET("/list_rproxied", list_rproxied)
-		c.POST("/del_rproxied", del_rproxied)
+		c.GET("/del_rproxied", del_rproxied)
 
 		c.GET("/filesystem", filesystem)
 	}

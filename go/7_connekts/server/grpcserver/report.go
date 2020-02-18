@@ -1,9 +1,9 @@
 package grpcserver
 
 import (
-	"connekts/grpcchannel"
-	"connekts/server/db"
-	"connekts/server/model"
+	"line/grpcchannel"
+	"line/server/db"
+	"line/server/model"
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 	"time"
@@ -49,7 +49,7 @@ func (s *server) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_Repor
 
 	logrus.Debugf("ci:%+v", ci)
 
-	tk := time.NewTicker(time.Second * 3600)
+	tk := time.NewTicker(time.Second * 600)
 	defer tk.Stop()
 	for {
 		select {

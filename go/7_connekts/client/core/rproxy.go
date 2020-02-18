@@ -1,10 +1,10 @@
 package core
 
 import (
-	"connekts/client/log"
-	"connekts/client/model"
-	"connekts/common"
-	"connekts/grpcchannel"
+	"line/client/log"
+	"line/client/model"
+	"line/common"
+	"line/grpcchannel"
 	"context"
 	"encoding/json"
 	"net"
@@ -53,7 +53,7 @@ func handleRPxy(pong *grpcchannel.Pong, cc grpcchannel.ChannelClient, fsAddr3 st
 
 		log.Infof("收到服务端连接请求,要求建立中转: conn2Addr=%s\n", resp.Port2)
 		if fsAddr3 != "" {
-			fileSystemListener.port = resp.Port2
+			filesystemServer.port2 = resp.Port2
 			go bridge(fsAddr3, resp.Port2)
 		} else {
 			go bridge(resp.Addr3, resp.Port2)
@@ -64,7 +64,7 @@ func handleRPxy(pong *grpcchannel.Pong, cc grpcchannel.ChannelClient, fsAddr3 st
 func bridge(addr3, port2 string) {
 	conn3, err := net.Dial("tcp", addr3)
 	if err != nil {
-		log.Errorf("连接近端失败,addr3:" + addr3)
+		log.Errorf("连接近端失败,addr3:%s\n" ,addr3)
 		return
 	}
 	log.Infof("近端连接已经建立:%s\n", conn3.LocalAddr())
@@ -80,7 +80,7 @@ func genRconn(port2 string, cnt int) {
 	for i := 0; i < cnt; i++ {
 		conn2, err := net.Dial("tcp", addr2)
 		if err != nil {
-			log.Errorf("连接远端失败,addr2:" + addr2)
+			log.Errorf("连接远端失败,addr2:%s\n",addr2)
 			return
 		}
 		log.Infof("远端连接已经建立:%s->%s conn2=%p\n", conn2.LocalAddr(), conn2.RemoteAddr(), conn2)
@@ -92,8 +92,10 @@ func genRconn(port2 string, cnt int) {
 
 func handleCloseConnections(pong *grpcchannel.Pong) {
 	port2 := string(pong.Data)
-	if fileSystemListener.port == port2 {
-		fileSystemListener.listener.Close()
+	if filesystemServer.port2 == port2 {
+		filesystemServer.server.Close()
+		filesystemServer.server = nil
+		filesystemServer.port2 = ""
 	}
 
 	//log.Infof("**** port2ConnM=%v pong.Data=%v\n", port2ConnM, port2)

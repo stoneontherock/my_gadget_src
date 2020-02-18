@@ -1,7 +1,7 @@
 package model
 
 import (
-	"connekts/grpcchannel"
+	"line/grpcchannel"
 	"net"
 )
 

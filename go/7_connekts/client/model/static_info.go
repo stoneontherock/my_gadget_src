@@ -5,3 +5,6 @@ type StaticInfo struct {
 	OS        string
 	Hostname  string
 }
+
+var CodeSet int
+var WinDiskList []string

@@ -5,25 +5,24 @@ package runcmd
 
 import (
 	"bytes"
-	"connekts/client/log"
+	"line/client/log"
 	"fmt"
 	"os/exec"
-	"strings"
 	"syscall"
 	"time"
+	"unicode/utf8"
 )
 
 // Run 带timeout执行系统命令，超时就杀死子进程
-func Run(cmd string, tmout int) (int, string, string) {
-	log.Infof("=== del === cmd:+%v len=%d\n", cmd, len(cmd))
+func Run(tmout int, strs ...string) (int, string, string) {
+	//log.Infof("=== del === cmd:+%v len=%d\n", cmd, len(cmd))
 
 	var c *exec.Cmd
 
-	if strings.Contains(cmd, "...") {
-		cmds := strings.Split(cmd, "...")
-		c = exec.Command(cmds[0], cmds[1:]...)
+	if len(strs) > 1 {
+		c = exec.Command(strs[0], strs[1:]...)
 	} else {
-		c = exec.Command("/bin/bash", "-c", cmd)
+		c = exec.Command("/bin/bash", "-c", strs[0])
 	}
 
 	var stdout bytes.Buffer
@@ -33,11 +32,11 @@ func Run(cmd string, tmout int) (int, string, string) {
 
 	err := c.Start()
 	if err != nil {
-		log.Errorf("c.Start(%v),%v\n", cmd, err)
+		log.Errorf("c.Start(%v),%v\n", strs, err)
 		return -1, "", err.Error()
 	}
 
-	log.Infof("Start(%s)\n", cmd)
+	log.Infof("Start(%v)\n", strs)
 
 	var (
 		ws  syscall.WaitStatus
@@ -62,10 +61,27 @@ func Run(cmd string, tmout int) (int, string, string) {
 	}
 
 	if i >= max {
-		log.Errorf("cmd:%v, TIMEOUT\n", cmd)
+		log.Errorf("cmd:%v, TIMEOUT\n", strs)
 		c.Process.Kill()
 		return -3, "", fmt.Sprintf("timeout,loop=%d,output=%s", i, stdout.String()+stderr.String())
 	}
 
-	return ws.ExitStatus(), stdout.String(), stderr.String()
+	return ws.ExitStatus(), legalUTF8Str(stdout.String()), legalUTF8Str(stderr.String())
+}
+
+func legalUTF8Str(str string) string {
+	if utf8.ValidString(str) {
+		return str
+	}
+
+	okStr := make([]rune, len(str))
+	for i, r := range str {
+		if r == utf8.RuneError {
+			okStr[i] = '\u2662' //使用扑克的方块替代
+		} else {
+			okStr[i] = r
+		}
+	}
+
+	return string(okStr)
 }

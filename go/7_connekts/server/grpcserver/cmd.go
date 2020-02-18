@@ -1,8 +1,8 @@
 package grpcserver
 
 import (
-	"connekts/grpcchannel"
-	"connekts/server/model"
+	"line/grpcchannel"
+	"line/server/model"
 	"context"
 	"github.com/sirupsen/logrus"
 )
