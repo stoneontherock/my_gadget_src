@@ -19,6 +19,7 @@ message Ping {
     string mid = 1;
     string hostname = 2;
     string os = 3;
+    int32 interval = 4;
 }
 
 //ping out

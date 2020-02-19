@@ -6,7 +6,6 @@ import (
 	"net"
 	"os"
 	"strconv"
-	"time"
 )
 
 func main() {
@@ -21,9 +20,9 @@ func main() {
 		os.Exit(127)
 	}
 
-	interval, _ := strconv.Atoi(os.Getenv("INTERVAL"))
-	if interval <= 0 {
-		interval = 30 //默认30秒
+	core.ReportInterval, _ = strconv.Atoi(os.Getenv("INTERVAL"))
+	if core.ReportInterval <= 0 {
+		core.ReportInterval = 30 //默认30秒
 	}
-	core.Reporter(model.ServerTCPAddr, time.Duration(interval)*time.Second)
+	core.Reporter(model.ServerTCPAddr)
 }

@@ -1,11 +1,11 @@
 package grpcserver
 
 import (
+	"github.com/jinzhu/gorm"
+	"github.com/sirupsen/logrus"
 	"line/grpcchannel"
 	"line/server/db"
 	"line/server/model"
-	"github.com/jinzhu/gorm"
-	"github.com/sirupsen/logrus"
 	"time"
 )
 
@@ -19,7 +19,7 @@ func (s *server) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_Repor
 			logrus.Errorf("Report:First:%v\n", err)
 			return err
 		}
-		err := db.DB.Create(&model.ClientInfo{ID: ping.Mid, WanIP: wanIP, Hostname: ping.Hostname, OS: ping.Os}).Error
+		err := db.DB.Create(&model.ClientInfo{ID: ping.Mid, WanIP: wanIP, Hostname: ping.Hostname, OS: ping.Os, Interval: ping.Interval}).Error
 		if err != nil {
 			logrus.Errorf("Report:Create:%v\n", err)
 			return err

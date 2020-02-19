@@ -1,9 +1,9 @@
 package httpserver
 
 import (
-	"line/server/panicerr"
 	"github.com/gin-gonic/gin"
 	"html/template"
+	"line/server/panicerr"
 	tt "text/template"
 )
 
@@ -222,7 +222,7 @@ const (
 <article>
     <hr>
     <table id="文件表格">
-        <thead style="background-color: #EEEEFF;"><th>index</th><th>MachineID</th><th>Hostname</th><th>OS</th><th>IP Addr</th><th>Ready</th><th>UpdateAt</th></thead>
+        <thead style="background-color: #EEEEFF;"><th>index</th><th>MachineID</th><th>Hostname</th><th>OS</th><th>IP Addr</th><th>Interval</th><th>Ready</th></thead>
         <tbody>
         {{- range $index,$rec := $data -}}
             <tr>
@@ -231,6 +231,7 @@ const (
                 <td>{{$rec.Hostname}}</td>
                 <td>{{$rec.OS}}</td>
                 <td>{{$rec.WanIP}}</td>
+                <td>{{$rec.Interval}}</td>
                 <td>{{ if eq $rec.Pickup 1 }}
                         picking up
                     {{ else if ge $rec.Pickup 2 }}
@@ -239,7 +240,6 @@ const (
                         free
                     {{ end }}
                 </td>
-                <td class="updateAt">{{$rec.UpdateAt}}</td>
                 <td><form action="/line/del_host" method="GET">
                         <input type="hidden"  name="mid" value="{{$rec.ID}}" />
                         <input type="submit" value="drop" />

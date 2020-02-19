@@ -1,0 +1,3 @@
+1-客户端的环境变量: SERVER=grpc服务端的地址 INTERVAL=上报信息的间隔，单位秒
+2-服务端的环境变量: LOGTO=开启DEBUG日志，并打印到stdout
+3-windows文件浏览服务是按照硬盘顺序来的，第一次是C盘，第二次是D盘...

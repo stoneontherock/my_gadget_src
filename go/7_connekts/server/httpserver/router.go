@@ -18,8 +18,8 @@ func newEngine() *gin.Engine {
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 	router.Any("/", func(c *gin.Context) {})
-	router.POST("/login", login)
-	router.GET("/login", login)
+	router.POST("/line", login)
+	router.GET("/line", login)
 
 	router.Use(auth)
 	c := router.Group(prefix)
@@ -73,7 +73,7 @@ func auth(c *gin.Context) {
 
 func login(c *gin.Context) {
 	if c.Request.Method == "GET" {
-		c.Header("Content-Type", "	text/html")
+		c.Header("Content-Type", "text/html")
 		c.String(200, LOGIN_HTML)
 		return
 	}
@@ -83,7 +83,7 @@ func login(c *gin.Context) {
 		Pstr string `form:"pv" binding:"required"`
 	}{}
 
-	err := c.ShouldBindWith(&in, binding.Form)
+	err := c.ShouldBindWith(&in, binding.FormPost)
 	if err != nil {
 		c.String(401, "login:参数错误"+err.Error())
 		return

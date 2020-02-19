@@ -1,21 +1,22 @@
 package core
 
 import (
-	"line/client/log"
-	"line/grpcchannel"
 	"context"
 	"google.golang.org/grpc"
+	"line/client/log"
+	"line/grpcchannel"
 	"time"
 )
 
 var staticInfo = static()
+var ReportInterval int
 
-func Reporter(addr string, reportInterval time.Duration) {
+func Reporter(addr string) {
 	i := 0
 	for {
 		i++
 		println(i)
-		time.Sleep(reportInterval)
+		time.Sleep(time.Duration(ReportInterval) * time.Second)
 		conn, err := grpc.Dial(addr, grpc.WithInsecure()) //如果需要授权认证或tls加密，则可以使用DialOptions来设置grpc.Dial
 		if err != nil {
 			log.Errorf("grpc.Dial: %v\n", err)
@@ -32,7 +33,7 @@ func reportDo(conn *grpc.ClientConn) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	stream, err := cc.Report(ctx, &grpcchannel.Ping{Mid: staticInfo.MachineID, Hostname: staticInfo.Hostname, Os: staticInfo.OS})
+	stream, err := cc.Report(ctx, &grpcchannel.Ping{Mid: staticInfo.MachineID, Hostname: staticInfo.Hostname, Os: staticInfo.OS, Interval: int32(ReportInterval)})
 	if err != nil {
 		log.Errorf("reportDo:c.Report: %v\n", err)
 		return
