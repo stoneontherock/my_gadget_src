@@ -7,7 +7,7 @@ package grpcserver
 //	"io"
 //)
 //
-//func (s *server) FileUp(stream grpcchannel.Channel_FileUpServer) error {
+//func (s *grpcServer) FileUp(stream grpcchannel.Channel_FileUpServer) error {
 //	var dataC chan *grpcchannel.FileDataUp
 //	var ok bool
 //

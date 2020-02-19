@@ -1,9 +1,9 @@
 package httpserver
 
 import (
-	"line/server/grpcserver"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"line/server/grpcserver"
 )
 
 type pickupIn struct {
@@ -25,6 +25,5 @@ func pickup(c *gin.Context) {
 		return
 	}
 
-	//c.JSON(200, gin.H{"msg": "更新pickup成功:"})
-	c.Data(200, "text/html", []byte(LIST_HOSTS))
+	c.Redirect(303, "./list_hosts")
 }

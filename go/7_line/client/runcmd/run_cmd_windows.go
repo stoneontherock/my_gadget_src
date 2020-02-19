@@ -4,12 +4,12 @@ package runcmd
 
 import (
 	"bytes"
-	"line/client/log"
-	"line/client/model"
 	"fmt"
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"golang.org/x/text/transform"
 	"io/ioutil"
+	"line/client/log"
+	"line/client/model"
 	"os/exec"
 	"regexp"
 	"time"

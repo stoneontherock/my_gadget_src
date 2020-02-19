@@ -2,6 +2,6 @@ package common
 
 type CmdPong struct {
 	Cmd     string
-	InShell   bool
+	InShell bool
 	Timeout int
 }

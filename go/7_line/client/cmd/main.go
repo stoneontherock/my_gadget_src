@@ -10,7 +10,7 @@ import (
 
 func main() {
 	var err error
-	model.ServerTCPAddr = os.Getenv("SERVER")
+	model.ServerTCPAddr = os.Getenv("LINE_GRPC_SERVER")
 	if model.ServerTCPAddr == "" {
 		model.ServerTCPAddr = "32521746.xyz:65000"
 	}
@@ -20,7 +20,7 @@ func main() {
 		os.Exit(127)
 	}
 
-	core.ReportInterval, _ = strconv.Atoi(os.Getenv("INTERVAL"))
+	core.ReportInterval, _ = strconv.Atoi(os.Getenv("LINE_REPORT_INTERVAL"))
 	if core.ReportInterval <= 0 {
 		core.ReportInterval = 30 //默认30秒
 	}

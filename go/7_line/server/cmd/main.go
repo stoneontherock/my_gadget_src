@@ -5,14 +5,31 @@ import (
 	"line/server/grpcserver"
 	"line/server/httpserver"
 	"line/server/log"
-	"fmt"
+	"os"
 )
 
 func main() {
-	fmt.Printf("提示：环境变量LOGTO=stdout可以把日志答应到stdout上\n")
+	getEnv(&log.Debug, "LINE_STDOUT_DEBUG")
 	log.InitLog()
+
 	db.InitSQLite()
+
+	getEnv(&grpcserver.GRPCServer.ListenAddr, "LINE_GRPC_LISTEN_ADDR")
 	go grpcserver.Serve()
 
-	httpserver.Serve("0.0.0.0:65080")
+	getEnv(&httpserver.AdminName, "LINE_HTTP_ADMIN")
+	getEnv(&httpserver.AdminPv, "LINE_HTTP_PASSWD")
+
+	var addr = ":65080"
+	getEnv(&addr, "LINE_HTTP_LISTEN_ADDR")
+	httpserver.Serve(addr)
+}
+
+func getEnv(value *string, envKey string) {
+	tmp := os.Getenv(envKey)
+	if httpserver.AdminPv == "" {
+		return
+	}
+
+	*value = tmp
 }

@@ -1,11 +1,13 @@
 package httpserver
 
 import (
+	"encoding/json"
+	"github.com/gin-gonic/gin"
 	"line/common"
 	"line/grpcchannel"
 	"line/server/model"
-	"encoding/json"
-	"github.com/gin-gonic/gin"
+	"net"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -61,5 +63,11 @@ func filesystem(c *gin.Context) {
 
 	pongC <- grpcchannel.Pong{Action: "filesystem", Data: data}
 
-	c.Redirect(303, "http://"+host+port1+"/")
+	dm, port, _ := net.SplitHostPort(c.Request.Host)
+	scheme := "http://"
+	if c.Request.TLS != nil {
+		scheme = "https://"
+	}
+	home := "/?home=" + url.QueryEscape(scheme+dm+":"+port+"/line/list_hosts")
+	c.Redirect(303, "http://"+host+port1+home)
 }

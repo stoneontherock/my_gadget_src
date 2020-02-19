@@ -1,13 +1,13 @@
 package httpserver
 
 import (
-	"line/common"
-	"line/grpcchannel"
-	"line/server/model"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/square/go-jose.v2/json"
+	"line/common"
+	"line/grpcchannel"
+	"line/server/model"
 	"net"
 	"strconv"
 	"strings"
@@ -82,7 +82,7 @@ func rProxy(c *gin.Context) {
 
 	pongC <- grpcchannel.Pong{Action: "rpxy", Data: data}
 
-	c.Redirect(303, "./list_rproxied")
+	c.Redirect(303, "./rpxy")
 }
 
 func listen2Side(mid, label, port1, port2 string, numOfConn2 int) error {

@@ -1,16 +1,17 @@
 package core
 
 import (
-	"line/client/log"
-	"line/client/model"
-	"line/common"
-	"line/grpcchannel"
 	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
+	"line/client/log"
+	"line/client/model"
+	"line/common"
+	"line/grpcchannel"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -40,7 +41,7 @@ func handleFilesystem(pong *grpcchannel.Pong, cc grpcchannel.ChannelClient) {
 	addr3 := "127.0.0.1:" + port
 	webRoot := "/"
 	if runtime.GOOS == "windows" {
-		webRoot = model.WinDiskList[winDiskIndex]
+		webRoot = model.WinDiskList[winDiskIndex] + "/"
 		winDiskIndex = (winDiskIndex + 1) % len(model.WinDiskList)
 	}
 	go serveFilesystem(addr3, webRoot)
@@ -111,7 +112,16 @@ func fs(rootDir string) func(wr http.ResponseWriter, req *http.Request) {
 	}
 }
 
+var homeURL string
+
 func listFS(wr http.ResponseWriter, req *http.Request, path string) {
+	if req.URL.Path == "/" {
+		home, _ := url.QueryUnescape(req.FormValue("home"))
+		if home != "" {
+			homeURL = home
+		}
+	}
+
 	fi, err := os.Stat(path)
 	if err != nil {
 		renderHTMLErr(wr, err.Error())
@@ -231,6 +241,7 @@ func renderHTMLErr(wr io.Writer, errStr string) {
 }
 
 type fsList struct {
+	Home  string
 	Path  string
 	Dirs  []os.FileInfo
 	Files []os.FileInfo
@@ -269,6 +280,7 @@ func renderHTMLDir(wr io.Writer, path string, fis []os.FileInfo) {
 	}
 
 	var fl fsList
+	fl.Home = homeURL
 	fl.Path = path
 	if fl.Path == "/" {
 		fl.Path = "." //修复根目录作为web root时url不可用的bug
@@ -290,9 +302,9 @@ func getPath(urlPath, rootDir string) (string, error) {
 	}
 	p = filepath.Clean(p)
 
-	if !strings.HasPrefix(p, rootDir) {
-		return "", fmt.Errorf("无权访问%s", p)
-	}
+	//if !strings.HasPrefix(p, rootDir) {
+	//	return "", fmt.Errorf("无权访问%s", p)
+	//}
 	return p, nil
 }
 
@@ -363,6 +375,7 @@ const (
       </abbr>
   </form>
   <br />
+  <a href="{{$data.Home}}"><b>&#8634; 返回主机管理界面</b></a><br />
   <a href="/"><b>&#8634; 返回web根目录</b></a><br />
   <a href="{{dirName $data.Path}}"><b>&#8634; 返回上层目录</b></a>
   <div style="color: #104E8B"><span style="font-weight: bold">当前目录:</span> {{$data.Path}}/</div>

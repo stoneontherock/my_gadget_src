@@ -66,7 +66,7 @@ func unmarshalCookieValue(value string) (string, int64, error) {
 
 //label传空字符串表示关闭对应mid的所有连接
 func closeConnection(label, mid string) {
-	logrus.Debugf("***** label=%s RPxyLisAndConnM[%s]=%v", label, mid, model.RPxyConnResM[mid])
+	//logrus.Debugf("***** label=%s RPxyLisAndConnM[%s]=%v", label, mid, model.RPxyConnResM[mid])
 	for key, ifaces := range model.RPxyConnResM[mid] {
 		if label != "" && label != key {
 			continue

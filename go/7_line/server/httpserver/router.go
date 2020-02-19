@@ -1,15 +1,18 @@
 package httpserver
 
 import (
-	"line/server/panicerr"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"line/server/panicerr"
 	"net"
 	"time"
 )
 
 const prefix = "/line"
+
+var AdminName = "管理员"
+var AdminPv = "zh@85058"
 
 func newEngine() *gin.Engine {
 	gin.SetMode(gin.DebugMode) //todo: release
@@ -18,12 +21,13 @@ func newEngine() *gin.Engine {
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 	router.Any("/", func(c *gin.Context) {})
-	router.POST("/line", login)
-	router.GET("/line", login)
+	router.POST("/line/login", login)
+	router.GET("/line/login", login)
 
 	router.Use(auth)
 	c := router.Group(prefix)
 	{
+		c.GET("", listHosts)
 		c.GET("/list_hosts", listHosts)
 		c.GET("/del_host", delHost)
 
@@ -32,10 +36,16 @@ func newEngine() *gin.Engine {
 		c.GET("/change_pickup", pickup)
 
 		c.GET("/rpxy", rProxy)
-		c.GET("/list_rproxied", list_rproxied)
+		//c.GET("/list_rproxied", list_rproxied)    //功能冗余
 		c.GET("/del_rproxied", del_rproxied)
 
 		c.GET("/filesystem", filesystem)
+
+		c.GET("/logout", func(c *gin.Context) {
+			dm, _, _ := net.SplitHostPort(c.Request.Host)
+			c.SetCookie("S", "", 0, "/", dm, false, true)
+			c.Redirect(307, "/line/login")
+		})
 	}
 
 	return router
@@ -51,7 +61,7 @@ func auth(c *gin.Context) {
 	login := false
 	defer func() {
 		if !login {
-			c.Redirect(307, "/login")
+			c.Redirect(307, "/line/login")
 		}
 	}()
 
@@ -89,7 +99,7 @@ func login(c *gin.Context) {
 		return
 	}
 
-	if in.User != "管理员" || in.Pstr != "zh@85058" {
+	if in.User != AdminName || in.Pstr != AdminPv {
 		time.Sleep(time.Second * 1)
 		c.String(401, "login:用户名或密码错误")
 	}

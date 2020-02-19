@@ -5,8 +5,8 @@ package runcmd
 
 import (
 	"bytes"
-	"line/client/log"
 	"fmt"
+	"line/client/log"
 	"os/exec"
 	"syscall"
 	"time"

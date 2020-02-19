@@ -1,13 +1,13 @@
 package grpcserver
 
 import (
+	"github.com/sirupsen/logrus"
 	"line/common"
 	"line/grpcchannel"
 	"line/server/model"
-	"github.com/sirupsen/logrus"
 )
 
-func (s *server) RProxyController(req *grpcchannel.RPxyReq, stream grpcchannel.Channel_RProxyControllerServer) error {
+func (s *grpcServer) RProxyController(req *grpcchannel.RPxyReq, stream grpcchannel.Channel_RProxyControllerServer) error {
 	logrus.Infof("客户端%s报到", req.Mid)
 
 	for {

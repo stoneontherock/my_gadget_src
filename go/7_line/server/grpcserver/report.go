@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func (s *server) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_ReportServer) error {
+func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_ReportServer) error {
 	wanIP := getClientIPAddr(stream.Context())
 
 	ci := model.ClientInfo{ID: ping.Mid}

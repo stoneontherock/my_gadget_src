@@ -1,12 +1,13 @@
 package httpserver
 
 import (
-	"line/grpcchannel"
-	"line/server/db"
-	"line/server/model"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/sirupsen/logrus"
+	"line/grpcchannel"
+	"line/server/db"
+	"line/server/model"
 	"time"
 )
 
@@ -23,29 +24,23 @@ func delHost(c *gin.Context) {
 		return
 	}
 
-	err = db.DB.Delete(&model.ClientInfo{ID: dhi.MID}).Error
+	ci := model.ClientInfo{ID: dhi.MID}
+	err = db.DB.Delete(&ci).Error
 	if err != nil {
 		respJSAlert(c, 400, "db.Find.Count:"+err.Error())
 		return
 	}
 
 	closeConnection("", dhi.MID)
-
-	pongC, ok := model.PongM[dhi.MID]
-	if ok {
-		pongC <- grpcchannel.Pong{Action: "fin"}
-		time.Sleep(time.Millisecond * 10)
-		delete(model.PongM, dhi.MID)
+	if ci.Pickup > 0 {
+		pongC, ok := model.PongM[dhi.MID]
+		if ok {
+			pongC <- grpcchannel.Pong{Action: "fin"}
+			time.Sleep(time.Millisecond * 10)
+			delete(model.PongM, dhi.MID)
+		}
 	}
 
 	logrus.Debugf("delHost:删除host:%s成功", dhi.MID)
-	c.Data(200, "text/html", []byte(LIST_HOSTS))
+	c.Redirect(303, "./list_hosts")
 }
-
-const LIST_HOSTS = `
-<html>
-  <script language='javascript' type='text/javascript'> 
-     setTimeout("javascript:location.href='./list_hosts'", 1000); 
-  </script>
-</html>
-`

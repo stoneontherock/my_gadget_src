@@ -1,13 +1,13 @@
 package grpcserver
 
 import (
-	"line/grpcchannel"
-	"line/server/model"
 	"context"
 	"github.com/sirupsen/logrus"
+	"line/grpcchannel"
+	"line/server/model"
 )
 
-func (s *server) CmdResult(ctx context.Context, output *grpcchannel.CmdOutput) (*grpcchannel.EmptyResp, error) {
+func (s *grpcServer) CmdResult(ctx context.Context, output *grpcchannel.CmdOutput) (*grpcchannel.EmptyResp, error) {
 	logrus.Debugf("Run:output: %+v", output)
 	outputC, ok := model.CmdOutM[output.Mid]
 	if !ok {
