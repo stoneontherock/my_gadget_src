@@ -8,3 +8,4 @@
 	LINE_HTTP_ADMIN
 	LINE_HTTP_PASSWD
 3-windows文件浏览服务是按照硬盘顺序来的，第一次是C盘，第二次是D盘...
+4-服务端可执行文件所在目录下需要放tls证书(server.crt)和秘钥(server.key)

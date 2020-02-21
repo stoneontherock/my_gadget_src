@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/sirupsen/logrus"
+	"line/server/log"
 	"line/server/panicerr"
 	"net"
 	"time"
@@ -53,7 +54,7 @@ func newEngine() *gin.Engine {
 
 func Serve(addr string) {
 	r := newEngine()
-	err := r.RunTLS(addr, "server.crt", "server.key")
+	err := r.RunTLS(addr, log.BinDir+"/server.crt", log.BinDir+"/server.key")
 	panicerr.Handle(err, "启动http服务失败:")
 }
 

@@ -10,6 +10,7 @@ import (
 )
 
 var Debug string
+var BinDir string
 
 func InitLog() {
 	fmtr := new(logrus.TextFormatter)
@@ -18,10 +19,11 @@ func InitLog() {
 	fmtr.DisableTimestamp = false               // 禁止显示时间
 	fmtr.DisableColors = true                   // 禁止颜色显示
 
-	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	var err error
+	BinDir, err = filepath.Abs(filepath.Dir(os.Args[0]))
 	panicerr.Handle(err, "获取可执行文件所在路径的绝对路径失败")
 
-	dir += "/log"
+	dir := BinDir + "/log"
 	err = os.MkdirAll(dir, 0700)
 	panicerr.Handle(err, "创建日志目录失败")
 
