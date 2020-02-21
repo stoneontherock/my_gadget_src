@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -18,26 +20,41 @@ import (
 
 var addr *string
 var rootDir *string
+var winSlash string
 
 var errTemplate *template.Template
 var dirTemplate *template.Template
 
 func init() {
+	if runtime.GOOS == "windows" {
+		winSlash = "/"
+	}
+
 	binDir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
 	addr = flag.String("a", ":80", "http监听地址,例如: ':8000'或'192.168.0.100:8000'")
 	rootDir = flag.String("d", binDir, "web根目录,例如: '/tmp'")
 	flag.Parse()
 
 	var err error
+	if runtime.GOOS == "windows" {
+		ok, err := regexp.MatchString(`^[a-zA-Z]:$`, *rootDir)
+		if err == nil && ok {
+			*rootDir = *rootDir + `/`
+		}
+	}
 	*rootDir, err = filepath.Abs(*rootDir)
 	errFatal(err)
+	*rootDir = filepath.ToSlash(*rootDir)
 
 	errTemplate, err = template.New("errTemp").Parse(HTML_ERR)
 	errFatal(err)
 
 	dirNameFunc := func(path string) string {
-		path = strings.TrimRight(path, "/")
-		return filepath.Dir(path)
+		path = filepath.ToSlash(filepath.Dir(strings.TrimRight(path, "/")))
+		if strings.HasSuffix(path, "/") {
+			return path
+		}
+		return path + "/"
 	}
 	dirTemplate, err = template.New("dirTemp").Funcs(template.FuncMap{"dirName": dirNameFunc}).Parse(HTML_DIR)
 	errFatal(err)
@@ -59,6 +76,8 @@ func serve() {
 }
 
 func fs(wr http.ResponseWriter, req *http.Request) {
+	wr.Header().Set("Cache-Control", "no-store")
+
 	path, err := getPath(req.URL.Path)
 	if err != nil {
 		renderHTMLErr(wr, err.Error())
@@ -237,7 +256,7 @@ func renderHTMLDir(wr io.Writer, path string, fis []os.FileInfo) {
 	}
 
 	var fl fsList
-	fl.Path = path
+	fl.Path = winSlash + filepath.ToSlash(path)
 	if fl.Path == "/" {
 		fl.Path = "." //修复根目录作为web root时url不可用的bug
 	}
@@ -252,16 +271,22 @@ func renderHTMLDir(wr io.Writer, path string, fis []os.FileInfo) {
 }
 
 func getPath(path string) (string, error) {
-	p := path
-	if p == "/" {
-		p = *rootDir
+	if path == "/" {
+		path = *rootDir
 	}
-	p = filepath.Clean(p)
 
-	if !strings.HasPrefix(p, *rootDir) {
-		return "", fmt.Errorf("无权访问%s", p)
+	if runtime.GOOS == "windows" && strings.HasPrefix(path, "/"+*rootDir) {
+		fmt.Printf("***p1.5=%s\n", path)
+		path = path[1:]
+		fmt.Printf("***p2=%s\n", path)
 	}
-	return p, nil
+
+	path = filepath.ToSlash(filepath.Clean(path))
+
+	if !strings.HasPrefix(path, *rootDir) {
+		return "", fmt.Errorf("无权访问%s", path)
+	}
+	return path, nil
 }
 
 func errFatal(err error) {
@@ -292,11 +317,13 @@ const (
 	HTML_DIR = `<!doctype html>
 <html lang="zh">
 <head>
+    {{ $data := . -}}
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <style type="text/css">
+	<title>WEB文件管理</title>
+	<style type="text/css">
         form{
             background-color: #EEEEEE;
             position: relative;
@@ -319,10 +346,8 @@ const (
         #文件表格 td:nth-child(even){text-align: right;}
         #文件表格 td>a{text-decoration:none; }
     </style>
-    <title>WEB文件管理</title>
 </head>
 <body>
-{{ $data := . -}}
 <header>
     <form enctype="multipart/form-data" action="{{$data.Path}}" method="POST">
         <abbr title="可以按Ctrl键选择多个文件">
@@ -333,7 +358,7 @@ const (
     <br />
     <a href="/"><b>&#8634; 返回web根目录</b></a><br />
     <a href="{{dirName $data.Path}}"><b>&#8634; 返回上层目录</b></a>
-    <div style="color: #104E8B"><span style="font-weight: bold">当前目录:</span> {{$data.Path}}/</div>
+    <div style="color: #104E8B"><span style="font-weight: bold">当前目录:</span> {{$data.Path}}</div>
 </header>
 
 <article>
