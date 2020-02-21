@@ -12,6 +12,7 @@ var staticInfo = static()
 var ReportInterval int
 
 func Reporter(addr string) {
+	log.Infof("报告间隔%d秒\n", ReportInterval)
 	i := 0
 	for {
 		i++

@@ -69,7 +69,7 @@ const (
         <input type="hidden"  name="mid" value="{{$data.MID}}" />
         <input type="text" name="timeout" value="30" />秒执行超时<br/>
         <input type="checkbox" name="inShell" value="true" checked/>在shell中执行<br/>
-        <textarea  rows="5" cols="100" name="cmd" placeholder='非shell环境执行需要用"..."分隔命令参数'></textarea> <br />
+        <textarea  rows="5" cols="100" name="cmd" placeholder='这里输入命令,linux支持多行'></textarea> <br />
         <input type="submit" value="执行" />
         <br />
     </form>

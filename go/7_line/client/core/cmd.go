@@ -46,5 +46,3 @@ func handleCMD(pong *grpcchannel.Pong, cc grpcchannel.ChannelClient) {
 		return
 	}
 }
-
-

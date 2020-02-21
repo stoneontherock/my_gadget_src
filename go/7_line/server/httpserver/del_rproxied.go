@@ -20,5 +20,5 @@ func del_rproxied(c *gin.Context) {
 
 	closeConnection(di.Label, di.MID)
 
-	c.Redirect(303, "./list_rproxied?mid="+di.MID)
+	c.Redirect(303, "./rpxy?mid="+di.MID)
 }

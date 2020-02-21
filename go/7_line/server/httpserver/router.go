@@ -1,9 +1,9 @@
 package httpserver
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"github.com/sirupsen/logrus"
 	"line/server/panicerr"
 	"net"
 	"time"
@@ -67,13 +67,13 @@ func auth(c *gin.Context) {
 
 	ses, err := c.Cookie("S")
 	if err != nil {
-		fmt.Printf("cookie获取失败\n")
+		logrus.Error("cookie获取失败")
 		return
 	}
 
 	name, expire, err := unmarshalCookieValue(ses)
 	if err != nil || expire < time.Now().Unix() || name != "管理员" {
-		fmt.Printf("过期,用户名不对或错误,err=%v\n", err)
+		logrus.Errorf("过期,用户名不对或错误,err=%v", err)
 		return
 	}
 

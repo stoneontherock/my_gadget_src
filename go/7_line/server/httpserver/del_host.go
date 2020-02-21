@@ -24,18 +24,25 @@ func delHost(c *gin.Context) {
 	}
 
 	ci := model.ClientInfo{ID: dhi.MID}
-	err = db.DB.Delete(&ci).Error
+	err = db.DB.First(&ci).Error
 	if err != nil {
-		respJSAlert(c, 400, "db.Find.Count:"+err.Error())
+		respJSAlert(c, 400, "db.First:"+err.Error())
+		return
+	}
+
+	err = db.DB.Delete(&model.ClientInfo{ID: dhi.MID}).Error
+	if err != nil {
+		respJSAlert(c, 400, "db.Delete:"+err.Error())
 		return
 	}
 
 	closeConnection("", dhi.MID)
-	if ci.Pickup > 0 {
+
+	if ci.Pickup > 1 {
 		pongC, ok := model.PongM[dhi.MID]
 		if ok {
 			pongC <- grpcchannel.Pong{Action: "fin"}
-			time.Sleep(time.Millisecond * 10)
+			time.Sleep(time.Millisecond * 10) //休息多久？
 			delete(model.PongM, dhi.MID)
 		}
 	}

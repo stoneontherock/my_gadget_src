@@ -82,7 +82,7 @@ func closeConnection(label, mid string) {
 				v.Close()
 			case string:
 				go func() {
-					time.Sleep(time.Second * 10)
+					//time.Sleep(time.Second * 1) //todo 延迟多久？
 					logrus.Debugf("closeConnection:发送关闭连接命令到客户端: addr2=%s ", v)
 					model.PongM[mid] <- grpcchannel.Pong{Action: "closeConnections", Data: []byte(v)}
 					//logrus.Debugf("closeConnection:发送关闭连接命令到客户端: addr2=%s  [done]", v)

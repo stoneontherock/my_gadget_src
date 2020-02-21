@@ -64,7 +64,7 @@ func handleRPxy(pong *grpcchannel.Pong, cc grpcchannel.ChannelClient, fsAddr3 st
 func bridge(addr3, port2 string) {
 	conn3, err := net.Dial("tcp", addr3)
 	if err != nil {
-		log.Errorf("连接近端失败,addr3:%s\n" ,addr3)
+		log.Errorf("连接近端失败,addr3:%s\n", addr3)
 		return
 	}
 	log.Infof("近端连接已经建立:%s\n", conn3.LocalAddr())
@@ -80,7 +80,7 @@ func genRconn(port2 string, cnt int) {
 	for i := 0; i < cnt; i++ {
 		conn2, err := net.Dial("tcp", addr2)
 		if err != nil {
-			log.Errorf("连接远端失败,addr2:%s\n",addr2)
+			log.Errorf("连接远端失败,addr2:%s\n", addr2)
 			return
 		}
 		log.Infof("远端连接已经建立:%s->%s conn2=%p\n", conn2.LocalAddr(), conn2.RemoteAddr(), conn2)

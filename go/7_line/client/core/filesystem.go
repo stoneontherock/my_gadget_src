@@ -14,6 +14,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"sort"
 	"strconv"
@@ -28,6 +29,7 @@ type fsServer struct {
 
 var filesystemServer fsServer
 var winDiskIndex = 0
+var winSlash string
 
 func handleFilesystem(pong *grpcchannel.Pong, cc grpcchannel.ChannelClient) {
 	var arg grpcchannel.RPxyResp
@@ -53,13 +55,20 @@ var errTemplate *template.Template
 var dirTemplate *template.Template
 
 func init() {
+	if runtime.GOOS == "windows" {
+		winSlash = "/"
+	}
+
 	var err error
 	errTemplate, err = template.New("errTemp").Parse(HTML_ERR)
 	errFatal(err)
 
 	dirNameFunc := func(path string) string {
-		path = strings.TrimRight(path, "/")
-		return filepath.Dir(path)
+		path = filepath.ToSlash(filepath.Dir(strings.TrimRight(path, "/")))
+		if strings.HasSuffix(path, "/") {
+			return path
+		}
+		return path + "/"
 	}
 
 	dirTemplate, err = template.New("dirTemp").Funcs(template.FuncMap{"dirName": dirNameFunc}).Parse(HTML_DIR)
@@ -67,6 +76,14 @@ func init() {
 }
 
 func serveFilesystem(addr, rootDir string) {
+	if runtime.GOOS == "windows" {
+		ok, err := regexp.MatchString(`^[a-zA-Z]:$`, rootDir)
+		if err == nil && ok {
+			rootDir = rootDir + `/`
+		}
+	}
+	rootDir = filepath.ToSlash(rootDir)
+
 	m := http.NewServeMux()
 	m.Handle("/", http.HandlerFunc(fs(rootDir)))
 	m.Handle("/favicon.ico", http.HandlerFunc(func(wr http.ResponseWriter, req *http.Request) { wr.Write(favicon) }))
@@ -92,6 +109,8 @@ func serveFilesystem(addr, rootDir string) {
 
 func fs(rootDir string) func(wr http.ResponseWriter, req *http.Request) {
 	return func(wr http.ResponseWriter, req *http.Request) {
+		wr.Header().Set("Cache-Control", "no-store")
+
 		path, err := getPath(req.URL.Path, rootDir)
 		if err != nil {
 			renderHTMLErr(wr, err.Error())
@@ -281,7 +300,7 @@ func renderHTMLDir(wr io.Writer, path string, fis []os.FileInfo) {
 
 	var fl fsList
 	fl.Home = homeURL
-	fl.Path = path
+	fl.Path = winSlash + filepath.ToSlash(path)
 	if fl.Path == "/" {
 		fl.Path = "." //修复根目录作为web root时url不可用的bug
 	}
@@ -296,16 +315,20 @@ func renderHTMLDir(wr io.Writer, path string, fis []os.FileInfo) {
 }
 
 func getPath(urlPath, rootDir string) (string, error) {
-	p := urlPath
-	if p == "/" {
-		p = rootDir
+	if urlPath == "/" {
+		urlPath = rootDir
 	}
-	p = filepath.Clean(p)
 
-	//if !strings.HasPrefix(p, rootDir) {
-	//	return "", fmt.Errorf("无权访问%s", p)
-	//}
-	return p, nil
+	if runtime.GOOS == "windows" && strings.HasPrefix(urlPath, "/"+rootDir) {
+		urlPath = urlPath[1:]
+	}
+
+	urlPath = filepath.ToSlash(filepath.Clean(urlPath))
+
+	if !strings.HasPrefix(urlPath, rootDir) {
+		return "", fmt.Errorf("无权访问%s", urlPath)
+	}
+	return urlPath, nil
 }
 
 func errFatal(err error) {
@@ -318,12 +341,12 @@ const (
 	HTML_ERR = `<!doctype html>
 <html lang="zh">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <meta http-equiv="Refresh" content="3; url=/">
-  <title>Web文件管理</title>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta http-equiv="Refresh" content="3; url=/">
+    <title>Web文件管理</title>
 </head>
 <body>
 <strong>{{.}}</strong>
@@ -336,39 +359,40 @@ const (
 	HTML_DIR = `<!doctype html>
 <html lang="zh">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <style type="text/css">
-      form{
-          background-color: #EEEEEE;
-          position: relative;
-          border: 1px solid gray;
-          border-radius: 0.2em;
-          width:332px;
-      }
-      #上传按钮{
-          position: absolute;
-          float: right;
-      }
-      #文件表格{
-          width: 100%;
-          border-collapse: collapse;
-      }
-      #文件表格 tr:nth-child(even){
-          background-color: #EEE;
-      }
-      #文件表格 td:nth-child(odd){text-align: left;}
-      #文件表格 td:nth-child(even){text-align: right;}
-      #文件表格 td>a{text-decoration:none; }
-  </style>
-  <title>WEB文件管理</title>
+    {{ $data := . -}}
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>WEB文件管理</title>
+	<style type="text/css">
+        form{
+            background-color: #EEEEEE;
+            position: relative;
+            border: 1px solid gray;
+            border-radius: 0.2em;
+            width:332px;
+        }
+        #上传按钮{
+            position: absolute;
+            float: right;
+        }
+        #文件表格{
+            width: 100%;
+            border-collapse: collapse;
+        }
+        #文件表格 tr:nth-child(even){
+            background-color: #EEE;
+        }
+        #文件表格 td:nth-child(odd){text-align: left;}
+        #文件表格 td:nth-child(even){text-align: right;}
+        #文件表格 td>a{text-decoration:none; }
+    </style>
 </head>
 <body>
 {{ $data := . -}}
 <header>
-  <form enctype="multipart/form-data" action="{{$data.Path}}" method="GET">
+    <form enctype="multipart/form-data" action="{{$data.Path}}" method="POST">
       <abbr title="可以按Ctrl键选择多个文件">
           <input type="file" multiple name="uploadFiles" required>
           <input id="上传按钮" type="submit" value="批量上传文件">
@@ -378,29 +402,29 @@ const (
   <a href="{{$data.Home}}"><b>&#8634; 返回主机管理界面</b></a><br />
   <a href="/"><b>&#8634; 返回web根目录</b></a><br />
   <a href="{{dirName $data.Path}}"><b>&#8634; 返回上层目录</b></a>
-  <div style="color: #104E8B"><span style="font-weight: bold">当前目录:</span> {{$data.Path}}/</div>
+  <div style="color: #104E8B"><span style="font-weight: bold">当前目录:</span> {{$data.Path}}</div>
 </header>
 
 <article>
-  <hr>
-  <table id="文件表格">
-      <thead style="background-color: #EEEEFF;"><th style="text-align:left;">目录名/文件名</th><th style="text-align:right">大小</th></thead>
-      <tbody>
-      {{- range $index,$dir := $data.Dirs -}}
-          <tr>
-              <td class="col1"><a href="{{$data.Path}}/{{$dir.Name}}/"  title="点击打开目录">&bull; {{$dir.Name}}/</a></td>
-              <td class="col2">{{$dir.Size}}</td>
-          </tr>
-      {{end}}
-      {{- range $index,$file := $data.Files -}}
-          <tr>
-              <td class="col1"><a href="{{$data.Path}}/{{$file.Name}}" title="下载纯文本文件: 右键->链接另存为">&bull; {{$file.Name}}</a></td>
-              <td class="col2">{{$file.Size}}</td>
-          </tr>
-      {{end}}
-      </tbody>
-  </table>
-  <hr>
+    <hr>
+    <table id="文件表格">
+        <thead style="background-color: #EEEEFF;"><th style="text-align:left;">目录名/文件名</th><th style="text-align:right">大小</th></thead>
+        <tbody>
+        {{- range $index,$dir := $data.Dirs -}}
+            <tr>
+                <td class="col1"><a href="{{$data.Path}}/{{$dir.Name}}/"  title="点击打开目录">&bull; {{$dir.Name}}/</a></td>
+                <td class="col2">{{$dir.Size}}</td>
+            </tr>
+        {{end}}
+        {{- range $index,$file := $data.Files -}}
+            <tr>
+                <td class="col1"><a href="{{$data.Path}}/{{$file.Name}}" title="下载纯文本文件: 右键->链接另存为">&bull; {{$file.Name}}</a></td>
+                <td class="col2">{{$file.Size}}</td>
+            </tr>
+        {{end}}
+        </tbody>
+    </table>
+    <hr>
 </article>
 </body>
 </html>

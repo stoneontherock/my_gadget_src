@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"line/client/log"
 	"os/exec"
+	"strings"
 	"syscall"
 	"time"
 	"unicode/utf8"
@@ -16,6 +17,9 @@ import (
 // Run 带timeout执行系统命令，超时就杀死子进程
 func Run(tmout int, strs ...string) (int, string, string) {
 	//log.Infof("=== del === cmd:+%v len=%d\n", cmd, len(cmd))
+	for i, str := range strs {
+		strs[i] = strings.Replace(str, "\r\n", "\n", -1)
+	}
 
 	var c *exec.Cmd
 
