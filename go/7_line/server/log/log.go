@@ -3,14 +3,12 @@ package log
 import (
 	"github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
+	"line/server"
 	"line/server/panicerr"
 	"log"
 	"os"
 	"path/filepath"
 )
-
-var Debug string
-var BinDir string
 
 func InitLog() {
 	fmtr := new(logrus.TextFormatter)
@@ -20,10 +18,8 @@ func InitLog() {
 	fmtr.DisableColors = true                   // 禁止颜色显示
 
 	var err error
-	BinDir, err = filepath.Abs(filepath.Dir(os.Args[0]))
-	panicerr.Handle(err, "获取可执行文件所在路径的绝对路径失败")
 
-	dir := BinDir + "/log"
+	dir := server.BinDir + "/log"
 	err = os.MkdirAll(dir, 0700)
 	panicerr.Handle(err, "创建日志目录失败")
 
@@ -40,11 +36,10 @@ func InitLog() {
 		Compress:   true,
 	}
 
-	if Debug == "on" {
-		logrus.SetOutput(os.Stdout)
-		logrus.SetLevel(logrus.Level(5 - 0)) // debug
+	logrus.SetOutput(jack)
+	if server.Debug == "on" {
+		logrus.SetLevel(logrus.Level(5 - 0)) //debug
 	} else {
-		logrus.SetOutput(jack)
 		logrus.SetLevel(logrus.Level(5 - 1)) //info
 	}
 

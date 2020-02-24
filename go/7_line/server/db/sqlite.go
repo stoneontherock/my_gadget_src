@@ -3,7 +3,7 @@ package db
 import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
-	"line/server/log"
+	"line/server"
 	"line/server/model"
 	"line/server/panicerr"
 	oslog "log"
@@ -14,7 +14,7 @@ var DB *gorm.DB
 
 func InitSQLite() {
 	var err error
-	DB, err = gorm.Open("sqlite3", log.BinDir+"/data.sqlite3")
+	DB, err = gorm.Open("sqlite3", server.BinDir+"/data.sqlite3")
 	//defer DB.Close()
 
 	DB.AutoMigrate(&model.ClientInfo{})

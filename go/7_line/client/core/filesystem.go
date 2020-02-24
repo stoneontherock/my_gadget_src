@@ -246,8 +246,7 @@ func uploadFiles(wr http.ResponseWriter, req *http.Request, path string) {
 	var speed = totalMB / dur
 	log.Infof("平均速率:%.2f MB/s, 耗时%.2fs, 总大小%.2f MB  %d\n", speed, dur, totalMB, time.Now().Sub(begin))
 
-	fmt.Fprintf(wr, "<h1>平均速率: %.2fMB/s,  耗时:%.2fs,  总大小: %.2fMB,  上传失败:%d, 成功:%d, </h1> <p>%s</p> <script language='javascript' type='text/javascript'> setTimeout(\"javascript:location.href='%s'\", %d000); </script>",
-		speed, dur, totalMB, uplFail, upSucc, rename, path, 3+len(strings.Split(rename, "<br />")))
+	fmt.Fprintf(wr, UPLOAD_STATISTIC, "/"+path, 3+len(strings.Split(rename, "<br />")), speed, dur, totalMB, uplFail, upSucc, rename)
 }
 
 func clientIP(remoteAddr string) string {
@@ -352,6 +351,21 @@ const (
 <strong>{{.}}</strong>
 <br />
 <p>正在跳转到根目录...</p>
+</body>
+</html>
+`
+
+	UPLOAD_STATISTIC = `
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body onload="setTimeout(&quot;location.href='%s'&quot;, %d000);">
+    <h1>平均速率: %.2fMB/s,  耗时:%.2fs,  总大小: %.2fMB,  上传失败:%d, 成功:%d, </h1> <p>%s</p>
 </body>
 </html>
 `

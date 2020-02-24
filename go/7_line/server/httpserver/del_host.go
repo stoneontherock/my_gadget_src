@@ -14,7 +14,7 @@ type delHostIn struct {
 	MID string `form:"mid" binding:"required"`
 }
 
-//todo 还有很多需要删，待写
+//todo 还有很多需要删，待写, 已经勾住的主机删除后，没有收到fin
 func delHost(c *gin.Context) {
 	var dhi delHostIn
 	err := c.ShouldBindWith(&dhi, binding.Form)
@@ -41,9 +41,12 @@ func delHost(c *gin.Context) {
 	if ci.Pickup > 1 {
 		pongC, ok := model.PongM[dhi.MID]
 		if ok {
-			pongC <- grpcchannel.Pong{Action: "fin"}
-			time.Sleep(time.Millisecond * 10) //休息多久？
-			delete(model.PongM, dhi.MID)
+			func() {
+				//time.Sleep(time.Millisecond * 10)
+				pongC <- grpcchannel.Pong{Action: "fin"}
+				time.Sleep(time.Millisecond * 10) //休息多久？
+				delete(model.PongM, dhi.MID)
+			}()
 		}
 	}
 

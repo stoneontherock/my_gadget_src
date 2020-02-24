@@ -31,7 +31,7 @@ func reportDo(conn *grpc.ClientConn) {
 	defer conn.Close()
 	cc := grpcchannel.NewChannelClient(conn) //2.新建一个客户端stub来执行rpc方法
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*60)
 	defer cancel()
 
 	stream, err := cc.Report(ctx, &grpcchannel.Ping{Mid: staticInfo.MachineID, Hostname: staticInfo.Hostname, Os: staticInfo.OS, Interval: int32(ReportInterval)})

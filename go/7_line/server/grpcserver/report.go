@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+//todo 1-pickup 2-stop client 3-start client 4-del host 然后client就卡住了
 func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_ReportServer) error {
 	wanIP := getClientIPAddr(stream.Context())
 
@@ -34,7 +35,7 @@ func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_R
 	}
 
 	if ci.Pickup <= 0 {
-		logrus.Debugf("Report:丢弃")
+		logrus.Debugf("Report:丢弃%s", ping.Mid)
 		sendFin(stream)
 		return nil
 	}
@@ -54,7 +55,7 @@ func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_R
 	for {
 		select {
 		case <-tk.C:
-			logrus.Infof("Report:超时,pickup->-1")
+			logrus.Infof("Report: %s超时,pickup->-1", ping.Mid)
 			sendFin(stream)
 			return nil
 		case pong, ok := <-pongC:
@@ -70,29 +71,16 @@ func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_R
 				logrus.Warnf("Report:stream.Send:%v", err)
 				return nil
 			}
-			logrus.Debugf("Report:创建响应chan...")
-			createRespChan(pong.Action, ping.Mid)
+
+			if pong.Action == "cmd" {
+				logrus.Debugf("Report:创建响应chan...")
+				if _, ok := model.CmdOutM[ping.Mid]; !ok {
+					model.CmdOutM[ping.Mid] = make(chan grpcchannel.CmdOutput)
+					logrus.Debugf("Report:创建响应chan...done")
+				}
+			}
 		}
 	}
-}
-
-func createRespChan(typ, mid string) {
-	switch typ {
-	case "cmd": //cmd需要反馈到前端，所以需要创建map
-		if _, ok := model.CmdOutM[mid]; !ok {
-			model.CmdOutM[mid] = make(chan grpcchannel.CmdOutput)
-		}
-		//case "list_file":
-		//	if _,ok := model.ListFileM[mid]; !ok {
-		//		model.ListFileM[mid] = make(chan *grpcchannel.FileList)
-		//	}
-		//case "file_up":
-		//	if _,ok := model.FileUpDataM[mid]; !ok {
-		//		model.FileUpDataM[mid] = make(chan []byte)
-		//	}
-	}
-
-	logrus.Debugf("Report:创建响应chan done")
 }
 
 func ChangePickup(mid string, pickup int) error {
