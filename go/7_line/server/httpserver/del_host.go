@@ -36,7 +36,7 @@ func delHost(c *gin.Context) {
 		return
 	}
 
-	closeConnection("", dhi.MID)
+	model.CloseConnection("", dhi.MID)
 
 	if ci.Pickup > 1 {
 		pongC, ok := model.PongM[dhi.MID]

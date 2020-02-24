@@ -4,6 +4,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 	"line/grpcchannel"
+	"line/server"
 	"line/server/db"
 	"line/server/model"
 	"time"
@@ -16,13 +17,22 @@ func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_R
 	ci := model.ClientInfo{ID: ping.Mid}
 	err := db.DB.First(&ci).Error
 	if err != nil {
-		if err != gorm.ErrRecordNotFound {
-			logrus.Errorf("Report:First:%v\n", err)
-			return err
-		}
-		err := db.DB.Create(&model.ClientInfo{ID: ping.Mid, WanIP: wanIP, Hostname: ping.Hostname, OS: ping.Os, Interval: ping.Interval}).Error
-		if err != nil {
-			logrus.Errorf("Report:Create:%v\n", err)
+		if gorm.IsRecordNotFoundError(err) {
+			err := db.DB.Create(&model.ClientInfo{
+				ID:       ping.Mid,
+				WanIP:    wanIP,
+				Hostname: ping.Hostname,
+				OS:       ping.Os,
+				Interval: ping.Interval,
+				StartAt:  ping.StartAt,
+			}).Error
+			if err != nil {
+				logrus.Errorf("Report:Create:%v", err)
+				return err
+			}
+		} else {
+			logrus.Errorf("Report:First:%v", err)
+			sendFin(stream)
 			return err
 		}
 	}
@@ -40,6 +50,22 @@ func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_R
 		return nil
 	}
 
+	if ci.Pickup >= 1 && ci.StartAt != ping.StartAt {
+		err := db.DB.Delete(&model.ClientInfo{ID: ping.Mid}).Error
+		if err != nil {
+			logrus.Errorf("Report:更新会话ID:%v", err)
+			return err
+		}
+
+		if ci.Pickup == 2 {
+			pongC <- grpcchannel.Pong{Action: "fin"} //这里的sendFin是为了关闭已经失效的stream
+			model.CloseConnection("", ping.Mid)
+		}
+
+		sendFin(stream) //关闭当前的连接
+		return nil
+	}
+
 	if ci.Pickup == 1 {
 		err := ChangePickup(ping.Mid, 2)
 		if err != nil {
@@ -50,7 +76,7 @@ func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_R
 
 	logrus.Debugf("ci:%+v", ci)
 
-	tk := time.NewTicker(time.Second * 600)
+	tk := time.NewTicker(time.Second * server.GRPCPongTimeout)
 	defer tk.Stop()
 	for {
 		select {
@@ -86,7 +112,7 @@ func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_R
 func ChangePickup(mid string, pickup int) error {
 	err := db.DB.Model(&model.ClientInfo{ID: mid}).Update("pickup", pickup).Error
 	if err != nil {
-		logrus.Errorf("Report:Update:%v", err)
+		logrus.Errorf("Report:更新Pickup值:%v", err)
 		return err
 	}
 

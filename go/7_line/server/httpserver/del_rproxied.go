@@ -3,6 +3,7 @@ package httpserver
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"line/server/model"
 )
 
 type delRpxyIn struct {
@@ -18,7 +19,7 @@ func del_rproxied(c *gin.Context) {
 		return
 	}
 
-	closeConnection(di.Label, di.MID)
+	model.CloseConnection(di.Label, di.MID)
 
 	c.Redirect(303, "./rpxy?mid="+di.MID)
 }

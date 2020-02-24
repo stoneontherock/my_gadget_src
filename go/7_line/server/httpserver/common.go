@@ -3,10 +3,8 @@ package httpserver
 import (
 	"encoding/binary"
 	"errors"
-	"github.com/sirupsen/logrus"
-	"line/grpcchannel"
+	"line/server/db"
 	"line/server/model"
-	"net"
 	"strconv"
 	"strings"
 	"time"
@@ -64,37 +62,16 @@ func unmarshalCookieValue(value string) (string, int64, error) {
 	return string(buf[:len(buf)-trimRight]), int64(unixTime / 13), nil
 }
 
-//label传空字符串表示关闭对应mid的所有连接
-func closeConnection(label, mid string) {
-	//logrus.Debugf("***** label=%s RPxyLisAndConnM[%s]=%v", label, mid, model.RPxyConnResM[mid])
-	for key, ifaces := range model.RPxyConnResM[mid] {
-		if label != "" && label != key {
-			continue
-		}
-
-		for _, ifc := range ifaces {
-			switch v := ifc.(type) {
-			case *net.TCPConn:
-				logrus.Debugf("closeConnection:关闭TCPconn, 内存地址:%p, 远端:%s, 近端:%s", v, v.RemoteAddr(), v.LocalAddr())
-				v.Close()
-			case *net.TCPListener:
-				logrus.Debugf("closeConnection:关闭TCPListener, 内存地址:%p, 监听地址:%s", v, v.Addr())
-				v.Close()
-			case string:
-				go func() {
-					//time.Sleep(time.Second * 1) //todo 延迟多久？
-					logrus.Debugf("closeConnection:发送关闭连接命令到客户端: addr2=%s ", v)
-					model.PongM[mid] <- grpcchannel.Pong{Action: "closeConnections", Data: []byte(v)}
-					//logrus.Debugf("closeConnection:发送关闭连接命令到客户端: addr2=%s  [done]", v)
-				}()
-			default:
-				logrus.Errorf("closeConnection:不支持的类型：%v", v)
-			}
-		}
-
-		delete(model.RPxyConnResM[mid], key)
-		if len(model.RPxyConnResM[mid]) == 0 {
-			delete(model.RPxyConnResM, mid)
-		}
+func isHostPickedUp(mid string) bool {
+	ci := model.ClientInfo{ID: mid}
+	err := db.DB.First(&ci).Error
+	if err != nil {
+		return false //包含没找到记录的情况
 	}
+
+	if ci.Pickup == 2 {
+		return true
+	}
+
+	return false
 }

@@ -32,6 +32,11 @@ func command(c *gin.Context) {
 		return
 	}
 
+	if !isHostPickedUp(ci.MID) {
+		respJSAlert(c, 500, "主机未勾住")
+		return
+	}
+
 	if ci.Cmd == "" {
 		cmdOutTmpl.Execute(c.Writer, &cmdOutHTTPResp{MID: ci.MID})
 		return

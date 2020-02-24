@@ -7,7 +7,7 @@ type ClientInfo struct {
 	OS       string `gorm:"varchar(32)"`
 	Pickup   int8   // -1被标记为非活动 1表示申请捡起,2表示已经捡起
 	Interval int32
-	//	CreateAt int64
+	StartAt  int32
 	//UpdateAt int64
 }
 

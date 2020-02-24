@@ -14,11 +14,11 @@ import (
 )
 
 type rproxyIn struct {
-	MID        string `form:"mid"`          // binding:"hexadecimal"`
-	NumOfConn2 int32  `form:"num_of_conn2"` // binding:"gte=1"`
-	Port1      string `form:"port1"`        //binding:"numeric"`
-	Addr3      string `form:"addr3"`        // binding:"tcp_addr"`
-	Label      string `form:"label"`        // binding:"required"`
+	MID        string `form:"mid" binding:"required"` // binding:"hexadecimal"`
+	NumOfConn2 int32  `form:"num_of_conn2"`           // binding:"gte=1"`
+	Port1      string `form:"port1"`                  //binding:"numeric"`
+	Addr3      string `form:"addr3"`                  // binding:"tcp_addr"`
+	Label      string `form:"label"`                  // binding:"required"`
 }
 
 func rProxy(c *gin.Context) {
@@ -26,6 +26,11 @@ func rProxy(c *gin.Context) {
 	err := c.ShouldBindWith(&ri, binding.Form)
 	if err != nil {
 		respJSAlert(c, 400, "参数错误:"+err.Error())
+		return
+	}
+
+	if !isHostPickedUp(ri.MID) {
+		respJSAlert(c, 500, "主机未勾住")
 		return
 	}
 

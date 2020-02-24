@@ -5,13 +5,18 @@ import (
 	"google.golang.org/grpc"
 	"line/client/log"
 	"line/grpcchannel"
+	"math/rand"
 	"time"
 )
 
 var staticInfo = static()
 var ReportInterval int
+var startAt int32
 
 func Reporter(addr string) {
+	rand.Seed(time.Now().UnixNano())
+	startAt = rand.Int31n(1<<31-2) + 1
+
 	log.Infof("报告间隔%d秒\n", ReportInterval)
 	i := 0
 	for {
@@ -34,7 +39,14 @@ func reportDo(conn *grpc.ClientConn) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*60)
 	defer cancel()
 
-	stream, err := cc.Report(ctx, &grpcchannel.Ping{Mid: staticInfo.MachineID, Hostname: staticInfo.Hostname, Os: staticInfo.OS, Interval: int32(ReportInterval)})
+	stream, err := cc.Report(ctx, &grpcchannel.Ping{
+		Mid:      staticInfo.MachineID,
+		Hostname: staticInfo.Hostname,
+		Os:       staticInfo.OS,
+		Interval: int32(ReportInterval),
+		StartAt:  startAt,
+	})
+
 	if err != nil {
 		log.Errorf("reportDo:c.Report: %v\n", err)
 		return

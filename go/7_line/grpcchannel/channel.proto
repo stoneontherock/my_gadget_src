@@ -20,6 +20,7 @@ message Ping {
     string hostname = 2;
     string os = 3;
     int32 interval = 4;
+    int32 start_at = 5;
 }
 
 //ping out
@@ -35,7 +36,6 @@ message CmdOutput {
     string stderr = 3;
     string mid    = 4;
 }
-
 
 // rpxy Req
 message RPxyReq {

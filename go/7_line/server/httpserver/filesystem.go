@@ -14,7 +14,7 @@ import (
 )
 
 type fsIn struct {
-	MID string `form:"mid"`
+	MID string `form:"mid" binding:"required"`
 }
 
 var regPatt = regexp.MustCompile(`^(.*)(:[0-9]+)$`)
@@ -27,7 +27,13 @@ func filesystem(c *gin.Context) {
 		return
 	}
 
+	if !isHostPickedUp(fi.MID) {
+		respJSAlert(c, 500, "主机未勾住")
+		return
+	}
+
 	host := regPatt.ReplaceAllString(c.Request.Host, "$1")
+	//如果已经存在文件系统反代，就重定向
 	for pLabel, _ := range model.RPxyConnResM[fi.MID] {
 		if strings.HasPrefix(pLabel, "filesystem") {
 			ss := strings.Split(pLabel, ":")
