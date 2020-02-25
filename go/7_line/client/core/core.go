@@ -5,18 +5,14 @@ import (
 	"google.golang.org/grpc"
 	"line/client/log"
 	"line/grpcchannel"
-	"math/rand"
 	"time"
 )
 
 var staticInfo = static()
 var ReportInterval int
-var startAt int32
+var startAt = int32(time.Now().Unix())
 
 func Reporter(addr string) {
-	rand.Seed(time.Now().UnixNano())
-	startAt = rand.Int31n(1<<31-2) + 1
-
 	log.Infof("报告间隔%d秒\n", ReportInterval)
 	i := 0
 	for {
@@ -36,7 +32,7 @@ func reportDo(conn *grpc.ClientConn) {
 	defer conn.Close()
 	cc := grpcchannel.NewChannelClient(conn) //2.新建一个客户端stub来执行rpc方法
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*60)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	stream, err := cc.Report(ctx, &grpcchannel.Ping{

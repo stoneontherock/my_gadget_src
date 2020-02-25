@@ -15,13 +15,13 @@ func pickup(c *gin.Context) {
 	var pi pickupIn
 	err := c.ShouldBindWith(&pi, binding.Form)
 	if err != nil {
-		c.JSON(400, gin.H{"msg": "参数错误:" + err.Error()})
+		respJSAlert(c, 500, err.Error())
 		return
 	}
 
 	err = grpcserver.ChangePickup(pi.MID, pi.Pickup)
 	if err != nil {
-		c.JSON(500, gin.H{"msg": "Update失败:" + err.Error()})
+		respJSAlert(c, 500, err.Error())
 		return
 	}
 

@@ -32,7 +32,7 @@ func init() {
 	var tmout = "1200"
 	getEnv(&tmout, "LINE_GRPC_PONG_TIMEOUT")
 	i, _ := strconv.Atoi(tmout)
-	if i >= 120 {
+	if i >= 60 {
 		GRPCPongTimeout = time.Duration(i)
 	}
 
@@ -40,11 +40,19 @@ func init() {
 	getEnv(&AdminPv, "LINE_HTTP_PASSWD")
 
 	getEnv(&HTTPListenAddr, "LINE_HTTP_LISTEN_ADDR")
+
+	fmt.Printf("Debug=%s  GRPCListenAddr=%s  GRPCPongTimeout=%d  HTTPListenAddr=%s  AdminName=%s Pv=%s",
+		Debug,
+		GRPCListenAddr,
+		GRPCPongTimeout,
+		HTTPListenAddr,
+		AdminName,
+		AdminPv)
 }
 
 func getEnv(value *string, envKey string) {
-	fmt.Printf("获取环境变量的值:%s, 对应默认值:%s\n", envKey, *value)
 	tmp := os.Getenv(envKey)
+	fmt.Printf("获取环境变量的值:%s=%s, 对应默认值:%s\n", envKey, tmp, *value)
 	if tmp == "" {
 		return
 	}

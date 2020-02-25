@@ -3,6 +3,7 @@ package httpserver
 import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"line/common"
 	"line/grpcchannel"
 	"line/server/model"
@@ -34,6 +35,7 @@ func filesystem(c *gin.Context) {
 
 	host := regPatt.ReplaceAllString(c.Request.Host, "$1")
 	//如果已经存在文件系统反代，就重定向
+	logrus.Debugf("RPxyConnResM[%s]=%+v", fi.MID, model.RPxyConnResM[fi.MID])
 	for pLabel, _ := range model.RPxyConnResM[fi.MID] {
 		if strings.HasPrefix(pLabel, "filesystem") {
 			ss := strings.Split(pLabel, ":")
