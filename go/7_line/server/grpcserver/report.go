@@ -59,7 +59,7 @@ func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_R
 	if ci.StartAt != ping.StartAt {
 		err := db.DB.Delete(&model.ClientInfo{ID: ping.Mid}).Error
 		if err != nil {
-			logrus.Errorf("Report:更新会话ID:%v", err)
+			logrus.Errorf("Report:删除:%v", err)
 		}
 
 		if ci.Pickup == 2 {
@@ -83,7 +83,8 @@ func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_R
 	for {
 		select {
 		case <-tk.C:
-			logrus.Infof("Report: %s超时,pickup->-1", ping.Mid)
+			logrus.Infof("Report: %s超时,发fin", ping.Mid)
+			//ChangePickup(ping.Mid,-1)
 			needFin = true
 			return nil
 		case pong, ok := <-pongC:

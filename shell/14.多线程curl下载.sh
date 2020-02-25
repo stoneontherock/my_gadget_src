@@ -6,9 +6,9 @@ function fn_down(){
 	fname="$3"
 	url="$4"
 	
-	echo "curl -L -o $fname/${fname}_$index -r $range $url"
+	echo "curl -L -o tmp_${fname}_$index -r $range $url"
 	ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.97 Safari/537.36"
-	curl -A "$ua" -L -o "$fname/${fname}_$index" -r $range "$url" >/dev/null 2>&1
+	curl -A "$ua" -L -o "tmp_${fname}_$index" -r $range "$url" >/dev/null 2>&1
 }
 
 function fn_main(){
@@ -61,9 +61,8 @@ function fn_main(){
 		return 4
 	fi
 
-	cd "$fname"	
-	cat "$fname"_* >"$fname"
-	rm "$fname"_*
+	cat "tmp_$fname"_* >"$fname"
+	rm "tmp_$fname"_*
 }
 
 fn_main "$1"
