@@ -93,7 +93,9 @@ func genRconn(port2 string, cnt int) {
 func handleCloseConnections(pong *grpcchannel.Pong) {
 	port2 := string(pong.Data)
 	if filesystemServer.port2 == port2 {
-		filesystemServer.server.Close()
+		if filesystemServer.server != nil {
+			filesystemServer.server.Shutdown(context.TODO())
+		}
 		filesystemServer.server = nil
 		filesystemServer.port2 = ""
 	}
