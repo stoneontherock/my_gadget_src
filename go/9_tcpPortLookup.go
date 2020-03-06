@@ -5,6 +5,7 @@ import (
 	"flag"
 	"log"
 	"net"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -42,27 +43,33 @@ func main() {
 	wg.Add(portMax - portMin + 1)
 	for i := portMin; i <= portMax; i++ {
 		maxRoutineCh <- struct{}{}
-		go func() {
-			err := scanner(*ip, i, time.Duration(*tmout)*time.Millisecond)
-			if err != nil && *debug {
-				println(err.Error())
-			}
-			<-maxRoutineCh
-			wg.Done()
-		}()
+		go goroutineControl(i, maxRoutineCh, &wg)
 	}
 
 	wg.Wait()
 	println("----END----")
 }
 
+func goroutineControl(port int, limit <-chan struct{}, wg *sync.WaitGroup) {
+	err := scanner(*ip, port, time.Duration(*tmout)*time.Millisecond)
+	if err != nil && *debug {
+		errStr := err.Error()
+		if !strings.HasSuffix(errStr, "connection refused") {
+			println(err.Error())
+		}
+	}
+	<-limit
+	wg.Done()
+}
+
 func scanner(ip string, port int, tmout time.Duration) error {
-	conn, err := net.DialTimeout("tcp", ip+":"+strconv.Itoa(port), tmout)
+	p := strconv.Itoa(port)
+	conn, err := net.DialTimeout("tcp", ip+":"+p, tmout)
 	if err != nil {
 		return err
 	}
 
-	println(port)
+	os.Stdout.Write([]byte(p + "\n")) //避免重复打印
 	conn.Close()
 
 	return nil
