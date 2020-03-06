@@ -7,6 +7,7 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -14,7 +15,8 @@ var (
 	ip        = flag.String("a", "", "ip addr")
 	portRange = flag.String("p", "", "port range, example: 22-1024")
 	limit     = flag.Int("l", 20, "go routine limit")
-	tmout     = flag.Int("t", 3000, "tcp dial time out(ms)")
+	tmout     = flag.Int64("t", 3000, "tcp dial time out(ms)")
+	debug     = flag.Bool("d", false, "print dial error or not")
 )
 
 func main() {
@@ -36,26 +38,32 @@ func main() {
 	}
 
 	maxRoutineCh := make(chan struct{}, *limit)
+	wg := sync.WaitGroup{}
+	wg.Add(portMax - portMin + 1)
 	for i := portMin; i <= portMax; i++ {
-		go scanner(*ip, i, *tmout, maxRoutineCh)
+		maxRoutineCh <- struct{}{}
+		go func() {
+			err := scanner(*ip, i, time.Duration(*tmout)*time.Millisecond)
+			if err != nil && *debug {
+				println(err.Error())
+			}
+			<-maxRoutineCh
+			wg.Done()
+		}()
 	}
 
-	for range maxRoutineCh {
-		if len(maxRoutineCh) == 0 {
-			break
-		}
-	}
+	wg.Wait()
 	println("----END----")
 }
 
-func scanner(ip string, port, tmout int, limit chan<- struct{}) {
-	conn, err := net.DialTimeout("tcp", ip+":"+strconv.Itoa(port), time.Millisecond*time.Duration(tmout))
+func scanner(ip string, port int, tmout time.Duration) error {
+	conn, err := net.DialTimeout("tcp", ip+":"+strconv.Itoa(port), tmout)
 	if err != nil {
-		limit<- struct{}{}
-		return
+		return err
 	}
 
 	println(port)
 	conn.Close()
-	limit<- struct{}{}
+
+	return nil
 }
