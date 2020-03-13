@@ -85,8 +85,9 @@ func serveFilesystem(addr, rootDir string) {
 	rootDir = filepath.ToSlash(rootDir)
 
 	m := http.NewServeMux()
+	m.HandleFunc("/", func(wr http.ResponseWriter, req *http.Request) {})
 	m.Handle("/fs/", http.StripPrefix("/fs", http.HandlerFunc(fs(rootDir))))
-	m.Handle("/favicon.ico", http.HandlerFunc(func(wr http.ResponseWriter, req *http.Request) { wr.Write(favicon) }))
+	m.HandleFunc("/favicon.ico", func(wr http.ResponseWriter, req *http.Request) { wr.Write(favicon) })
 	filesystemServer.server = &http.Server{
 		Handler: m,
 		//go 1.11的http.Server没有BaseContext字段
