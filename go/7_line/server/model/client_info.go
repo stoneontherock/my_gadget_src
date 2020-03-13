@@ -1,7 +1,7 @@
 package model
 
 type ClientInfo struct {
-	ID       string `gorm:"varchar(36)"`
+	ID       string `gorm:"varchar(37)"`
 	WanIP    string `gorm:"varchar(46)"`
 	Hostname string `gorm:"varchar(64)"`
 	OS       string `gorm:"varchar(32)"`

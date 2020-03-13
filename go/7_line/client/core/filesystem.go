@@ -85,7 +85,7 @@ func serveFilesystem(addr, rootDir string) {
 	rootDir = filepath.ToSlash(rootDir)
 
 	m := http.NewServeMux()
-	m.Handle("/", http.HandlerFunc(fs(rootDir)))
+	m.Handle("/fs/", http.StripPrefix("/fs", http.HandlerFunc(fs(rootDir))))
 	m.Handle("/favicon.ico", http.HandlerFunc(func(wr http.ResponseWriter, req *http.Request) { wr.Write(favicon) }))
 	filesystemServer.server = &http.Server{
 		Handler: m,
@@ -160,13 +160,8 @@ func listFS(wr http.ResponseWriter, req *http.Request, path string) {
 		return
 	}
 
-	if fi.Mode().IsRegular() {
-		log.Infof("%q 下载了 %q, %d字节\n", clientIP(req.RemoteAddr), path, fi.Size())
-		http.ServeFile(wr, req, path)
-		return
-	}
-
-	renderHTMLErr(wr, "路径不存在或访问的路径不是目录/常规文件")
+	log.Infof("%q 下载了 %q, %d字节\n", clientIP(req.RemoteAddr), path, fi.Size())
+	http.ServeFile(wr, req, path)
 }
 
 func uploadFiles(wr http.ResponseWriter, req *http.Request, path string) {
@@ -246,7 +241,7 @@ func uploadFiles(wr http.ResponseWriter, req *http.Request, path string) {
 	var speed = totalMB / dur
 	log.Infof("平均速率:%.2f MB/s, 耗时%.2fs, 总大小%.2f MB  %d\n", speed, dur, totalMB, time.Now().Sub(begin))
 
-	fmt.Fprintf(wr, UPLOAD_STATISTIC, "/"+path, 3+len(strings.Split(rename, "<br />")), speed, dur, totalMB, uplFail, upSucc, rename)
+	fmt.Fprintf(wr, UPLOAD_STATISTIC, "/fs/"+path, 3+len(strings.Split(rename, "<br />")), speed, dur, totalMB, uplFail, upSucc, rename)
 }
 
 func clientIP(remoteAddr string) string {
@@ -287,22 +282,21 @@ func renderHTMLDir(wr io.Writer, path string, fis []os.FileInfo) {
 
 	//只显示常规文件和目录
 	for i := range fis {
-		if fis[i].Mode().IsRegular() {
-			fs[f] = fis[i]
-			f++
-		}
 		if fis[i].Mode().IsDir() {
 			ds[d] = fis[i]
 			d++
+		} else {
+			fs[f] = fis[i]
+			f++
 		}
 	}
 
 	var fl fsList
 	fl.Home = homeURL
 	fl.Path = winSlash + filepath.ToSlash(path)
-	if fl.Path == "/" {
-		fl.Path = "." //修复根目录作为web root时url不可用的bug
-	}
+	//if fl.Path == "/" {
+	//	fl.Path = "." //修复根目录作为web root时url不可用的bug
+	//}
 	fl.Files = fs[:f]
 	fl.Dirs = ds[:d]
 
@@ -324,9 +318,6 @@ func getPath(urlPath, rootDir string) (string, error) {
 
 	urlPath = filepath.ToSlash(filepath.Clean(urlPath))
 
-	if !strings.HasPrefix(urlPath, rootDir) {
-		return "", fmt.Errorf("无权访问%s", urlPath)
-	}
 	return urlPath, nil
 }
 
@@ -406,7 +397,7 @@ const (
 <body>
 {{ $data := . -}}
 <header>
-    <form enctype="multipart/form-data" action="{{$data.Path}}" method="POST">
+    <form enctype="multipart/form-data" action="/fs{{$data.Path}}" method="POST">
       <abbr title="可以按Ctrl键选择多个文件">
           <input type="file" multiple name="uploadFiles" required>
           <input id="上传按钮" type="submit" value="批量上传文件">
@@ -414,8 +405,8 @@ const (
   </form>
   <br />
   <a href="{{$data.Home}}"><b>&#8634; 返回主机管理界面</b></a><br />
-  <a href="/"><b>&#8634; 返回web根目录</b></a><br />
-  <a href="{{dirName $data.Path}}"><b>&#8634; 返回上层目录</b></a>
+  <a href="/fs"><b>&#8634; 返回web根目录</b></a><br />
+  <a href="/fs/{{dirName $data.Path}}"><b>&#8634; 返回上层目录</b></a>
   <div style="color: #104E8B"><span style="font-weight: bold">当前目录:</span> {{$data.Path}}</div>
 </header>
 
@@ -426,13 +417,13 @@ const (
         <tbody>
         {{- range $index,$dir := $data.Dirs -}}
             <tr>
-                <td class="col1"><a href="{{$data.Path}}/{{$dir.Name}}/"  title="点击打开目录">&bull; {{$dir.Name}}/</a></td>
+                <td class="col1"><a href="/fs/{{$data.Path}}/{{$dir.Name}}/"  title="点击打开目录">&bull; {{$dir.Name}}/</a></td>
                 <td class="col2">{{$dir.Size}}</td>
             </tr>
         {{end}}
         {{- range $index,$file := $data.Files -}}
             <tr>
-                <td class="col1"><a href="{{$data.Path}}/{{$file.Name}}" title="下载纯文本文件: 右键->链接另存为">&bull; {{$file.Name}}</a></td>
+                <td class="col1"><a href="/fs/{{$data.Path}}/{{$file.Name}}" title="下载纯文本文件: 右键->链接另存为">&bull; {{$file.Name}}</a></td>
                 <td class="col2">{{$file.Size}}</td>
             </tr>
         {{end}}
