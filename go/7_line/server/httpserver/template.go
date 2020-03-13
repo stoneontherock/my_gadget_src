@@ -57,8 +57,20 @@ const (
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>alives</title>
+    <script>
+        function BindEnter(obj)
+        {
+            //使用document.getElementById获取到按钮对象
+            var button = document.getElementById('submitBtn');
+            if(obj.keyCode == 13)
+            {
+                button.click();
+                obj.returnValue = false;
+            }
+        }
+    </script>
 </head>
-<body>
+<body onkeydown="BindEnter(event)">
 {{ $data := . -}}
 <header>
 	<a href="/line/list_hosts">返回主机管理界面</a>
@@ -70,7 +82,7 @@ const (
         <input type="text" name="timeout" value="30" />秒执行超时<br/>
         <input type="checkbox" name="inShell" value="true" checked/>在shell中执行<br/>
         <textarea  rows="5" cols="100" name="cmd" placeholder='这里输入命令,linux支持多行'></textarea> <br />
-        <input type="submit" value="执行" />
+        <input id="submitBtn" type="submit" value="执行" />
         <br />
     </form>
 
