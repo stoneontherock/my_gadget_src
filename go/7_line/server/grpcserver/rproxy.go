@@ -7,7 +7,7 @@ import (
 	"line/server/model"
 )
 
-//todo 从连接池中取出来也不可用
+//todo 从连接池中取出来也不可用?
 func (s *grpcServer) RProxyController(req *grpcchannel.RPxyReq, stream grpcchannel.Channel_RProxyControllerServer) error {
 	logrus.Infof("客户端%s报到", req.Mid)
 

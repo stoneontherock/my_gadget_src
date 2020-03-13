@@ -208,6 +208,24 @@ const (
 	<div style="width=100%;text-align:right"><a href="/line/logout">退出</a></div>
 </header>
 
+<script>
+	function pickup(mid) {
+        let dur = prompt("勾起多少分钟后放下？",10);
+        let req = new XMLHttpRequest();
+
+        req.onreadystatechange=function(){
+            if (req.readyState==4){ 
+                if (req.status!=200){
+            	    window.alert(req.responseText);
+				}
+				location="/line/list_hosts";
+            }
+        }
+        req.open("GET","/line/change_pickup?pickup=1&timeout="+dur+"&mid="+mid,true);
+        req.send();
+    }
+</script>
+
 <article>
     <hr>
     <table id="文件表格">
@@ -221,12 +239,12 @@ const (
                 <td>{{$rec.OS}}</td>
                 <td>{{$rec.WanIP}}</td>
                 <td>{{$rec.Interval}}</td>
-                <td>{{ if eq $rec.Pickup 1 }}
-                        等待...
+                <td id="pickupTd">{{ if eq $rec.Pickup 1 }}
+                        正在勾起...
                     {{ else if ge $rec.Pickup 2 }}
-                        就绪
+                        {{slice $rec.Timeout 10}}丢掉
                     {{ else }}
-                        自由
+                        未被勾住
                     {{ end }}
                 </td>
                 <td><form action="/line/del_host" method="GET">
@@ -236,11 +254,7 @@ const (
                 </td>
 
                 {{ if lt $rec.Pickup 1 }}
-                <td><form action="/line/change_pickup" method="GET">
-                        <input type="hidden"  name="mid" value="{{$rec.ID}}" />
-                        <input type="hidden"  name="pickup" value="1" />
-                        <input type="submit" value="勾住" />
-                    </form>
+                <td><button onclick="pickup({{$rec.ID}})">勾住</button>
                 </td>
                 {{end}}
 

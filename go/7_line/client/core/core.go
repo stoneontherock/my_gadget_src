@@ -25,11 +25,11 @@ func Reporter(addr string) {
 			continue
 		}
 		reportDo(conn)
+		conn.Close()
 	}
 }
 
 func reportDo(conn *grpc.ClientConn) {
-	defer conn.Close()
 	cc := grpcchannel.NewChannelClient(conn) //2.新建一个客户端stub来执行rpc方法
 
 	ctx, cancel := context.WithCancel(context.Background())

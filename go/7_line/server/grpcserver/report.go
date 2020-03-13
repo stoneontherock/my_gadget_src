@@ -5,13 +5,11 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 	"line/grpcchannel"
-	"line/server"
 	"line/server/db"
 	"line/server/model"
 	"time"
 )
 
-//todo 1-pickup 2-stop client 3-start client 4-del host 然后client就卡住了
 func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_ReportServer) error {
 	wanIP := getClientIPAddr(stream.Context())
 
@@ -73,18 +71,25 @@ func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_R
 	if ci.Pickup == 1 {
 		ChangePickup(ping.Mid, 2)
 		needFin = false
-		return nil
 	}
 
 	logrus.Debugf("ci:%+v", ci)
 
-	tk := time.NewTicker(time.Second * server.GRPCPongTimeout)
+	now := time.Now()
+	deadline, _ := time.ParseInLocation("2006-01-02 15:04:05", ci.Timeout, now.Location())
+	tmout := deadline.Sub(now)
+	if tmout <= time.Second*10 {
+		tmout = time.Second * 10
+	}
+
+	tk := time.NewTicker(tmout)
 	defer tk.Stop()
 	for {
 		select {
 		case <-tk.C:
 			logrus.Infof("Report: %s超时,发fin", ping.Mid)
-			//ChangePickup(ping.Mid,-1)
+			ChangePickup(ping.Mid, -1)
+			model.CloseConnection("", ping.Mid)
 			needFin = true
 			return nil
 		case pong, ok := <-pongC:

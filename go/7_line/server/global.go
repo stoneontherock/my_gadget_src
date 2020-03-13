@@ -5,16 +5,13 @@ import (
 	"line/server/panicerr"
 	"os"
 	"path/filepath"
-	"strconv"
-	"time"
 )
 
 var (
 	BinDir string
 	Debug  = "off"
 
-	GRPCListenAddr  = ":65000"
-	GRPCPongTimeout = time.Duration(1200)
+	GRPCListenAddr = ":65000"
 
 	HTTPListenAddr = ":65080"
 	AdminName      = "管理员"
@@ -29,22 +26,15 @@ func init() {
 	getEnv(&Debug, "LINE_DEBUG")
 
 	getEnv(&GRPCListenAddr, "LINE_GRPC_LISTEN_ADDR")
-	var tmout = "1200"
-	getEnv(&tmout, "LINE_GRPC_PONG_TIMEOUT")
-	i, _ := strconv.Atoi(tmout)
-	if i >= 60 {
-		GRPCPongTimeout = time.Duration(i)
-	}
 
 	getEnv(&AdminName, "LINE_HTTP_ADMIN")
 	getEnv(&AdminPv, "LINE_HTTP_PASSWD")
 
 	getEnv(&HTTPListenAddr, "LINE_HTTP_LISTEN_ADDR")
 
-	fmt.Printf("Debug=%s  GRPCListenAddr=%s  GRPCPongTimeout=%d  HTTPListenAddr=%s  AdminName=%s Pv=%s",
+	fmt.Printf("Debug=%s  GRPCListenAddr=%s  HTTPListenAddr=%s  AdminName=%s Pv=%s",
 		Debug,
 		GRPCListenAddr,
-		GRPCPongTimeout,
 		HTTPListenAddr,
 		AdminName,
 		AdminPv)
