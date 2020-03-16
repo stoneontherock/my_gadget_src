@@ -22,7 +22,7 @@ func main() {
 
 	core.ReportInterval, _ = strconv.Atoi(os.Getenv("LINE_REPORT_INTERVAL"))
 	if core.ReportInterval < 10 {
-		core.ReportInterval = 30 //默认30秒
+		core.ReportInterval = 60 //默认60秒
 	}
 	core.Reporter(model.ServerTCPAddr)
 }

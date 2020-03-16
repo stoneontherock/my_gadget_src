@@ -81,7 +81,7 @@ const (
         <input type="hidden"  name="mid" value="{{$data.MID}}" />
         <input type="text" name="timeout" value="30" />秒执行超时<br/>
         <input type="checkbox" name="inShell" value="true" checked/>在shell中执行<br/>
-        <textarea  rows="5" cols="100" name="cmd" placeholder='这里输入命令,linux支持多行'></textarea> <br />
+        <textarea  rows="5" cols="100" name="cmd" placeholder='输入命令，敲回车。linux支持多行'></textarea> <br />
         <input id="submitBtn" type="submit" value="执行" />
         <br />
     </form>
@@ -251,7 +251,7 @@ const (
                 <td>{{$rec.OsInfo}}</td>
                 <td>{{$rec.WanIP}}</td>
                 <td>{{$rec.Interval}}秒</td>
-                <td id="pickupTd">{{ if eq $rec.Pickup 1 }}
+                <td>{{ if eq $rec.Pickup 1 }}
                         正在勾起...
                     {{ else if ge $rec.Pickup 2 }}
                         {{slice $rec.Timeout 11 16}}丢掉

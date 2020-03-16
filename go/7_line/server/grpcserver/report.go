@@ -78,8 +78,8 @@ func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_R
 	now := time.Now()
 	deadline, _ := time.ParseInLocation("2006-01-02 15:04:05", ci.Timeout, now.Location())
 	tmout := deadline.Sub(now)
-	if tmout <= time.Second*10 {
-		tmout = time.Second * 10
+	if tmout <= time.Second*60 {
+		tmout = time.Second * 60
 	}
 
 	tk := time.NewTicker(tmout)
