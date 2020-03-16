@@ -61,8 +61,10 @@ func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_R
 		}
 
 		if ci.Pickup == 2 {
-			pongC <- grpcchannel.Pong{Action: "fin"} //这里的sendFin是为了关闭已经失效的stream
-			model.CloseConnection("", ping.Mid)
+			go func() {
+				model.CloseAllConnections(ping.Mid)
+				pongC <- grpcchannel.Pong{Action: "fin"} //这里的sendFin是为了关闭已经失效的stream
+			}()
 		}
 
 		return errors.New("startAt标记已经变更")
@@ -89,7 +91,7 @@ func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_R
 		case <-tk.C:
 			logrus.Infof("Report: %s超时,发fin", ping.Mid)
 			ChangePickup(ping.Mid, -1)
-			model.CloseConnection("", ping.Mid)
+			model.CloseAllConnections(ping.Mid)
 			needFin = true
 			return nil
 		case pong, ok := <-pongC:

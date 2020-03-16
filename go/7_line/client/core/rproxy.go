@@ -109,4 +109,6 @@ func handleCloseConnections(pong *grpcchannel.Pong) {
 		log.Infof("关闭conn %p\n", conn)
 		conn.Close()
 	}
+
+	delete(port2ConnM, port2)
 }

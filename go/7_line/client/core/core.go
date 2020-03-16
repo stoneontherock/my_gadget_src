@@ -57,6 +57,7 @@ func reportDo(conn *grpc.ClientConn) {
 
 		if pong.Action == "fin" {
 			log.Infof("收到fin\n")
+			closeAllConnection()
 			return
 		}
 
@@ -77,5 +78,21 @@ func handlePong(pong grpcchannel.Pong, cc grpcchannel.ChannelClient) {
 		handleFilesystem(&pong, cc)
 	default:
 		println("不支持的acton\n")
+	}
+}
+
+func closeAllConnection() {
+	if filesystemServer.server != nil {
+		filesystemServer.server.Shutdown(context.TODO())
+	}
+	filesystemServer.server = nil
+	filesystemServer.port2 = ""
+
+	for port2, connList := range port2ConnM {
+		for _, conn := range connList {
+			log.Infof("关闭conn %p -> port2=%s\n", conn, port2)
+			conn.Close()
+		}
+		delete(port2ConnM, port2)
 	}
 }

@@ -36,15 +36,13 @@ func delHost(c *gin.Context) {
 		return
 	}
 
-	model.CloseConnection("", dhi.MID)
-
-	if ci.Pickup > 1 {
+	model.CloseAllConnections(dhi.MID)
+	if ci.Pickup >= 1 {
 		pongC, ok := model.PongM[dhi.MID]
 		if ok {
 			func() {
-				time.Sleep(time.Millisecond * 2)
 				pongC <- grpcchannel.Pong{Action: "fin"}
-				time.Sleep(time.Millisecond * 10) //休息多久？
+				time.Sleep(time.Millisecond * 100) //休息多久？
 				delete(model.PongM, dhi.MID)
 			}()
 		}
