@@ -241,20 +241,20 @@ const (
 <article>
     <hr>
     <table id="文件表格">
-        <thead style="background-color: #EEEEFF;"><th>序号</th><th>机器ID</th><th>主机名</th><th>操作系统</th><th>公网IP</th><th>上报间隔</th><th>状态</th></thead>
+        <thead style="background-color: #EEEEFF;"><th>序号</th><th>机器ID</th><th>内核</th><th>OS信息</th><th>公网IP</th><th>心跳</th><th>状态</th></thead>
         <tbody>
         {{- range $index,$rec := $data -}}
             <tr>
                 <td>{{$index}}</td>
                 <td>{{$rec.ID}}</td>
-                <td>{{$rec.Hostname}}</td>
-                <td>{{$rec.OS}}</td>
+                <td>{{$rec.Kernel}}</td>
+                <td>{{$rec.OsInfo}}</td>
                 <td>{{$rec.WanIP}}</td>
-                <td>{{$rec.Interval}}</td>
+                <td>{{$rec.Interval}}秒</td>
                 <td id="pickupTd">{{ if eq $rec.Pickup 1 }}
                         正在勾起...
                     {{ else if ge $rec.Pickup 2 }}
-                        {{slice $rec.Timeout 10}}丢掉
+                        {{slice $rec.Timeout 11 16}}丢掉
                     {{ else }}
                         未被勾住
                     {{ end }}

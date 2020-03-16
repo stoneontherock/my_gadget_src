@@ -27,8 +27,8 @@ func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_R
 			err := db.DB.Create(&model.ClientInfo{
 				ID:       ping.Mid,
 				WanIP:    wanIP,
-				Hostname: ping.Hostname,
-				OS:       ping.Os,
+				Kernel:   ping.Kernel,
+				OsInfo:   ping.OsInfo,
 				Interval: ping.Interval,
 				StartAt:  ping.StartAt,
 			}).Error

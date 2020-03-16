@@ -19,7 +19,7 @@ func static() model.StaticInfo {
 	_, kernel, _ := runcmd.Run(10, "uname", "-r")
 	_, hostname, _ := runcmd.Run(10, "hostname")
 
-	si.OS = "linux " + strings.Replace(kernel, "\n", "", -1)
-	si.Hostname = strings.Replace(hostname, "\n", "", -1)
+	si.Kernel = "linux " + strings.Replace(kernel, "\n", "", -1)
+	si.OsInfo = "主机名:" + strings.Replace(hostname, "\n", "", -1)
 	return si
 }

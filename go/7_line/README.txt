@@ -4,7 +4,6 @@
 2-服务端的环境变量: 
 	LINE_STDOUT_DEBUG     开启DEBUG日志，并打印到stdout,取值on/off 
 	LINE_GRPC_LISTEN_ADDR
-	LINE_GRPC_PONG_TIMEOUT //响应客户端的上报动作的超时时间，pong一般携带动作，比如命令、反代等。取值不得低于60秒
 	LINE_HTTP_LISTEN_ADDR
 	LINE_HTTP_ADMIN
 	LINE_HTTP_PASSWD

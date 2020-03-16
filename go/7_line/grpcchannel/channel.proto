@@ -17,8 +17,8 @@ message EmptyResp {
 //Ping IN
 message Ping {
     string mid = 1;
-    string hostname = 2;
-    string os = 3;
+    string kernel = 2;
+    string os_info = 3;
     int32 interval = 4;
     int32 start_at = 5;
 }

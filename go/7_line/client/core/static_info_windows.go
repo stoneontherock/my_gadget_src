@@ -21,22 +21,26 @@ func static() model.StaticInfo {
 		si.MachineID = "sample_machine_id"
 	}
 
-	//os名
-	_, caption, _ := runcmd.Run(10, "wmic", "os", "get", "caption", "/value")
-	cp := getValue(caption)[0]
-	//codeSet
-	_, codeSet, _ := runcmd.Run(10, "wmic", "os", "get", "codeSet", "/value")
-	cs := getValue(codeSet)[0]
+	//nt版本
+	_, k, _ := runcmd.Run(10, "wmic", "os", "get", "version", "/value")
+	kernel := getValue(k)[0]
 	//主机名
 	hostName, _ := os.Hostname()
 	//非guest，非管理员用户: wmic useraccount WHERE (Status='ok' AND Name!='guest' AND Name!='Administrator') get name /value
 	_, users, _ := runcmd.Run(10, `wmic`, `useraccount`, `WHERE`, `(Status='ok' AND Name!='guest' AND Name!='Administrator')`, `get`, `name`, `/value`)
-	us := strings.Join(getValue(users), ";")
+	us := strings.Join(getValue(users), ",")
 
-	si.OS = strings.Replace(cp, "Microsoft ", "", -1) + "(codeSet=" + cs + ")"
-	si.Hostname = hostName + "(user=" + us + ")"
+	ks := strings.Split(kernel, ".")
+	if len(ks) >= 2 {
+		kernel = strings.Join(ks[:2], ".")
+	}
+	si.Kernel = "NT " + kernel
+	si.OsInfo = "主机名:" + hostName + ";普通用户:" + us
 
 	//windows专有信息
+	//codeSet
+	_, codeSet, _ := runcmd.Run(10, "wmic", "os", "get", "codeSet", "/value")
+	cs := getValue(codeSet)[0]
 	model.CodeSet, _ = strconv.Atoi(cs)
 	_, logicDisks, _ := runcmd.Run(10, "wmic", "logicaldisk", "where", "drivetype=3", "get", "name", "/value")
 	disks := getValue(logicDisks)
@@ -44,6 +48,7 @@ func static() model.StaticInfo {
 		model.WinDiskList = []string{"C:"}
 	} else {
 		model.WinDiskList = disks
+		si.OsInfo += ";磁盘分区:" + strings.Join(disks, ",")
 	}
 	return si
 }

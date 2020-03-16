@@ -42,7 +42,7 @@ func Run(tmout int, cmd ...string) (int, string, string) {
 	go func() {
 		err := c.Wait()
 		if err != nil {
-			waitErr <- err.Error()
+			waitErr <- err.Error() //todo 不安全！ send to close channel
 			return
 		}
 		waitErr <- ""

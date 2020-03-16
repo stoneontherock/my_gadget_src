@@ -37,8 +37,8 @@ func reportDo(conn *grpc.ClientConn) {
 
 	stream, err := cc.Report(ctx, &grpcchannel.Ping{
 		Mid:      staticInfo.MachineID,
-		Hostname: staticInfo.Hostname,
-		Os:       staticInfo.OS,
+		Kernel:   staticInfo.Kernel,
+		OsInfo:   staticInfo.OsInfo,
 		Interval: int32(ReportInterval),
 		StartAt:  startAt,
 	})
