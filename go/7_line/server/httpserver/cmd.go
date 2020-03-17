@@ -66,7 +66,7 @@ func command(c *gin.Context) {
 		time.Sleep(time.Millisecond * 10)
 		cmdOutC, ok = model.CmdOutM[ci.MID]
 		if ok {
-			tk := time.NewTicker(time.Second * time.Duration(ci.Timeout))
+			tk := time.NewTicker(time.Second * time.Duration(ci.Timeout+5))
 			select {
 			case <-tk.C:
 				respJSAlert(c, 400, "等待执行结果超时")

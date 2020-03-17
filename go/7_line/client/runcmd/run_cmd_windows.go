@@ -4,6 +4,7 @@ package runcmd
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"golang.org/x/text/transform"
@@ -34,42 +35,35 @@ func Run(tmout int, cmd ...string) (int, string, string) {
 	if err != nil {
 		log.Errorf("exec.Cmd.Start(%v),%v\n", cmd, err)
 		return -1, "", err.Error()
-	} else {
-		log.Infof("Start(%s)\n", cmd)
 	}
+	log.Infof("Start(%s)\n", cmd)
 
-	waitErr := make(chan string, 1)
+	ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second*time.Duration(tmout))
+
 	go func() {
 		err := c.Wait()
 		if err != nil {
-			waitErr <- err.Error() //todo 不安全！ send to close channel
-			return
+			log.Errorf("等待结果失败, err=%v\n", err)
 		}
-		waitErr <- ""
+		cancelFunc()
 	}()
 
-	defer close(waitErr)
-	tch := time.After(time.Second * time.Duration(tmout))
-	select {
-	case we := <-waitErr:
-		if we != "" { //执行命令发生错误
-			return -2, "", we
-		}
-		var exitcode int
-		if !c.ProcessState.Success() {
-			exitcode = 1
-		}
-
-		return exitcode, legalUTF8Str(stdout.Bytes()), legalUTF8Str(stderr.Bytes())
-	case <-tch:
+	<-ctx.Done()
+	if ctx.Err() == context.DeadlineExceeded {
 		err = c.Process.Kill()
 		if err != nil {
-			log.Errorf("kill process failed, cmd = %v\n", cmd)
-			return -3, "", fmt.Sprintf("wait result timeout(%d).kill process failed,%v", tmout, err)
+			log.Errorf("杀死子进程失败, cmd = %v, err=%v\n", cmd, err)
+			return -4, "", fmt.Sprintf("等待子进程超时,cmd=%v, err=%v", cmd, err)
 		}
-		return -3, "", fmt.Sprintf("wait result timeout(%d).kill process successfully", tmout)
+		return -3, "", fmt.Sprintf("等待结果超时, 正常结束子进程。 cmd=%v", cmd)
 	}
 
+	var exitcode int
+	if !c.ProcessState.Success() {
+		exitcode = 1
+	}
+
+	return exitcode, legalUTF8Str(stdout.Bytes()), legalUTF8Str(stderr.Bytes())
 }
 
 func legalUTF8Str(bs []byte) string {

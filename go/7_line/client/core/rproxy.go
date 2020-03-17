@@ -47,7 +47,7 @@ func handleRPxy(pong *grpcchannel.Pong, cc grpcchannel.ChannelClient, fsAddr3 st
 		rcLen := len(conn2Pool)
 		log.Infof("rcLen=%d\n", rcLen)
 		nc := int(resp.NumOfConn2)
-		if rcLen <= nc/2 { //消耗一半的时候，开始创建新连接
+		if rcLen < nc {
 			genRconn(resp.Port2, nc-rcLen)
 		}
 
