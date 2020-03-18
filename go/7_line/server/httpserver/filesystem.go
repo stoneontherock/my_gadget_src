@@ -42,7 +42,7 @@ func filesystem(c *gin.Context) {
 			if len(ss) != 2 {
 				continue
 			}
-			c.Redirect(303, "http://"+host+":"+ss[1]+"/fs")
+			c.Redirect(303, "http://"+host+":"+ss[1]+"/filesystem")
 			return
 		}
 	}
@@ -56,13 +56,13 @@ func filesystem(c *gin.Context) {
 		return
 	}
 
-	err = listen2Side(fi.MID, "filesystem", port1, port2, 6)
+	err = listen2Side(fi.MID, "filesystem", port1, port2, 3)
 	if err != nil {
 		respJSAlert(c, 500, "创建bridge listener 失败:"+err.Error())
 		return
 	}
 
-	rpr := grpcchannel.RPxyResp{Port2: port2, NumOfConn2: 6}
+	rpr := grpcchannel.RPxyResp{Port2: port2, NumOfConn2: 3}
 	data, err := json.Marshal(&rpr)
 	if err != nil {
 		respJSAlert(c, 500, "序列化到pong data失败:"+err.Error())
@@ -76,6 +76,6 @@ func filesystem(c *gin.Context) {
 	if c.Request.TLS != nil {
 		scheme = "https://"
 	}
-	home := "/fs?home=" + url.QueryEscape(scheme+dm+":"+port+"/line/list_hosts")
+	home := "/filesystem?home=" + url.QueryEscape(scheme+dm+":"+port+"/line/list_hosts")
 	c.Redirect(303, "http://"+host+port1+home)
 }

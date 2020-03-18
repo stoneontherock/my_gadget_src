@@ -86,7 +86,7 @@ func serveFilesystem(addr, rootDir string) {
 
 	m := http.NewServeMux()
 	m.HandleFunc("/", func(wr http.ResponseWriter, req *http.Request) {})
-	m.Handle("/fs/", http.StripPrefix("/fs", http.HandlerFunc(fs(rootDir))))
+	m.Handle("/filesystem/", http.StripPrefix("/filesystem", http.HandlerFunc(fs(rootDir))))
 	m.HandleFunc("/favicon.ico", func(wr http.ResponseWriter, req *http.Request) { wr.Write(favicon) })
 	filesystemServer.server = &http.Server{
 		Handler: m,
@@ -242,7 +242,7 @@ func uploadFiles(wr http.ResponseWriter, req *http.Request, path string) {
 	var speed = totalMB / dur
 	log.Infof("平均速率:%.2f MB/s, 耗时%.2fs, 总大小%.2f MB  %d\n", speed, dur, totalMB, time.Now().Sub(begin))
 
-	fmt.Fprintf(wr, UPLOAD_STATISTIC, "/fs/"+path, 3+len(strings.Split(rename, "<br />")), speed, dur, totalMB, uplFail, upSucc, rename)
+	fmt.Fprintf(wr, UPLOAD_STATISTIC, "/filesystem/"+path, 3+len(strings.Split(rename, "<br />")), speed, dur, totalMB, uplFail, upSucc, rename)
 }
 
 func clientIP(remoteAddr string) string {
@@ -398,7 +398,7 @@ const (
 <body>
 {{ $data := . -}}
 <header>
-    <form enctype="multipart/form-data" action="/fs{{$data.Path}}" method="POST">
+    <form enctype="multipart/form-data" action="/filesystem{{$data.Path}}" method="POST">
       <abbr title="可以按Ctrl键选择多个文件">
           <input type="file" multiple name="uploadFiles" required>
           <input id="上传按钮" type="submit" value="批量上传文件">
@@ -406,8 +406,8 @@ const (
   </form>
   <br />
   <a href="{{$data.Home}}"><b>&#8634; 返回主机管理界面</b></a><br />
-  <a href="/fs"><b>&#8634; 返回web根目录</b></a><br />
-  <a href="/fs/{{dirName $data.Path}}"><b>&#8634; 返回上层目录</b></a>
+  <a href="/filesystem"><b>&#8634; 返回web根目录</b></a><br />
+  <a href="/filesystem/{{dirName $data.Path}}"><b>&#8634; 返回上层目录</b></a>
   <div style="color: #104E8B"><span style="font-weight: bold">当前目录:</span> {{$data.Path}}</div>
 </header>
 
@@ -418,13 +418,13 @@ const (
         <tbody>
         {{- range $index,$dir := $data.Dirs -}}
             <tr>
-                <td class="col1"><a href="/fs/{{$data.Path}}/{{$dir.Name}}/"  title="点击打开目录">&bull; {{$dir.Name}}/</a></td>
+                <td class="col1"><a href="/filesystem/{{$data.Path}}/{{$dir.Name}}/"  title="点击打开目录">&bull; {{$dir.Name}}/</a></td>
                 <td class="col2">{{$dir.Size}}</td>
             </tr>
         {{end}}
         {{- range $index,$file := $data.Files -}}
             <tr>
-                <td class="col1"><a href="/fs/{{$data.Path}}/{{$file.Name}}" title="下载纯文本文件: 右键->链接另存为">&bull; {{$file.Name}}</a></td>
+                <td class="col1"><a href="/filesystem/{{$data.Path}}/{{$file.Name}}" title="下载纯文本文件: 右键->链接另存为">&bull; {{$file.Name}}</a></td>
                 <td class="col2">{{$file.Size}}</td>
             </tr>
         {{end}}

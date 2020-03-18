@@ -79,7 +79,7 @@ const (
 <article>
     <form action="/line/cmd" method="GET">
         <input type="hidden"  name="mid" value="{{$data.MID}}" />
-        <input type="text" name="timeout" value="30" />秒执行超时<br/>
+        <input type="text" name="timeout" value="15" />秒执行超时<br/>
         <input type="checkbox" name="inShell" value="true" checked/>在shell中执行<br/>
         <textarea  rows="5" cols="100" name="cmd" placeholder='输入命令，敲回车。linux支持多行'></textarea> <br />
         <input id="submitBtn" type="submit" value="执行" />
