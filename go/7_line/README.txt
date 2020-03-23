@@ -1,3 +1,4 @@
+0-windows下的客户端可以通过nssm来注册服务， nssm install <ServiceName> <binPath>
 1-客户端的环境变量: 
 	LINE_GRPC_SERVER=grpc服务端的地址 
 	LINE_REPORT_INTERVAL=上报信息的间隔，单位秒,默认30s
