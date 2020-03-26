@@ -39,8 +39,6 @@ function fn_main(){
 	part=$((${size[0]}/num))
 	last=${size[0]} #初始化为总大小
 	
-        [ -d "$fname" ] && { rm -fv "$fname"/*; } || { mkdir "$fname" || { echo "创建目录\"$fname\"失败"; return 3; }; }
-
 	for ((i=0;i<num;i++))
 	do
 		fn_down $i "$((part*i))-$(((part*(i+1))-1))" "$fname" "$url" &
