@@ -35,9 +35,10 @@ func init() {
 		defaultAddr = ":8000"
 	}
 
-	binDir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
+	wd, _ := os.Getwd()
+	wd, _ = filepath.Abs(wd)
 	addr = flag.String("a", defaultAddr, "http监听地址,例如: ':8000'或'192.168.0.100:8000'")
-	rootDir = flag.String("d", binDir, "web根目录,例如: '/tmp'")
+	rootDir = flag.String("d", wd, "web根目录,例如: '/tmp'")
 	flag.Parse()
 
 	var err error
