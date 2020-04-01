@@ -8,6 +8,7 @@ import (
 	"line/server/panicerr"
 	oslog "log"
 	"os"
+	"time"
 )
 
 var DB *gorm.DB
@@ -24,4 +25,26 @@ func InitSQLite() {
 
 	err = DB.DB().Ping()
 	panicerr.Handle(err, "InitSQLite:Ping()")
+
+	go checkAlive()
+}
+
+func checkAlive() {
+	for {
+		time.Sleep(time.Second * time.Duration(server.CheckAliveInterval))
+
+		var cis []model.ClientInfo
+		err := DB.Model(&model.ClientInfo{}).Find(&cis).Error
+		if err != nil {
+			continue
+		}
+
+		now := int32(time.Now().Unix())
+		for _, ci := range cis {
+			if now-ci.LastReport < int32(server.CheckAliveInterval) {
+				continue
+			}
+			DB.Delete(&model.ClientInfo{}, `id = ?`, ci.ID)
+		}
+	}
 }

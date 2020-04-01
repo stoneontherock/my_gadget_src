@@ -25,12 +25,13 @@ func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_R
 	if err != nil {
 		if gorm.IsRecordNotFoundError(err) {
 			err := db.DB.Create(&model.ClientInfo{
-				ID:       ping.Mid,
-				WanIP:    wanIP,
-				Kernel:   ping.Kernel,
-				OsInfo:   ping.OsInfo,
-				Interval: ping.Interval,
-				StartAt:  ping.StartAt,
+				ID:         ping.Mid,
+				WanIP:      wanIP,
+				Kernel:     ping.Kernel,
+				OsInfo:     ping.OsInfo,
+				Interval:   ping.Interval,
+				StartAt:    ping.StartAt,
+				LastReport: int32(time.Now().Unix()),
 			}).Error
 			if err != nil {
 				logrus.Errorf("Report:Create:%v", err)

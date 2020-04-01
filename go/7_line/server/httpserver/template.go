@@ -166,13 +166,22 @@ const (
 	<style>
         #主机列表{
             border-collapse: collapse;
-            border: 1px dashed grey;
+            border: 5px solid #EEEFFF;
 			white-space: nowrap;
         }
 
         #主机列表 th,#主机列表 td{
-            border: 1px dashed grey;
+            border: 5px solid #EEEFFF;
 			white-space: nowrap;
+        }
+
+        .midSpan{
+            display: inline-block;
+            width:3em;
+            height:1.2em;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
         }
 
         .osInfoSpan{
@@ -185,14 +194,14 @@ const (
             text-overflow: ellipsis;
         }
 
-        .osInfoSpanHover{
+        .hoverSpan{
             display: none;
             position: absolute;
             background-color: black;
             color: white;
         }
 
-        .osInfoSpan:hover~.osInfoSpanHover{
+        .briefSpan:hover~.hoverSpan{
                 border: 1px solid grey;
                 padding: 2px;
                 display: block;
@@ -201,15 +210,6 @@ const (
         .opBtn {
             display: inline-block;
         }
-
-		.midSpan{
-            display: inline-block;
-            width:3em;
-			height:1.2em;
-            overflow: hidden;
-			white-space: nowrap;
-            text-overflow: ellipsis;
-		}
 	</style>
 </head>
 <body>
@@ -239,12 +239,13 @@ const (
 <article>
     <hr>
     <table id="主机列表">
-        <thead style="background-color: #EEEEFF;"><th>内核</th><th>OS信息</th><th>公网IP</th><th>心跳</th><th>状态</th><th>机器ID</th><th>操作</th></thead>
+        <thead style="background-color: #EEFFFF;"><th>机器ID</th><th>内核</th><th>OS信息</th><th>公网IP</th><th>心跳</th><th>状态</th><th>操作</th></thead>
         <tbody>
         {{- range $index,$rec := $data -}}
             <tr>
+                <td><span class="midSpan briefSpan">{{$rec.ID}}</span><span class="hoverSpan">{{$rec.ID}}</span></td>
                 <td>{{$rec.Kernel}}</td>
-                <td><span class="osInfoSpan">{{$rec.OsInfo}}</span><span class="osInfoSpanHover">{{$rec.OsInfo}}</span></td>
+                <td><span class="osInfoSpan briefSpan">{{$rec.OsInfo}}</span><span class="hoverSpan">{{$rec.OsInfo}}</span></td>
                 <td>{{$rec.WanIP}}</td>
                 <td>{{$rec.Interval}}秒</td>
                 <td>{{ if eq $rec.Pickup 1 }}
@@ -255,7 +256,7 @@ const (
                         未被勾住
                     {{ end }}
                 </td>
-		<td><span class="midSpan">{{$rec.ID}}</span></td>
+		
                 <td><form class="opBtn" action="/line/del_host" method="GET">
                         <input type="hidden"  name="mid" value="{{$rec.ID}}" />
                         <input type="submit" value="丢弃" />

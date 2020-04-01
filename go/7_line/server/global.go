@@ -5,23 +5,34 @@ import (
 	"line/server/panicerr"
 	"os"
 	"path/filepath"
+	"strconv"
 )
 
 var (
 	BinDir string
-	Debug  = "off"
+
+	CheckAliveInterval int
+
+	Debug = "off"
 
 	GRPCListenAddr = ":65000"
-
 	HTTPListenAddr = ":65080"
-	AdminName      = "管理员"
-	AdminPv        = "zh@85058"
+
+	AdminName = "管理员"
+	AdminPv   = "zh@85058"
 )
 
 func init() {
 	var err error
 	BinDir, err = filepath.Abs(filepath.Dir(os.Args[0]))
 	panicerr.Handle(err, "获取可执行文件所在路径的绝对路径失败")
+
+	tmp := "600"
+	getEnv(&tmp, "LINE_CHECK_ALIVE_INTERVAL")
+	cai, err := strconv.Atoi(tmp)
+	if err == nil {
+		CheckAliveInterval = cai
+	}
 
 	getEnv(&Debug, "LINE_DEBUG")
 
@@ -32,7 +43,8 @@ func init() {
 
 	getEnv(&HTTPListenAddr, "LINE_HTTP_LISTEN_ADDR")
 
-	fmt.Printf("Debug=%s  GRPCListenAddr=%s  HTTPListenAddr=%s  AdminName=%s Pv=%s\n",
+	fmt.Printf("CheckAliveInterval=%d Debug=%s  GRPCListenAddr=%s  HTTPListenAddr=%s  AdminName=%s Pv=%s\n",
+		CheckAliveInterval,
 		Debug,
 		GRPCListenAddr,
 		HTTPListenAddr,
