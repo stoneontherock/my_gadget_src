@@ -155,64 +155,62 @@ const (
 </html>
 `
 
-	//LIST_RPROXIED_HTML = `
-	//<!doctype html>
-	//<html lang="zh">
-	//<head>
-	//  <meta charset="UTF-8">
-	//  <meta name="viewport"
-	//        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-	//  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-	//  <title>alives</title>
-	//</head>
-	//<body>
-	//{{ $data := . -}}
-	//<header>
-	//  <a href="/line/list_hosts">返回主机管理界面</a>
-	//  <br />
-	//  <h1>总数:{{- len $data -}}</h1>
-	//  <hr>
-	//</header>
-	//
-	//<article>
-	//   {{- with $data -}}
-	//   <table id="rpxy table">
-	//       <thead style="background-color: #EEEEFF;"><th style="text-align:left;">mid</th><th style="text-align:right">label</th></thead>
-	//       <tbody>
-	//          {{- range $mid,$labs := $data -}}
-	//				 {{- range $index,$lab := $labs -}}
-	//					<tr>
-	//               		 <td class="col1">{{- $mid -}}</td>
-	//              		 <td class="col2">{{- $lab -}}</td>
-	//					 <td class="col3">
-	//						<form action="/line/del_rproxied" method="GET">
-	//                    		<input type="hidden"  name="mid" value="{{- $mid -}}" />
-	//                    		<input type="hidden"  name="label" value="{{- $lab -}}" />
-	//							<input type="submit" value="✖️" />
-	//	                    </form>
-	//					 </td>
-	//					</tr>
-	//				{{- end -}}
-	//          {{- end -}}
-	//       </tbody>
-	//   </table>
-	//   {{- else -}}
-	//       <h3>{{- $data.Err -}}</h3>
-	//   {{- end -}}
-	//</article>
-	//</body>
-	//</html>
-	//`
-
 	LIST_HOSTS_HTML = `
 <!doctype html>
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>alives</title>
+	<style>
+        #主机列表{
+            border-collapse: collapse;
+            border: 1px dashed grey;
+			white-space: nowrap;
+        }
+
+        #主机列表 th,#主机列表 td{
+            border: 1px dashed grey;
+			white-space: nowrap;
+        }
+
+        .osInfoSpan{
+            display: inline-block;
+            width:8em;
+            height: 1.2em;
+            padding: 0px 0px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .osInfoSpanHover{
+            display: none;
+            position: absolute;
+            background-color: black;
+            color: white;
+        }
+
+        .osInfoSpan:hover~.osInfoSpanHover{
+                border: 1px solid grey;
+                padding: 2px;
+                display: block;
+        }
+
+        .opBtn {
+            display: inline-block;
+        }
+
+		.midSpan{
+            display: inline-block;
+            width:3em;
+			height:1.2em;
+            overflow: hidden;
+			white-space: nowrap;
+            text-overflow: ellipsis;
+		}
+	</style>
 </head>
 <body>
 {{ $data := . -}}
@@ -240,54 +238,49 @@ const (
 
 <article>
     <hr>
-    <table id="文件表格">
-        <thead style="background-color: #EEEEFF;"><th>序号</th><th>机器ID</th><th>内核</th><th>OS信息</th><th>公网IP</th><th>心跳</th><th>状态</th></thead>
+    <table id="主机列表">
+        <thead style="background-color: #EEEEFF;"><th>内核</th><th>OS信息</th><th>公网IP</th><th>心跳</th><th>状态</th><th>机器ID</th><th>操作</th></thead>
         <tbody>
         {{- range $index,$rec := $data -}}
             <tr>
-                <td>{{$index}}</td>
-                <td>{{$rec.ID}}</td>
                 <td>{{$rec.Kernel}}</td>
-                <td>{{$rec.OsInfo}}</td>
+                <td><span class="osInfoSpan">{{$rec.OsInfo}}</span><span class="osInfoSpanHover">{{$rec.OsInfo}}</span></td>
                 <td>{{$rec.WanIP}}</td>
                 <td>{{$rec.Interval}}秒</td>
                 <td>{{ if eq $rec.Pickup 1 }}
                         正在勾起...
                     {{ else if ge $rec.Pickup 2 }}
-                        {{slice $rec.Timeout 11 16}}丢掉
+                        {{slice $rec.Timeout 8 10}}日{{slice $rec.Timeout 11 16}}释放
                     {{ else }}
                         未被勾住
                     {{ end }}
                 </td>
-                <td><form action="/line/del_host" method="GET">
+		<td><span class="midSpan">{{$rec.ID}}</span></td>
+                <td><form class="opBtn" action="/line/del_host" method="GET">
                         <input type="hidden"  name="mid" value="{{$rec.ID}}" />
                         <input type="submit" value="丢弃" />
                     </form>
-                </td>
 
                 {{ if lt $rec.Pickup 1 }}
-                <td><button onclick="pickup({{$rec.ID}})">勾住</button>
-                </td>
+	                <button class="opBtn" onclick="pickup({{$rec.ID}})">勾住</button>
                 {{end}}
 
                 {{ if ge $rec.Pickup 2 }}
-                <td><form action="/line/cmd" method="GET">
+                <form class="opBtn" action="/line/cmd" method="GET">
                         <input type="hidden"  name="mid" value="{{$rec.ID}}" />
                         <input type="submit" value="命令" />
-                    </form>
-                </td>
-                <td><form action="/line/rpxy" method="GET">
+		</form>                
+                <form class="opBtn" action="/line/rpxy" method="GET">
                         <input type="hidden"  name="mid" value="{{$rec.ID}}" />
                         <input type="submit" value="反代" />
-                    </form>
-                </td>
-                <td><form action="/line/filesystem" method="GET">
+                </form>
+                
+                <form class="opBtn" action="/line/filesystem" method="GET">
                         <input type="hidden"  name="mid" value="{{$rec.ID}}" />
                         <input type="submit" value="文件浏览" />
-                    </form>
-                </td>
+                </form>
                 {{end}}
-
+                </td>
             </tr>
         {{end}}
         </tbody>

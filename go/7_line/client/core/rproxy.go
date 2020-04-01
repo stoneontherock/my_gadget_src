@@ -13,6 +13,7 @@ import (
 var conn2Pool chan net.Conn
 var port2ConnM = make(map[string][]net.Conn)
 
+//todo 多次连接后， conn很多。conn的重用未实现
 func handleRPxy(pong *grpcchannel.Pong, cc grpcchannel.ChannelClient, fsAddr3 string) {
 	var reportResp grpcchannel.RPxyResp
 	err := json.Unmarshal(pong.Data, &reportResp)

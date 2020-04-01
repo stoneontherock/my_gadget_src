@@ -32,7 +32,7 @@ func init() {
 
 	getEnv(&HTTPListenAddr, "LINE_HTTP_LISTEN_ADDR")
 
-	fmt.Printf("Debug=%s  GRPCListenAddr=%s  HTTPListenAddr=%s  AdminName=%s Pv=%s",
+	fmt.Printf("Debug=%s  GRPCListenAddr=%s  HTTPListenAddr=%s  AdminName=%s Pv=%s\n",
 		Debug,
 		GRPCListenAddr,
 		HTTPListenAddr,
