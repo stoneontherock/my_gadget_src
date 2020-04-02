@@ -29,7 +29,7 @@ func init() {
 
 	tmp := "600"
 	getEnv(&tmp, "LINE_CHECK_ALIVE_INTERVAL")
-	cai, err := strconv.ParseInt(tmp,10,0)
+	cai, err := strconv.ParseInt(tmp, 10, 0)
 	if err == nil {
 		CheckAliveInterval = cai
 	}

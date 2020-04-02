@@ -57,11 +57,6 @@ func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_R
 		model.PongM[ping.Mid] = pongC
 	}
 
-	if ci.Pickup <= 0 {
-		logrus.Debugf("Report:丢弃%s", ping.Mid)
-		return nil
-	}
-
 	if ci.StartAt != ping.StartAt {
 		err := db.DB.Delete(&model.ClientInfo{ID: ping.Mid}).Error
 		if err != nil {
@@ -76,6 +71,11 @@ func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_R
 		}
 
 		return errors.New("startAt标记已经变更")
+	}
+
+	if ci.Pickup <= 0 {
+		logrus.Debugf("Report:丢弃%s", ping.Mid)
+		return nil
 	}
 
 	if ci.Pickup == 1 {

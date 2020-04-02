@@ -41,10 +41,9 @@ func checkAlive() {
 
 		now := time.Now().Unix()
 		for _, ci := range cis {
-			if now-int64(ci.LastReport) < server.CheckAliveInterval {
-				continue
+			if now-int64(ci.LastReport) >= server.CheckAliveInterval && ci.Pickup <= 0 {
+				DB.Delete(&model.ClientInfo{}, `id = ?`, ci.ID)
 			}
-			DB.Delete(&model.ClientInfo{}, `id = ?`, ci.ID)
 		}
 	}
 }
