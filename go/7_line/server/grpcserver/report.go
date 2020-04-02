@@ -11,14 +11,19 @@ import (
 )
 
 func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_ReportServer) error {
-	wanIP := getClientIPAddr(stream.Context())
-
 	needFin := true
 	defer func() {
 		if needFin {
 			sendFin(stream) //关闭当前stream
 		}
 	}()
+
+	//不存在chan, 就初始化 pong chan
+	pongC, ok := model.PongM[ping.Mid]
+	if !ok {
+		pongC = make(chan grpcchannel.Pong)
+		model.PongM[ping.Mid] = pongC
+	}
 
 	ci := model.ClientInfo{ID: ping.Mid}
 	err := db.DB.First(&ci).Error
@@ -27,34 +32,30 @@ func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_R
 		return err
 	}
 
+	logrus.Debugf("ci:%+v", ci)
+
 	if ci.LastReport == 0 {
 		//无则创建
-		err := db.DB.Create(&model.ClientInfo{
+		ci = model.ClientInfo{
 			ID:         ping.Mid,
-			WanIP:      wanIP,
+			WanIP:      getClientIPAddr(stream.Context()),
 			Kernel:     ping.Kernel,
 			OsInfo:     ping.OsInfo,
 			Interval:   ping.Interval,
 			StartAt:    ping.StartAt,
 			LastReport: int32(time.Now().Unix()),
-		}).Error
+		}
+		err := db.DB.Create(&ci).Error
 		if err != nil {
 			logrus.Errorf("Report:Create:%v", err)
 			return err
 		}
 	} else {
-		err := db.DB.Model(&ci).Update("last_report", int32(time.Now().Unix())).Error
+		err = db.DB.Model(&model.ClientInfo{ID: ping.Mid}).Update("last_report", int32(time.Now().Unix())).Error
 		if err != nil {
 			logrus.Errorf("Report:更新LastReport值失败:%v", err)
 			return err
 		}
-	}
-
-	//不存在chan, 就初始化 pong chan
-	pongC, ok := model.PongM[ping.Mid]
-	if !ok {
-		pongC = make(chan grpcchannel.Pong)
-		model.PongM[ping.Mid] = pongC
 	}
 
 	if ci.StartAt != ping.StartAt {
@@ -83,11 +84,8 @@ func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_R
 		needFin = false
 	}
 
-	logrus.Debugf("ci:%+v", ci)
-
 	now := time.Now()
-
-	lifetime := time.Unix(int64(ci.Lifetime),0)
+	lifetime := time.Unix(int64(ci.Lifetime), 0)
 	tmout := lifetime.Sub(now)
 	if tmout <= time.Second*60 {
 		tmout = time.Second * 60
