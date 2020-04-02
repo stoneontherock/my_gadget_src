@@ -40,7 +40,8 @@ func delHost(c *gin.Context) {
 	if ci.Pickup >= 1 {
 		pongC, ok := model.PongM[dhi.MID]
 		if ok {
-			func() {
+			go func() {
+				time.Sleep(time.Second * 5)
 				pongC <- grpcchannel.Pong{Action: "fin"}
 				time.Sleep(time.Millisecond * 100) //休息多久？
 				delete(model.PongM, dhi.MID)

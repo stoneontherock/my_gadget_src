@@ -77,7 +77,7 @@ func handlePong(pong grpcchannel.Pong, cc grpcchannel.ChannelClient) {
 	case "filesystem":
 		handleFilesystem(&pong, cc)
 	default:
-		println("不支持的acton\n")
+		println("不支持的action\n")
 	}
 }
 

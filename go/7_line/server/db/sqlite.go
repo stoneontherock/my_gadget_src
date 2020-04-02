@@ -3,6 +3,8 @@ package db
 import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"github.com/sirupsen/logrus"
+	"line/grpcchannel"
 	"line/server"
 	"line/server/model"
 	"line/server/panicerr"
@@ -41,9 +43,25 @@ func checkAlive() {
 
 		now := time.Now().Unix()
 		for _, ci := range cis {
-			if now-int64(ci.LastReport) >= server.CheckAliveInterval && ci.Pickup <= 0 {
-				DB.Delete(&model.ClientInfo{}, `id = ?`, ci.ID)
+			if now-int64(ci.LastReport) < server.CheckAliveInterval || ci.Pickup > 0 {
+				continue
 			}
+
+			DB.Delete(&model.ClientInfo{}, `id = ?`, ci.ID)
+			model.CloseAllConnections(ci.ID)
+			if ci.Pickup >= 1 {
+				pongC, ok := model.PongM[ci.ID]
+				if ok {
+					go func() {
+						time.Sleep(time.Second * 5)
+						pongC <- grpcchannel.Pong{Action: "fin"}
+						time.Sleep(time.Millisecond * 100) //休息多久？
+						delete(model.PongM, ci.ID)
+					}()
+				}
+			}
+
+			logrus.Debugf("%s寿终", ci.ID)
 		}
 	}
 }
