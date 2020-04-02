@@ -22,23 +22,30 @@ func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_R
 
 	ci := model.ClientInfo{ID: ping.Mid}
 	err := db.DB.First(&ci).Error
-	if err != nil {
-		if gorm.IsRecordNotFoundError(err) {
-			err := db.DB.Create(&model.ClientInfo{
-				ID:         ping.Mid,
-				WanIP:      wanIP,
-				Kernel:     ping.Kernel,
-				OsInfo:     ping.OsInfo,
-				Interval:   ping.Interval,
-				StartAt:    ping.StartAt,
-				LastReport: int32(time.Now().Unix()),
-			}).Error
-			if err != nil {
-				logrus.Errorf("Report:Create:%v", err)
-				return err
-			}
-		} else {
-			logrus.Errorf("Report:First:%v", err)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		logrus.Errorf("Report:First:%v", err)
+		return err
+	}
+
+	if ci.LastReport == 0 {
+		//无则创建
+		err := db.DB.Create(&model.ClientInfo{
+			ID:         ping.Mid,
+			WanIP:      wanIP,
+			Kernel:     ping.Kernel,
+			OsInfo:     ping.OsInfo,
+			Interval:   ping.Interval,
+			StartAt:    ping.StartAt,
+			LastReport: int32(time.Now().Unix()),
+		}).Error
+		if err != nil {
+			logrus.Errorf("Report:Create:%v", err)
+			return err
+		}
+	} else {
+		err := db.DB.Model(&ci).Update("last_report", int32(time.Now().Unix())).Error
+		if err != nil {
+			logrus.Errorf("Report:更新LastReport值失败:%v", err)
 			return err
 		}
 	}
@@ -79,8 +86,9 @@ func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_R
 	logrus.Debugf("ci:%+v", ci)
 
 	now := time.Now()
-	deadline, _ := time.ParseInLocation("2006-01-02 15:04:05", ci.Timeout, now.Location())
-	tmout := deadline.Sub(now)
+
+	lifetime := time.Unix(int64(ci.Lifetime),0)
+	tmout := lifetime.Sub(now)
 	if tmout <= time.Second*60 {
 		tmout = time.Second * 60
 	}

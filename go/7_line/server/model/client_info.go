@@ -6,7 +6,7 @@ type ClientInfo struct {
 	Kernel     string `gorm:"varchar(25)"`
 	OsInfo     string `gorm:"varchar(64)"`
 	Pickup     int8   // -1被标记为非活动 1表示申请捡起,2表示已经捡起
-	Timeout    string `gorm:"varchar(20)"` //捡起来多久才放下，例如2006-01-02 15:04:05
+	Lifetime   int32
 	Interval   int32
 	StartAt    int32
 	LastReport int32

@@ -33,8 +33,8 @@ func pickup(c *gin.Context) {
 		return
 	}
 
-	hms := time.Now().Add(time.Duration(pi.Timeout) * time.Minute).Format("2006-01-02 15:04:05")
-	err = db.DB.Model(&model.ClientInfo{ID: pi.MID}).Update("timeout", hms).Error
+	lifetime := time.Now().Add(time.Duration(pi.Timeout) * time.Minute).Unix()
+	err = db.DB.Model(&model.ClientInfo{ID: pi.MID}).Update("lifetime", lifetime).Error
 	if err != nil {
 		c.String(500, "修改timeout失败:"+err.Error())
 		return

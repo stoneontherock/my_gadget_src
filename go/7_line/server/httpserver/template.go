@@ -166,12 +166,12 @@ const (
 	<style>
         #主机列表{
             border-collapse: collapse;
-            border: 5px solid #EEEFFF;
+            border: 3px solid #EEEFFF;
 			white-space: nowrap;
         }
 
         #主机列表 th,#主机列表 td{
-            border: 5px solid #EEEFFF;
+            border: 3px solid #EEEFFF;
 			white-space: nowrap;
         }
 
@@ -218,40 +218,23 @@ const (
 	<div style="width=100%;text-align:right"><a href="/line/logout">退出</a></div>
 </header>
 
-<script>
-	function pickup(mid) {
-        let dur = prompt("勾起多少分钟后放下？",10);
-        let req = new XMLHttpRequest();
-
-        req.onreadystatechange=function(){
-            if (req.readyState==4){ 
-                if (req.status!=200){
-            	    window.alert(req.responseText);
-				}
-				location="/line/list_hosts";
-            }
-        }
-        req.open("GET","/line/change_pickup?pickup=1&timeout="+dur+"&mid="+mid,true);
-        req.send();
-    }
-</script>
-
 <article>
     <hr>
     <table id="主机列表">
-        <thead style="background-color: #EEFFFF;"><th>机器ID</th><th>内核</th><th>OS信息</th><th>公网IP</th><th>心跳</th><th>状态</th><th>操作</th></thead>
+        <thead style="background-color: #EEFFFF;"><th>机器ID</th><th>启动时间</th><th>公网IP</th><th>内核</th><th>OS信息</th><th>心跳</th><th>状态</th><th>操作</th></thead>
         <tbody>
         {{- range $index,$rec := $data -}}
             <tr>
                 <td><span class="midSpan briefSpan">{{$rec.ID}}</span><span class="hoverSpan">{{$rec.ID}}</span></td>
+                <td><span class="timeFormat">{{$rec.StartAt}}</span></td>  
+                <td>{{$rec.WanIP}}</td>
                 <td>{{$rec.Kernel}}</td>
                 <td><span class="osInfoSpan briefSpan">{{$rec.OsInfo}}</span><span class="hoverSpan">{{$rec.OsInfo}}</span></td>
-                <td>{{$rec.WanIP}}</td>
-                <td>{{$rec.Interval}}秒</td>
+                <td>{{$rec.Interval}}秒</td>  
                 <td>{{ if eq $rec.Pickup 1 }}
                         正在勾起...
-                    {{ else if ge $rec.Pickup 2 }}
-                        {{slice $rec.Timeout 8 10}}日{{slice $rec.Timeout 11 16}}释放
+                    {{ else if eq $rec.Pickup 2 }}
+                        <span class="timeFormat">{{$rec.Lifetime}}</span>释放
                     {{ else }}
                         未被勾住
                     {{ end }}
@@ -288,6 +271,33 @@ const (
     </table>
     <hr>
 </article>
+
+<script>
+	function pickup(mid) {
+        let dur = prompt("勾起多少分钟后放下？",10);
+        let req = new XMLHttpRequest();
+
+        req.onreadystatechange=function(){
+            if (req.readyState==4){ 
+                if (req.status!=200){
+            	    window.alert(req.responseText);
+				}
+				location="/line/list_hosts";
+            }
+        }
+        req.open("GET","/line/change_pickup?pickup=1&timeout="+dur+"&mid="+mid,true);
+        req.send();
+    }
+    
+    window.onload =  function() {
+        let tfs = document.getElementsByClassName("timeFormat");
+        for (i=0;i<tfs.length;i++) {
+            let ut = new Date(tfs[i].innerText * 1000)
+            tfs[i].innerText = ut.getDate()+"日"+ut.getHours()+":"+ut.getMinutes()
+        }
+    }
+</script>
+
 </body>
 </html>
 `
