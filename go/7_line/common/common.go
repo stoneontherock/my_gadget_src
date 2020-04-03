@@ -1,7 +1,7 @@
 package common
 
 import (
-	"github.com/sirupsen/logrus"
+	"fmt"
 	"io"
 	"math/rand"
 	"net"
@@ -12,36 +12,36 @@ import (
 func CopyData(src, dst net.Conn, dir string, serverCloseSocket bool) {
 	n, err := io.Copy(dst, src)
 	if err != nil {
-		logrus.Errorf("copyData:io.Copy:dir=%s, err=%v  n=%d B, src=%p,dst=%p\n", dir, err, n, src, dst)
+		fmt.Printf("[ERROR] copyData:io.Copy:dir=%s, err=%v  n=%d B, src=%p,dst=%p\n", dir, err, n, src, dst)
 		err = src.(*net.TCPConn).Close()
 		if err != nil {
-			logrus.Errorf("copyData: src.Close() dir=%s, err=%v  src=%p,dst=%p\n", dir, err, src, dst)
+			fmt.Printf("[ERROR] copyData: src.Close() dir=%s, err=%v  src=%p,dst=%p\n", dir, err, src, dst)
 		}
 		err = dst.(*net.TCPConn).Close()
 		if err != nil {
-			logrus.Errorf("copyData: dst.Close() dir=%s, err=%v  src=%p,dst=%p\n", dir, err, src, dst)
+			fmt.Printf("[ERROR] copyData: dst.Close() dir=%s, err=%v  src=%p,dst=%p\n", dir, err, src, dst)
 		}
 	}
 
-	logrus.Infof("copy数据,dir=%s 成功, %d Bytes, src=%p(%s), dst=%p(%s)", dir, n, src, src.LocalAddr(), dst, dst.LocalAddr())
+	fmt.Printf("copy数据,dir=%s 成功, %d Bytes, src=%p(%s), dst=%p(%s)\n", dir, n, src, src.LocalAddr(), dst, dst.LocalAddr())
 
 	err = src.(*net.TCPConn).CloseWrite()
 	if err != nil {
-		logrus.Errorf("copyData: src.CloseWrite() dir=%s, err=%v  src=%p,dst=%p\n", dir, err, src, dst)
+		fmt.Printf("[ERROR] copyData: src.CloseWrite() dir=%s, err=%v  src=%p,dst=%p\n", dir, err, src, dst)
 	}
 	err = dst.(*net.TCPConn).CloseRead()
 	if err != nil {
-		logrus.Errorf("copyData: dst.CloseRead() dir=%s, err=%v  src=%p,dst=%p\n", dir, err, src, dst)
+		fmt.Printf("[ERROR] copyData: dst.CloseRead() dir=%s, err=%v  src=%p,dst=%p\n", dir, err, src, dst)
 	}
 
 	if serverCloseSocket {
 		err = src.(*net.TCPConn).Close()
 		if err != nil {
-			logrus.Errorf("copyData: src.Close() dir=%s, err=%v  src=%p,dst=%p\n", dir, err, src, dst)
+			fmt.Printf("[ERROR] copyData: src.Close() dir=%s, err=%v  src=%p,dst=%p\n", dir, err, src, dst)
 		}
 		err = dst.(*net.TCPConn).Close()
 		if err != nil {
-			logrus.Errorf("copyData: dst.Close() dir=%s, err=%v  src=%p,dst=%p\n", dir, err, src, dst)
+			fmt.Printf("[ERROR] copyData: dst.Close() dir=%s, err=%v  src=%p,dst=%p\n", dir, err, src, dst)
 		}
 	}
 }
