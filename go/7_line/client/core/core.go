@@ -33,8 +33,8 @@ func Reporter(addr string) {
 func reportDo(conn *grpc.ClientConn) {
 	cc := grpcchannel.NewChannelClient(conn) //2.新建一个客户端stub来执行rpc方法
 
-	mainCtx, manCancelF := context.WithCancel(context.Background())
-	defer manCancelF()
+	mainCtx, mainCancelF := context.WithCancel(context.Background())
+	defer mainCancelF()
 
 	stream, err := cc.Report(mainCtx, &grpcchannel.Ping{
 		Mid:      staticInfo.MachineID,
@@ -49,7 +49,7 @@ func reportDo(conn *grpc.ClientConn) {
 		return
 	}
 
-	finCtx, loopCancel := context.WithCancel(context.TODO())
+	finCtx, loopCancelF := context.WithCancel(context.TODO())
 	for {
 		pong, err := stream.Recv()
 		if err != nil {
@@ -75,7 +75,7 @@ func reportDo(conn *grpc.ClientConn) {
 				}
 
 				closeAllConnection()
-				manCancelF()
+				mainCancelF()
 				log.Infof("释放，c0=%p,原因%s\n", c0, cause)
 			}(finCtx)
 			continue
@@ -83,7 +83,7 @@ func reportDo(conn *grpc.ClientConn) {
 
 		if pong.Action == "fin" {
 			log.Infof("收到fin, c0=%p\n", finCtx)
-			loopCancel()
+			loopCancelF()
 			return
 		}
 
