@@ -33,10 +33,10 @@ func Reporter(addr string) {
 func reportDo(conn *grpc.ClientConn) {
 	cc := grpcchannel.NewChannelClient(conn) //2.新建一个客户端stub来执行rpc方法
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	mainCtx, manCancelF := context.WithCancel(context.Background())
+	defer manCancelF()
 
-	stream, err := cc.Report(ctx, &grpcchannel.Ping{
+	stream, err := cc.Report(mainCtx, &grpcchannel.Ping{
 		Mid:      staticInfo.MachineID,
 		Kernel:   staticInfo.Kernel,
 		OsInfo:   staticInfo.OsInfo,
@@ -49,16 +49,11 @@ func reportDo(conn *grpc.ClientConn) {
 		return
 	}
 
+	finCtx, loopCancel := context.WithCancel(context.TODO())
 	for {
 		pong, err := stream.Recv()
 		if err != nil {
 			log.Errorf("reportDo:stream.Recv: %v\n", err)
-			return
-		}
-
-		if pong.Action == "fin" {
-			log.Infof("收到fin\n")
-			closeAllConnection()
 			return
 		}
 
@@ -68,16 +63,28 @@ func reportDo(conn *grpc.ClientConn) {
 				lt = 1
 			}
 			dur := time.Duration(lt)
-			tk := time.NewTicker(dur)
-			go func(tk *time.Ticker) {
-				log.Infof("本次任务将于%s终止, 持续%.0f秒\n", time.Now().Add(dur).Format("01-02 15:04:05"), dur.Seconds())
-				<-tk.C
+			log.Infof("客户端将于%s释放, 持续%.0f秒 c0=%p\n", time.Now().Add(dur).Format("01-02 15:04:05"), dur.Seconds(), finCtx)
+			go func(c0 context.Context) {
+				cause := ""
+				c1, _ := context.WithTimeout(c0, dur)
+				select {
+				case <-c1.Done():
+					cause = c1.Err().Error()
+				case <-c0.Done():
+					cause = c0.Err().Error()
+				}
+
 				closeAllConnection()
-				cancel()
-				log.Infof("任务终止\n")
-				tk.Stop()
-			}(tk)
+				manCancelF()
+				log.Infof("释放，c0=%p,原因%s\n", c0, cause)
+			}(finCtx)
 			continue
+		}
+
+		if pong.Action == "fin" {
+			log.Infof("收到fin, c0=%p\n", finCtx)
+			loopCancel()
+			return
 		}
 
 		log.Infof("收到被捡起的pong: %v\n", pong)
