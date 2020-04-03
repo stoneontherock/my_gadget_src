@@ -7,6 +7,7 @@ import (
 	"line/grpcchannel"
 	"line/server/db"
 	"line/server/model"
+	"strconv"
 	"time"
 )
 
@@ -79,16 +80,17 @@ func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_R
 		return nil
 	}
 
-	if ci.Pickup == 1 {
-		ChangePickup(ping.Mid, 2)
-		needFin = false
-	}
-
 	now := time.Now()
 	lifetime := time.Unix(int64(ci.Lifetime), 0)
 	tmout := lifetime.Sub(now)
 	if tmout <= time.Second*60 {
 		tmout = time.Second * 60
+	}
+
+	if ci.Pickup == 1 {
+		ChangePickup(ping.Mid, 2)
+		stream.Send(&grpcchannel.Pong{Action: "lifetime", Data: []byte(strconv.FormatInt(int64(tmout)+int64(time.Duration(ci.Interval)*time.Second), 10))})
+		needFin = false
 	}
 
 	tk := time.NewTicker(tmout)

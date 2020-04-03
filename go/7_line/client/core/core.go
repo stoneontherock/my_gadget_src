@@ -5,6 +5,7 @@ import (
 	"google.golang.org/grpc"
 	"line/client/log"
 	"line/grpcchannel"
+	"strconv"
 	"time"
 )
 
@@ -59,6 +60,24 @@ func reportDo(conn *grpc.ClientConn) {
 			log.Infof("收到fin\n")
 			closeAllConnection()
 			return
+		}
+
+		if pong.Action == "lifetime" {
+			lt, _ := strconv.Atoi(string(pong.Data))
+			if lt <= 0 {
+				lt = 1
+			}
+			dur := time.Duration(lt)
+			tk := time.NewTicker(dur)
+			go func(tk *time.Ticker) {
+				log.Infof("本次任务将于%s终止, 持续%.0f秒\n", time.Now().Add(dur).Format("01-02 15:04:05"), dur.Seconds())
+				<-tk.C
+				closeAllConnection()
+				cancel()
+				log.Infof("任务终止\n")
+				tk.Stop()
+			}(tk)
+			continue
 		}
 
 		log.Infof("收到被捡起的pong: %v\n", pong)
