@@ -62,8 +62,8 @@ func reportDo(conn *grpc.ClientConn) {
 			if lt <= 0 {
 				lt = 1
 			}
-			dur := time.Duration(lt)
-			log.Infof("客户端将于%s释放, 持续%.0f秒 c0=%p\n", time.Now().Add(dur).Format("01-02 15:04:05"), dur.Seconds(), finCtx)
+			dur := time.Duration(lt) * time.Second
+			log.Infof("客户端将于%s释放, 持续%d秒, c0=%p\n", time.Now().Add(dur).Format("01-02 15:04:05"), lt, finCtx)
 			go func(c0 context.Context) {
 				cause := ""
 				c1, _ := context.WithTimeout(c0, dur)

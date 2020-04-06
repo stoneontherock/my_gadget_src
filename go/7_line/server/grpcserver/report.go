@@ -89,7 +89,9 @@ func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_R
 
 	if ci.Pickup == 1 {
 		ChangePickup(ping.Mid, 2)
-		stream.Send(&grpcchannel.Pong{Action: "lifetime", Data: []byte(strconv.FormatInt(int64(tmout)+int64(time.Duration(ci.Interval)*time.Second), 10))})
+		clientLifetime := int32(tmout/1e9) + ci.Interval
+		logrus.Debugf("tmout=%d clientLiftime=%d", tmout, clientLifetime)
+		stream.Send(&grpcchannel.Pong{Action: "lifetime", Data: []byte(strconv.Itoa(int(clientLifetime)))})
 		needFin = false
 	}
 
