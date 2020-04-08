@@ -8,7 +8,7 @@ function fn_do(){
 			return 100
 		fi
 		gsettings set org.gnome.system.proxy mode manual 
-		ps=$(ps -ef |grep -v grep |grep "1:1080")
+		ps=$(ps -ef |grep -v grep |grep 'ssh .*:1080')
 		if [ -n "$ps" ]
 		then
 			echo "$ps"
@@ -24,7 +24,7 @@ function fn_do(){
 				printf "\e[31mincorrect password!\n\e[0m"
 				return 30 
 			fi
-			ps -ef |grep -v grep|grep 1:1080 && { return 0; break; }
+			ps -ef |grep -v grep|grep 'ssh .*:1080' && { return 0; break; }
 			echo -n "."
 			sleep 0.3
 		done
