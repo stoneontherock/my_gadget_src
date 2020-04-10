@@ -3,10 +3,10 @@ package core
 import (
 	"context"
 	"encoding/json"
-	"line/client/log"
+	"github.com/sirupsen/logrus"
 	"line/client/model"
-	"line/common"
-	"line/grpcchannel"
+	"line/common/connection"
+	"line/common/connection/pb"
 	"net"
 )
 
@@ -14,45 +14,45 @@ var conn2Pool chan net.Conn
 var port2ConnM = make(map[string][]net.Conn)
 
 //todo 多次连接后， conn很多。conn的重用未实现
-func handleRPxy(pong *grpcchannel.Pong, cc grpcchannel.ChannelClient, fsAddr3 string) {
-	var reportResp grpcchannel.RPxyResp
+func handleRPxy(pong *pb.Pong, cc pb.ChannelClient, fsAddr3 string) {
+	var reportResp pb.RPxyResp
 	err := json.Unmarshal(pong.Data, &reportResp)
 	if err != nil {
-		log.Errorf("handleRPxy:Unmarshal:pong.Data:%v\n", err)
+		logrus.Errorf("handleRPxy:Unmarshal:pong.Data:%v", err)
 		return
 	}
 
-	log.Infof("收到rpxy的pong: %+v\n", reportResp)
+	logrus.Infof("收到rpxy的pong: %+v", reportResp)
 	conn2Pool = make(chan net.Conn, reportResp.NumOfConn2)
 
 	ctx, cancel := context.WithCancel(context.TODO())
 
-	log.Infof("请求rpxy控制端...\n")
-	stream, err := cc.RProxyController(ctx, &grpcchannel.RPxyReq{Mid: staticInfo.MachineID, Port2: reportResp.Port2, Addr3: reportResp.Addr3, NumOfConn2: reportResp.NumOfConn2})
+	logrus.Infof("请求rpxy控制端...")
+	stream, err := cc.RProxyController(ctx, &pb.RPxyReq{Mid: staticInfo.MachineID, Port2: reportResp.Port2, Addr3: reportResp.Addr3, NumOfConn2: reportResp.NumOfConn2})
 	if err != nil {
-		log.Errorf("grpcchannel.RProxyController失败,%v\n", err)
+		logrus.Errorf("grpcchannel.RProxyController失败,%v", err)
 		cancel()
 		return
 	}
-	log.Infof("请求rpxy控制端 done\n")
+	logrus.Infof("请求rpxy控制端 done")
 
 	for {
 		resp, err := stream.Recv()
 		if err != nil {
-			log.Errorf("stream.Recv失败,%v\n", err)
+			logrus.Errorf("stream.Recv失败,%v", err)
 			cancel()
 			break
 		}
-		log.Infof("收到控制端下发的连接任务:%+v\n", resp)
+		logrus.Infof("收到控制端下发的连接任务:%+v", resp)
 
 		rcLen := len(conn2Pool)
-		log.Infof("rcLen=%d\n", rcLen)
+		logrus.Infof("rcLen=%d", rcLen)
 		nc := int(resp.NumOfConn2)
 		if rcLen < nc {
 			genRconn(resp.Port2, nc-rcLen)
 		}
 
-		log.Infof("收到服务端连接请求,要求建立中转: conn2Addr=%s\n", resp.Port2)
+		logrus.Infof("收到服务端连接请求,要求建立中转: conn2Addr=%s", resp.Port2)
 		if fsAddr3 != "" {
 			filesystemServer.port2 = resp.Port2
 			go bridge(fsAddr3, resp.Port2)
@@ -65,33 +65,33 @@ func handleRPxy(pong *grpcchannel.Pong, cc grpcchannel.ChannelClient, fsAddr3 st
 func bridge(addr3, port2 string) {
 	conn3, err := net.Dial("tcp", addr3)
 	if err != nil {
-		log.Errorf("连接近端失败,addr3:%s\n", addr3)
+		logrus.Errorf("连接近端失败,addr3:%s", addr3)
 		return
 	}
-	log.Infof("近端连接已经建立:%s\n", conn3.LocalAddr())
+	logrus.Infof("近端连接已经建立:%s", conn3.LocalAddr())
 	port2ConnM[port2] = append(port2ConnM[port2], conn3)
 
 	conn2 := <-conn2Pool
-	go common.CopyData(conn2, conn3, "2->3", false)
-	common.CopyData(conn3, conn2, "2<-3", true)
+	go connection.CopyData(conn2, conn3, "2->3", false)
+	connection.CopyData(conn3, conn2, "2<-3", true)
 }
 
 func genRconn(port2 string, cnt int) {
-	addr2 := model.ServerIPAddr + port2
+	addr2 := model.GRPCServerIPaddr + port2
 	for i := 0; i < cnt; i++ {
 		conn2, err := net.Dial("tcp", addr2)
 		if err != nil {
-			log.Errorf("连接远端失败,addr2:%s\n", addr2)
+			logrus.Errorf("连接远端失败,addr2:%s", addr2)
 			return
 		}
-		log.Infof("远端连接已经建立:%s->%s conn2=%p\n", conn2.LocalAddr(), conn2.RemoteAddr(), conn2)
+		logrus.Infof("远端连接已经建立:%s->%s conn2=%p", conn2.LocalAddr(), conn2.RemoteAddr(), conn2)
 		port2ConnM[port2] = append(port2ConnM[port2], conn2)
 		conn2Pool <- conn2
-		log.Infof("conn2已经放入池子 conn2=%p\n", conn2)
+		logrus.Infof("conn2已经放入池子 conn2=%p", conn2)
 	}
 }
 
-func handleCloseConnections(pong *grpcchannel.Pong) {
+func handleCloseConnections(pong *pb.Pong) {
 	port2 := string(pong.Data)
 	if filesystemServer.port2 == port2 {
 		if filesystemServer.server != nil {
@@ -101,13 +101,13 @@ func handleCloseConnections(pong *grpcchannel.Pong) {
 		filesystemServer.port2 = ""
 	}
 
-	//log.Infof("**** port2ConnM=%v pong.Data=%v\n", port2ConnM, port2)
+	//logrus.Infof("**** port2ConnM=%v pong.Data=%v", port2ConnM, port2)
 	connList, ok := port2ConnM[port2]
 	if !ok {
 		return
 	}
 	for _, conn := range connList {
-		log.Infof("关闭conn %p\n", conn)
+		logrus.Infof("关闭conn %p", conn)
 		conn.Close()
 	}
 

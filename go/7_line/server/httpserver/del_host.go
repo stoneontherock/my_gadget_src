@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/sirupsen/logrus"
-	"line/grpcchannel"
+	"line/common/connection/pb"
 	"line/server/db"
 	"line/server/model"
 	"time"
@@ -42,7 +42,7 @@ func delHost(c *gin.Context) {
 		if ok {
 			go func() {
 				time.Sleep(time.Second * 5)
-				pongC <- grpcchannel.Pong{Action: "fin"}
+				pongC <- pb.Pong{Action: "fin"}
 				time.Sleep(time.Millisecond * 100) //休息多久？
 				delete(model.PongM, dhi.MID)
 			}()

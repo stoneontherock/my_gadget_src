@@ -4,8 +4,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/sirupsen/logrus"
-	"line/server"
-	"line/server/panicerr"
+	"line/common/log"
+	"line/common/panicerr"
+	"line/server/model"
 	"net"
 	"time"
 )
@@ -51,7 +52,7 @@ func newEngine() *gin.Engine {
 
 func Serve() {
 	r := newEngine()
-	err := r.RunTLS(server.HTTPListenAddr, server.BinDir+"/server.crt", server.BinDir+"/server.key")
+	err := r.RunTLS(model.HTTPListenAddr, log.BinDir+"/server.crt", log.BinDir+"/server.key")
 	panicerr.Handle(err, "启动http服务失败:")
 }
 
@@ -97,7 +98,7 @@ func login(c *gin.Context) {
 		return
 	}
 
-	if in.User != server.AdminName || in.Pstr != server.AdminPv {
+	if in.User != model.AdminName || in.Pstr != model.AdminPv {
 		time.Sleep(time.Second * 1)
 		c.String(401, "login:用户名或密码错误")
 	}

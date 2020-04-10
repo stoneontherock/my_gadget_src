@@ -1,9 +1,10 @@
-0-windows下的客户端可以通过nssm来注册服务， nssm install <ServiceName> <binPath>
+0-windows下的客户端可以通过nssm来注册服务， nssm install <ServiceName> <binPath>， 设置环境变量nssm set <serviceName> AppEnvironmentExtra <key=value> [key1=value...]
 1-客户端的环境变量: 
 	LINE_GRPC_SERVER=grpc服务端的地址 
 	LINE_REPORT_INTERVAL=上报信息的间隔，单位秒,默认60s
+	LINE_LOG_LEVEL=日志级别，默认使用panic，日志路径和可执行文件同目录
 2-服务端的环境变量: 
-	LINE_STDOUT_DEBUG     开启DEBUG日志，并打印到stdout,取值on/off 
+	LINE_LOG_LEVEL=日志级别，默认使用panic，日志路径和可执行文件同目录
 	LINE_GRPC_LISTEN_ADDR
 	LINE_HTTP_LISTEN_ADDR
 	LINE_HTTP_ADMIN

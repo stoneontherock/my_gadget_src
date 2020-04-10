@@ -6,7 +6,7 @@ package runcmd
 import (
 	"bytes"
 	"fmt"
-	"line/client/log"
+	"github.com/sirupsen/logrus"
 	"os/exec"
 	"strings"
 	"syscall"
@@ -16,7 +16,7 @@ import (
 
 // Run 带timeout执行系统命令，超时就杀死子进程
 func Run(tmout int, strs ...string) (int, string, string) {
-	//log.Infof("=== del === cmd:+%v len=%d\n", cmd, len(cmd))
+	//logrus.Infof("=== del === cmd:+%v len=%d", cmd, len(cmd))
 	for i, str := range strs {
 		strs[i] = strings.Replace(str, "\r\n", "\n", -1)
 	}
@@ -36,11 +36,11 @@ func Run(tmout int, strs ...string) (int, string, string) {
 
 	err := c.Start()
 	if err != nil {
-		log.Errorf("c.Start(%v),%v\n", strs, err)
+		logrus.Errorf("c.Start(%v),%v", strs, err)
 		return -1, "", err.Error()
 	}
 
-	log.Infof("Start(%v)\n", strs)
+	logrus.Debugf("Start(%v)", strs)
 
 	var (
 		ws  syscall.WaitStatus
@@ -55,17 +55,17 @@ func Run(tmout int, strs ...string) (int, string, string) {
 		time.Sleep(interval)
 		chp, err = syscall.Wait4(c.Process.Pid, &ws, syscall.WNOHANG, nil)
 		if err != nil {
-			log.Errorf("syscall.Wait4 err,%v\n", err)
+			logrus.Errorf("syscall.Wait4 err,%v", err)
 			return -2, "", fmt.Sprintf("syscall.Wait4(),err:%v", err)
 		}
 		if chp == c.Process.Pid {
-			log.Infof("Child process, exited code=%d\n", ws.ExitStatus())
+			logrus.Debugf("Child process, exited code=%d", ws.ExitStatus())
 			break
 		}
 	}
 
 	if i >= max {
-		log.Errorf("cmd:%v, TIMEOUT\n", strs)
+		logrus.Errorf("cmd:%v, TIMEOUT", strs)
 		c.Process.Kill()
 		return -3, "", fmt.Sprintf("timeout,loop=%d,output=%s", i, stdout.String()+stderr.String())
 	}

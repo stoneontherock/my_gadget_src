@@ -4,14 +4,14 @@ import (
 	"errors"
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
-	"line/grpcchannel"
+	"line/common/connection/pb"
 	"line/server/db"
 	"line/server/model"
 	"strconv"
 	"time"
 )
 
-func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_ReportServer) error {
+func (s *grpcServer) Report(ping *pb.Ping, stream pb.Channel_ReportServer) error {
 	needFin := true
 	defer func() {
 		if needFin {
@@ -22,7 +22,7 @@ func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_R
 	//不存在chan, 就初始化 pong chan
 	pongC, ok := model.PongM[ping.Mid]
 	if !ok {
-		pongC = make(chan grpcchannel.Pong)
+		pongC = make(chan pb.Pong)
 		model.PongM[ping.Mid] = pongC
 	}
 
@@ -68,7 +68,7 @@ func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_R
 		if ci.Pickup == 2 {
 			go func() {
 				model.CloseAllConnections(ping.Mid)
-				pongC <- grpcchannel.Pong{Action: "fin"} //这里的sendFin是为了关闭已经失效的stream
+				pongC <- pb.Pong{Action: "fin"} //这里的sendFin是为了关闭已经失效的stream
 			}()
 		}
 
@@ -91,7 +91,7 @@ func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_R
 		ChangePickup(ping.Mid, 2)
 		clientLifetime := int32(tmout/1e9) + ci.Interval
 		logrus.Debugf("tmout=%d clientLiftime=%d", tmout, clientLifetime)
-		stream.Send(&grpcchannel.Pong{Action: "lifetime", Data: []byte(strconv.Itoa(int(clientLifetime)))})
+		stream.Send(&pb.Pong{Action: "lifetime", Data: []byte(strconv.Itoa(int(clientLifetime)))})
 		needFin = false
 	}
 
@@ -124,7 +124,7 @@ func (s *grpcServer) Report(ping *grpcchannel.Ping, stream grpcchannel.Channel_R
 			if pong.Action == "cmd" {
 				logrus.Debugf("Report:创建cmd响应chan...")
 				if _, ok := model.CmdOutM[ping.Mid]; !ok {
-					model.CmdOutM[ping.Mid] = make(chan grpcchannel.CmdOutput)
+					model.CmdOutM[ping.Mid] = make(chan pb.CmdOutput)
 					logrus.Debugf("Report:创建cmd响应chan...done")
 				}
 			}
@@ -141,8 +141,8 @@ func ChangePickup(mid string, pickup int) error {
 	return nil
 }
 
-func sendFin(stream grpcchannel.Channel_ReportServer) {
-	err := stream.Send(&grpcchannel.Pong{Action: "fin"})
+func sendFin(stream pb.Channel_ReportServer) {
+	err := stream.Send(&pb.Pong{Action: "fin"})
 	if err != nil {
 		logrus.Warnf("Report:send fin:%v", err)
 	}

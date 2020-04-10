@@ -5,8 +5,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/sirupsen/logrus"
-	"line/common"
-	"line/grpcchannel"
+	"line/common/connection/pb"
+	"line/common/sharedmodel"
 	"line/server/model"
 	"time"
 )
@@ -42,7 +42,7 @@ func command(c *gin.Context) {
 		return
 	}
 
-	data, err := json.Marshal(&common.CmdPong{Cmd: ci.Cmd, InShell: ci.InShell, Timeout: ci.Timeout})
+	data, err := json.Marshal(&sharedmodel.CmdPong{Cmd: ci.Cmd, InShell: ci.InShell, Timeout: ci.Timeout})
 	if err != nil {
 		respJSAlert(c, 400, "json.Marshal:"+err.Error())
 		return
@@ -57,11 +57,11 @@ func command(c *gin.Context) {
 	ch, ok := model.CmdOutM[ci.MID]
 
 	logrus.Debugf("command:发送pongC...")
-	pongC <- grpcchannel.Pong{Action: "cmd", Data: data}
+	pongC <- pb.Pong{Action: "cmd", Data: data}
 	logrus.Debugf("command:发送pongC done, cmdout ch addr:%p, ok:%t", ch, ok)
 	//time.Sleep(time.Millisecond)
 
-	var cmdOutC chan grpcchannel.CmdOutput
+	var cmdOutC chan pb.CmdOutput
 	for i := 0; i < ci.Timeout*100; i++ { //这里的100和下面的毫秒数相关
 		time.Sleep(time.Millisecond * 10)
 		cmdOutC, ok = model.CmdOutM[ci.MID]

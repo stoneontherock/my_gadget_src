@@ -4,10 +4,10 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/sirupsen/logrus"
-	"line/grpcchannel"
-	"line/server"
+	"line/common/connection/pb"
+	"line/common/log"
+	"line/common/panicerr"
 	"line/server/model"
-	"line/server/panicerr"
 	oslog "log"
 	"os"
 	"time"
@@ -17,7 +17,7 @@ var DB *gorm.DB
 
 func InitSQLite() {
 	var err error
-	DB, err = gorm.Open("sqlite3", server.BinDir+"/data.sqlite3")
+	DB, err = gorm.Open("sqlite3", log.BinDir+"/data.sqlite3")
 	//defer DB.Close()
 
 	DB.AutoMigrate(&model.ClientInfo{})
@@ -33,7 +33,7 @@ func InitSQLite() {
 
 func checkAlive() {
 	for {
-		time.Sleep(time.Second * time.Duration(server.CheckAliveInterval))
+		time.Sleep(time.Second * time.Duration(model.CheckAliveInterval))
 
 		var cis []model.ClientInfo
 		err := DB.Model(&model.ClientInfo{}).Find(&cis).Error
@@ -43,7 +43,7 @@ func checkAlive() {
 
 		now := time.Now().Unix()
 		for _, ci := range cis {
-			if now-int64(ci.LastReport) < server.CheckAliveInterval || ci.Pickup > 0 {
+			if now-int64(ci.LastReport) < model.CheckAliveInterval || ci.Pickup > 0 {
 				continue
 			}
 
@@ -54,7 +54,7 @@ func checkAlive() {
 				if ok {
 					go func() {
 						time.Sleep(time.Second * 5)
-						pongC <- grpcchannel.Pong{Action: "fin"}
+						pongC <- pb.Pong{Action: "fin"}
 						time.Sleep(time.Millisecond * 100) //休息多久？
 						delete(model.PongM, ci.ID)
 					}()

@@ -2,7 +2,7 @@ package model
 
 import (
 	"github.com/sirupsen/logrus"
-	"line/grpcchannel"
+	"line/common/connection/pb"
 	"net"
 )
 
@@ -12,9 +12,9 @@ import (
 //	M  map[string]chan grpcchannel.Pong
 //}
 
-var PongM = make(map[string]chan grpcchannel.Pong)
+var PongM = make(map[string]chan pb.Pong)
 
-var CmdOutM = make(map[string]chan grpcchannel.CmdOutput)
+var CmdOutM = make(map[string]chan pb.CmdOutput)
 
 var RPxyConn2M = make(map[string]chan *net.TCPConn)
 var RPxyConn1M = make(map[string]chan *net.TCPConn)
@@ -44,7 +44,7 @@ func CloseConnections(label, mid string) {
 				go func() {
 					//time.Sleep(time.Second * 1) //todo 延迟多久？
 					//logrus.Debugf("closeConnection:发送关闭连接命令到客户端: port2=%s ", v)
-					PongM[mid] <- grpcchannel.Pong{Action: "closeConnections", Data: []byte(v)}
+					PongM[mid] <- pb.Pong{Action: "closeConnections", Data: []byte(v)}
 					//logrus.Debugf("closeConnection:发送关闭连接命令到客户端: port2=%s  [done]", v)
 				}()
 			default:

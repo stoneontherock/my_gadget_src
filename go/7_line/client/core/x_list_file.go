@@ -29,7 +29,7 @@ package core
 //
 //	_, err := cc.ListFile(ctx, fl)
 //	if err != nil {
-//		log.Errorf("cc.ListFile:%v\n", err)
+//		logrus.Errorf("cc.ListFile:%v", err)
 //		return
 //	}
 //}
@@ -43,7 +43,7 @@ package core
 //	var fi []os.FileInfo
 //	fi, err := ioutil.ReadDir(dir)
 //	if err != nil {
-//		log.Errorf("ReadDir(),%v\n", err)
+//		logrus.Errorf("ReadDir(),%v", err)
 //		fsList.Err = err.Error()
 //		return &fsList
 //	}

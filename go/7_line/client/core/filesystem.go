@@ -3,12 +3,13 @@ package core
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"html/template"
 	"io"
-	"line/client/log"
 	"line/client/model"
-	"line/common"
-	"line/grpcchannel"
+	"line/common/connection"
+	"line/common/connection/pb"
+	"line/common/panicerr"
 	"net"
 	"net/http"
 	"net/url"
@@ -31,15 +32,15 @@ var filesystemServer fsServer
 var winDiskIndex = 0
 var winSlash string
 
-func handleFilesystem(pong *grpcchannel.Pong, cc grpcchannel.ChannelClient) {
-	var arg grpcchannel.RPxyResp
+func handleFilesystem(pong *pb.Pong, cc pb.ChannelClient) {
+	var arg pb.RPxyResp
 	err := json.Unmarshal(pong.Data, &arg)
 	if err != nil {
-		log.Errorf("handleFilesystem: Unmarshal json:%v\n", err)
+		logrus.Errorf("handleFilesystem: Unmarshal json:%v", err)
 		return
 	}
 
-	port := strconv.Itoa(int(common.RandomAvaliblePort()))
+	port := strconv.Itoa(int(connection.RandomAvaliblePort()))
 	addr3 := "127.0.0.1:" + port
 	webRoot := "/"
 	if runtime.GOOS == "windows" {
@@ -61,7 +62,7 @@ func init() {
 
 	var err error
 	errTemplate, err = template.New("errTemp").Parse(HTML_ERR)
-	errFatal(err)
+	panicerr.Handle(err)
 
 	dirNameFunc := func(path string) string {
 		path = filepath.ToSlash(filepath.Dir(strings.TrimRight(path, "/")))
@@ -72,7 +73,7 @@ func init() {
 	}
 
 	dirTemplate, err = template.New("dirTemp").Funcs(template.FuncMap{"dirName": dirNameFunc}).Parse(HTML_DIR)
-	errFatal(err)
+	panicerr.Handle(err)
 }
 
 func serveFilesystem(addr, rootDir string) {
@@ -103,7 +104,7 @@ func serveFilesystem(addr, rootDir string) {
 	}
 	err = filesystemServer.server.Serve(ln)
 	if err != nil {
-		log.Errorf("Server.Serves()失败,%v\n", err)
+		logrus.Errorf("Server.Serves()失败,%v", err)
 		return
 	}
 }
@@ -161,14 +162,17 @@ func listFS(wr http.ResponseWriter, req *http.Request, path string) {
 		return
 	}
 
-	log.Infof("%q 下载了 %q, %d字节\n", clientIP(req.RemoteAddr), path, fi.Size())
+	logrus.Infof("%q 下载了 %q, %d字节", clientIP(req.RemoteAddr), path, fi.Size())
 	http.ServeFile(wr, req, path)
 }
 
 func uploadFiles(wr http.ResponseWriter, req *http.Request, path string) {
 	begin := time.Now()
 	err := os.Chdir(path)
-	errFatal(err)
+	if err != nil {
+		http.Error(wr, err.Error(), 500)
+		return
+	}
 
 	req.ParseMultipartForm(64 << 20) //64MB内存buffer
 	var uplFail, upSucc int
@@ -229,7 +233,7 @@ func uploadFiles(wr http.ResponseWriter, req *http.Request, path string) {
 		if err != nil {
 			uplFail++
 		} else {
-			log.Infof("%q 上传 %q 成功, %d字节\n", clientIP(req.RemoteAddr), fname, n)
+			logrus.Infof("%q 上传 %q 成功, %d字节", clientIP(req.RemoteAddr), fname, n)
 			upSucc++
 			totalSize += n
 		}
@@ -240,7 +244,7 @@ func uploadFiles(wr http.ResponseWriter, req *http.Request, path string) {
 	var dur = float64(time.Now().Sub(begin)) / float64(time.Second)
 	var totalMB = float64(totalSize) / 1024.0 / 1024.0
 	var speed = totalMB / dur
-	log.Infof("平均速率:%.2f MB/s, 耗时%.2fs, 总大小%.2f MB  %d\n", speed, dur, totalMB, time.Now().Sub(begin))
+	logrus.Infof("平均速率:%.2f MB/s, 耗时%.2fs, 总大小%.2f MB  %d", speed, dur, totalMB, time.Now().Sub(begin))
 
 	fmt.Fprintf(wr, UPLOAD_STATISTIC, "/filesystem/"+path, 3+len(strings.Split(rename, "<br />")), speed, dur, totalMB, uplFail, upSucc, rename)
 }
@@ -249,9 +253,12 @@ func clientIP(remoteAddr string) string {
 	return remoteAddr[:strings.LastIndex(remoteAddr, ":")]
 }
 
-func renderHTMLErr(wr io.Writer, errStr string) {
+func renderHTMLErr(wr http.ResponseWriter, errStr string) {
 	err := errTemplate.Execute(wr, errStr)
-	errFatal(err)
+	if err != nil {
+		http.Error(wr, err.Error(), 500)
+		return
+	}
 }
 
 type fsList struct {
@@ -275,7 +282,7 @@ func (fl fiList) Swap(i, j int) {
 	fl[i], fl[j] = fl[j], fl[i]
 }
 
-func renderHTMLDir(wr io.Writer, path string, fis []os.FileInfo) {
+func renderHTMLDir(wr http.ResponseWriter, path string, fis []os.FileInfo) {
 	fs := make([]os.FileInfo, len(fis))
 	ds := make([]os.FileInfo, len(fis))
 	f := 0
@@ -305,7 +312,10 @@ func renderHTMLDir(wr io.Writer, path string, fis []os.FileInfo) {
 	sort.Sort(fiList(fl.Files))
 	sort.Sort(fiList(fl.Dirs))
 	err := dirTemplate.Execute(wr, fl)
-	errFatal(err)
+	if err != nil {
+		http.Error(wr, err.Error(), 500)
+		return
+	}
 }
 
 func getPath(urlPath, rootDir string) (string, error) {
@@ -320,12 +330,6 @@ func getPath(urlPath, rootDir string) (string, error) {
 	urlPath = filepath.ToSlash(filepath.Clean(urlPath))
 
 	return urlPath, nil
-}
-
-func errFatal(err error) {
-	if err != nil {
-		panic(err)
-	}
 }
 
 const (

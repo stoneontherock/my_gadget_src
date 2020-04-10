@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"line/common"
-	"line/grpcchannel"
+	"line/common/connection"
+	"line/common/connection/pb"
 	"line/server/model"
 	"net"
 	"net/url"
@@ -47,8 +47,8 @@ func filesystem(c *gin.Context) {
 		}
 	}
 
-	port1 := ":" + strconv.Itoa(int(common.RandomAvaliblePort()))
-	port2 := ":" + strconv.Itoa(int(common.RandomAvaliblePort()))
+	port1 := ":" + strconv.Itoa(int(connection.RandomAvaliblePort()))
+	port2 := ":" + strconv.Itoa(int(connection.RandomAvaliblePort()))
 
 	pongC, ok := model.PongM[fi.MID]
 	if !ok {
@@ -62,14 +62,14 @@ func filesystem(c *gin.Context) {
 		return
 	}
 
-	rpr := grpcchannel.RPxyResp{Port2: port2, NumOfConn2: 3}
+	rpr := pb.RPxyResp{Port2: port2, NumOfConn2: 3}
 	data, err := json.Marshal(&rpr)
 	if err != nil {
 		respJSAlert(c, 500, "序列化到pong data失败:"+err.Error())
 		return
 	}
 
-	pongC <- grpcchannel.Pong{Action: "filesystem", Data: data}
+	pongC <- pb.Pong{Action: "filesystem", Data: data}
 
 	dm, port, _ := net.SplitHostPort(c.Request.Host)
 	scheme := "http://"

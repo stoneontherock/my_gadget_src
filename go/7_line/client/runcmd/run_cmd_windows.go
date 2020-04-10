@@ -6,10 +6,10 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"golang.org/x/text/transform"
 	"io/ioutil"
-	"line/client/log"
 	"line/client/model"
 	"os/exec"
 	"regexp"
@@ -33,17 +33,17 @@ func Run(tmout int, cmd ...string) (int, string, string) {
 
 	err := c.Start()
 	if err != nil {
-		log.Errorf("exec.Cmd.Start(%v),%v\n", cmd, err)
+		logrus.Errorf("exec.Cmd.Start(%v),%v", cmd, err)
 		return -1, "", err.Error()
 	}
-	log.Infof("Start(%s)\n", cmd)
+	logrus.Debugf("Start(%s)", cmd)
 
 	ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second*time.Duration(tmout))
 
 	go func() {
 		err := c.Wait()
 		if err != nil {
-			log.Errorf("等待结果失败, err=%v\n", err)
+			logrus.Errorf("等待结果失败, err=%v", err)
 		}
 		cancelFunc()
 	}()
@@ -52,7 +52,7 @@ func Run(tmout int, cmd ...string) (int, string, string) {
 	if ctx.Err() == context.DeadlineExceeded {
 		err = c.Process.Kill()
 		if err != nil {
-			log.Errorf("杀死子进程失败, cmd = %v, err=%v\n", cmd, err)
+			logrus.Errorf("杀死子进程失败, cmd = %v, err=%v", cmd, err)
 			return -4, "", fmt.Sprintf("等待子进程超时,cmd=%v, err=%v", cmd, err)
 		}
 		return -3, "", fmt.Sprintf("等待结果超时, 正常结束子进程。 cmd=%v", cmd)

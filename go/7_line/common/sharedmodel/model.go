@@ -1,4 +1,4 @@
-package common
+package sharedmodel
 
 type CmdPong struct {
 	Cmd     string

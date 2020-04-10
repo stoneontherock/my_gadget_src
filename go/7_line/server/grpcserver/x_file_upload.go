@@ -22,7 +22,7 @@ package grpcserver
 //		}
 //
 //		if err != nil {
-//			logrus.Infof("FileUp:fus.Recv:%v\n", err)
+//			logrus.Infof("FileUp:fus.Recv:%v", err)
 //			return err
 //		}
 //

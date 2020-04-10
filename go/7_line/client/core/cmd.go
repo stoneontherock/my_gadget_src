@@ -3,22 +3,22 @@ package core
 import (
 	"context"
 	"encoding/json"
-	"line/client/log"
+	"github.com/sirupsen/logrus"
 	"line/client/runcmd"
-	"line/common"
-	"line/grpcchannel"
+	"line/common/connection/pb"
+	"line/common/sharedmodel"
 	"regexp"
 	"time"
 )
 
 var repRegex = regexp.MustCompile(`[ \r\t]+`)
 
-func handleCMD(pong *grpcchannel.Pong, cc grpcchannel.ChannelClient) {
-	println("cmd:", string(pong.Data))
-	var cmd common.CmdPong
+func handleCMD(pong *pb.Pong, cc pb.ChannelClient) {
+	logrus.Debugf("cmd: %s", string(pong.Data))
+	var cmd sharedmodel.CmdPong
 	err := json.Unmarshal(pong.Data, &cmd)
 	if err != nil {
-		log.Errorf("Unmarshal:%v\n", err)
+		logrus.Errorf("Unmarshal:%v", err)
 		return
 	}
 
@@ -40,9 +40,9 @@ func handleCMD(pong *grpcchannel.Pong, cc grpcchannel.ChannelClient) {
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*60)
 	defer cancel()
 
-	_, err = cc.CmdResult(ctx, &grpcchannel.CmdOutput{ReturnCode: int32(rc), Stdout: stdout, Stderr: stderr, Mid: staticInfo.MachineID})
+	_, err = cc.CmdResult(ctx, &pb.CmdOutput{ReturnCode: int32(rc), Stdout: stdout, Stderr: stderr, Mid: staticInfo.MachineID})
 	if err != nil {
-		log.Errorf("cc.CmdResult:%v\n", err)
+		logrus.Errorf("cc.CmdResult:%v", err)
 		return
 	}
 }

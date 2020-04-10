@@ -1,31 +1,26 @@
-package server
+package model
 
 import (
 	"fmt"
-	"line/server/panicerr"
+	"line/common/panicerr"
 	"os"
-	"path/filepath"
 	"strconv"
 )
 
 var (
-	BinDir string
-
 	CheckAliveInterval int64
-
-	Debug = "off"
 
 	GRPCListenAddr = ":65000"
 	HTTPListenAddr = ":65080"
 
-	AdminName = "管理员"
-	AdminPv   = "zh@85058"
+	AdminName = ""
+	AdminPv   = ""
+
+	LogLevel = "info"
 )
 
 func init() {
 	var err error
-	BinDir, err = filepath.Abs(filepath.Dir(os.Args[0]))
-	panicerr.Handle(err, "获取可执行文件所在路径的绝对路径失败")
 
 	tmp := "600"
 	getEnv(&tmp, "LINE_CHECK_ALIVE_INTERVAL")
@@ -34,18 +29,19 @@ func init() {
 		CheckAliveInterval = cai
 	}
 
-	getEnv(&Debug, "LINE_DEBUG")
-
+	getEnv(&LogLevel, "LINE_LOG_LEVEL")
 	getEnv(&GRPCListenAddr, "LINE_GRPC_LISTEN_ADDR")
-
-	getEnv(&AdminName, "LINE_HTTP_ADMIN")
-	getEnv(&AdminPv, "LINE_HTTP_PASSWD")
-
 	getEnv(&HTTPListenAddr, "LINE_HTTP_LISTEN_ADDR")
+
+	AdminName = os.Getenv("LINE_HTTP_ADMIN")
+	AdminPv = os.Getenv("LINE_HTTP_PASSWD")
+	if AdminName == "" || AdminPv == "" {
+		panicerr.Handle(fmt.Errorf("环境变量LINE_HTTP_ADMIN或LINE_HTTP_PASSWD没有赋值"))
+	}
 
 	fmt.Printf("CheckAliveInterval=%d Debug=%s  GRPCListenAddr=%s  HTTPListenAddr=%s  AdminName=%s Pv=%s\n",
 		CheckAliveInterval,
-		Debug,
+		LogLevel,
 		GRPCListenAddr,
 		HTTPListenAddr,
 		AdminName,

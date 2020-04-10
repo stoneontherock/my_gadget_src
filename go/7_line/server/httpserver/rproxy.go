@@ -5,8 +5,8 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/square/go-jose.v2/json"
-	"line/common"
-	"line/grpcchannel"
+	"line/common/connection"
+	"line/common/connection/pb"
 	"line/server/model"
 	"net"
 	"strconv"
@@ -59,12 +59,12 @@ func rProxy(c *gin.Context) {
 	}
 
 	port1 := ":" + ri.Port1
-	if !common.IsPortAvalible(port1) {
+	if !connection.IsPortAvalible(port1) {
 		respJSAlert(c, 400, "port1不可用:")
 		return
 	}
 
-	port2 := ":" + strconv.Itoa(int(common.RandomAvaliblePort()))
+	port2 := ":" + strconv.Itoa(int(connection.RandomAvaliblePort()))
 
 	pongC, ok := model.PongM[ri.MID]
 	if !ok {
@@ -78,14 +78,14 @@ func rProxy(c *gin.Context) {
 		return
 	}
 
-	rpr := grpcchannel.RPxyResp{Port2: port2, Addr3: ri.Addr3, NumOfConn2: ri.NumOfConn2}
+	rpr := pb.RPxyResp{Port2: port2, Addr3: ri.Addr3, NumOfConn2: ri.NumOfConn2}
 	data, err := json.Marshal(&rpr)
 	if err != nil {
 		respJSAlert(c, 500, "序列化到pong data失败:"+err.Error())
 		return
 	}
 
-	pongC <- grpcchannel.Pong{Action: "rpxy", Data: data}
+	pongC <- pb.Pong{Action: "rpxy", Data: data}
 
 	c.Redirect(303, "./rpxy?mid="+ri.MID)
 }

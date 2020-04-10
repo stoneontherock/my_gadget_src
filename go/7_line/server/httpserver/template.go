@@ -3,7 +3,7 @@ package httpserver
 import (
 	"github.com/gin-gonic/gin"
 	"html/template"
-	"line/server/panicerr"
+	"line/common/panicerr"
 	tt "text/template"
 )
 

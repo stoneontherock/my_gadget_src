@@ -21,7 +21,7 @@ package core
 //
 //	stream, err := cc.FileUp(ctx)
 //	if err != nil {
-//		log.Errorf("cc.FileUp:%v\n", err)
+//		logrus.Errorf("cc.FileUp:%v", err)
 //		return
 //	}
 //
@@ -37,19 +37,19 @@ package core
 //		if err == io.EOF {
 //			_,err := stream.CloseAndRecv()
 //			if err != nil {
-//				log.Errorf("handleFileUp:stream.CloseAndRecv:%v\n",err)
+//				logrus.Errorf("handleFileUp:stream.CloseAndRecv:%v",err)
 //			}
 //			break
 //		}
 //
 //		if err != nil {
-//			log.Errorf("handleFileUp:read:%v\n",err)
+//			logrus.Errorf("handleFileUp:read:%v",err)
 //			break
 //		}
 //
 //		err = stream.Send(&grpcchannel.FileDataUp{Mid:staticInfo.MachineID,Data:buf[:n]})
 //		if err != nil {
-//			log.Errorf("handleFileUp:stream.Send:%v",err)
+//			logrus.Errorf("handleFileUp:stream.Send:%v",err)
 //		}
 //	}
 //}
