@@ -34,10 +34,8 @@ func InitLog(level string) {
 	err = os.MkdirAll(dir, 0700)
 	panicerr.Handle(err, "创建日志目录失败")
 
-	f := filepath.Join(dir, filepath.Base(os.Args[0])+".log")
-
 	jack := &lumberjack.Logger{
-		Filename: f,
+		Filename: filepath.Join(dir, filepath.Base(os.Args[0])+".log"),
 		MaxSize:  5, //MBytes
 		//MaxAge: 1, //day
 		MaxBackups: 50,
