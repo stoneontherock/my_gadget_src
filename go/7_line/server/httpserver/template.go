@@ -332,8 +332,8 @@ const (
             if (req.readyState==4){ 
                 if (req.status!=200){
             	    window.alert(req.responseText);
-				}
-				location="/line/list_hosts";
+                }
+                location="/line/list_hosts";
             }
         }
         req.open("GET","/line/change_pickup?pickup=1&timeout="+dur+"&mid="+mid,true);
@@ -343,8 +343,10 @@ const (
     window.onload =  function() {
         let tfs = document.getElementsByClassName("timeFormat");
         for (i=0;i<tfs.length;i++) {
-            let ut = new Date(tfs[i].innerText * 1000)
-            tfs[i].innerText = ut.getDate()+"日"+ut.getHours()+":"+ut.getMinutes()
+            let ut = new Date(tfs[i].innerText * 1000);
+	    let h = ut.getHours();
+            let m = ut.getMinutes();
+            tfs[i].innerText = ut.getDate()+"日"+(h>9?h:"0"+h)+":"+(m>9?m:"0"+m);
         }
     }
 </script>
