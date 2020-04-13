@@ -16,11 +16,11 @@ type ClientInfo struct {
 }
 
 type CmdHistory struct {
-	ID uint64
-	Mid string `gorm:"varchar(37)"`
-	Cmd template.HTML
+	ID          uint64
+	Mid         string `gorm:"varchar(37)"`
+	Cmd         template.HTML
 	QueryString string
-	Timeout int32
+	Timeout     int32
 }
 
 //func (ci *ClientInfo) BeforeCreate(scope *gorm.Scope) (err error) {

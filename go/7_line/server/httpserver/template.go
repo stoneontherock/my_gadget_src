@@ -77,6 +77,7 @@ const (
             position: absolute;
             background-color: #f9f9f9;
             min-width: 160px;
+            white-space:nowrap;
             box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
         }
 
@@ -121,11 +122,12 @@ const (
         <input type="hidden"  name="mid" value="{{$data.Mid}}" />
         <input type="text" name="timeout" value="15" />秒执行超时<br/>
         <input type="checkbox" name="inShell" value="true" checked/>在shell中执行<br/>
-        <textarea  rows="5" cols="100" name="cmd" placeholder='输入命令，敲回车。linux支持多行'></textarea> <br />
+        <textarea  name="cmd" required rows="5" cols="100" placeholder='输入命令，敲回车'></textarea> <br />
         <input id="submitBtn" type="submit" value="执行" />
-        <br />
+        <br/>
     </form>
 
+	<br/>
     <div id="cmdHis">
         <button id="cmdHisBtn">命令历史</button>
         <div id="linkList">

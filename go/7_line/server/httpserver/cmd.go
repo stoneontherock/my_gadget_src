@@ -30,7 +30,7 @@ type cmdOutHTTPResp struct {
 	CmdHistory []model.CmdHistory
 }
 
-const MAXCMDHISTORY = 5
+const MAXCMDHISTORY = 20
 
 func command(c *gin.Context) {
 	var ci cmdFormIn
@@ -46,36 +46,8 @@ func command(c *gin.Context) {
 	}
 
 	if ci.Cmd == "" {
-		cmdOutTmpl.Execute(c.Writer, &cmdOutHTTPResp{Mid: ci.Mid})
+		cmdOutTmpl.Execute(c.Writer, &cmdOutHTTPResp{Mid: ci.Mid, CmdHistory: getCmdHistory(ci.Mid)})
 		return
-	}
-
-	var cmdHis model.CmdHistory
-	err = db.DB.First(&cmdHis, "cmd = ?",template.HTML(ci.Cmd)).Error
-	if gorm.IsRecordNotFoundError(err) {
-		u := url.Values{}
-		u.Set("cmd", ci.Cmd)
-		u.Set("inShell", strconv.FormatBool(ci.InShell))
-		u.Set("timeout", strconv.Itoa(ci.Timeout))
-		err = db.DB.Create(&model.CmdHistory{Mid: ci.Mid, Cmd: template.HTML(ci.Cmd), QueryString: u.Encode()}).Error
-		if err != nil {
-			logrus.Errorf("创建cmd历史记录失败")
-		}
-		//logrus.Debugf("cmd=%s已经存在",cmdHis.Cmd)
-	}
-
-
-	var chl []model.CmdHistory
-	err = db.DB.Model(&model.CmdHistory{}).Find(&chl, "mid = ?", ci.Mid).Error
-	if err != nil {
-		logrus.Errorf("查询cmd历史记录失败")
-	}
-
-	if len(chl) > MAXCMDHISTORY {
-		for i := 0; i < len(chl)-MAXCMDHISTORY; i++ {
-			db.DB.Delete(&chl[i])
-		}
-		chl = chl[MAXCMDHISTORY:]
 	}
 
 	data, err := json.Marshal(&sharedmodel.CmdPong{Cmd: ci.Cmd, InShell: ci.InShell, Timeout: ci.Timeout})
@@ -108,11 +80,49 @@ func command(c *gin.Context) {
 				respJSAlert(c, 400, "等待执行结果超时")
 				tk.Stop()
 			case out := <-cmdOutC:
-				cmdOutTmpl.Execute(c.Writer, &cmdOutHTTPResp{Mid: ci.Mid, Stdout: out.Stdout, Stderr: out.Stderr, CmdHistory: chl})
+				if len(out.Stderr) == 0 {
+					storeToDB(&ci)
+				}
+				cmdOutTmpl.Execute(c.Writer, &cmdOutHTTPResp{Mid: ci.Mid, Stdout: out.Stdout, Stderr: out.Stderr, CmdHistory: getCmdHistory(ci.Mid)})
 			}
 			return
 		}
 	}
 
 	respJSAlert(c, 400, "等待cmdOutC超时")
+}
+
+func storeToDB(ci *cmdFormIn) {
+	var cmdHis model.CmdHistory
+	err := db.DB.First(&cmdHis, "cmd = ?", template.HTML(ci.Cmd)).Error
+	if !gorm.IsRecordNotFoundError(err) {
+		return
+	}
+
+	u := url.Values{}
+	u.Set("cmd", ci.Cmd)
+	u.Set("inShell", strconv.FormatBool(ci.InShell))
+	u.Set("timeout", strconv.Itoa(ci.Timeout))
+	err = db.DB.Create(&model.CmdHistory{Mid: ci.Mid, Cmd: template.HTML(ci.Cmd), QueryString: u.Encode()}).Error
+	if err != nil {
+		logrus.Errorf("创建cmd历史记录失败")
+	}
+	//logrus.Debugf("cmd=%s已经存在",cmdHis.Cmd)
+}
+
+func getCmdHistory(mid string) []model.CmdHistory {
+	var chl []model.CmdHistory
+	err := db.DB.Model(&model.CmdHistory{}).Find(&chl, "mid = ?", mid).Error
+	if err != nil {
+		logrus.Errorf("查询cmd历史记录失败")
+	}
+
+	if len(chl) > MAXCMDHISTORY {
+		for i := 0; i < len(chl)-MAXCMDHISTORY; i++ {
+			db.DB.Delete(&chl[i])
+		}
+		chl = chl[MAXCMDHISTORY:]
+	}
+
+	return chl
 }

@@ -31,7 +31,7 @@ func InitLog(level string) {
 	logrus.SetFormatter(fmtr)
 
 	jack := &lumberjack.Logger{
-		Filename: filepath.Join(BinDir + "/log", filepath.Base(os.Args[0])+".log"),
+		Filename: filepath.Join(BinDir+"/log", filepath.Base(os.Args[0])+".log"),
 		MaxSize:  5, //MBytes
 		//MaxAge: 1, //day
 		MaxBackups: 50,
