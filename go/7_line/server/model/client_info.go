@@ -1,5 +1,7 @@
 package model
 
+import "html/template"
+
 type ClientInfo struct {
 	ID         string `gorm:"varchar(37)"`
 	WanIP      string `gorm:"varchar(46)"`
@@ -11,6 +13,14 @@ type ClientInfo struct {
 	StartAt    int32
 	LastReport int32
 	//UpdateAt int64
+}
+
+type CmdHistory struct {
+	ID uint64
+	Mid string `gorm:"varchar(37)"`
+	Cmd template.HTML
+	QueryString string
+	Timeout int32
 }
 
 //func (ci *ClientInfo) BeforeCreate(scope *gorm.Scope) (err error) {

@@ -30,12 +30,8 @@ func InitLog(level string) {
 	fmtr.DisableColors = true                   // 禁止颜色显示
 	logrus.SetFormatter(fmtr)
 
-	dir := BinDir + "/log"
-	err = os.MkdirAll(dir, 0700)
-	panicerr.Handle(err, "创建日志目录失败")
-
 	jack := &lumberjack.Logger{
-		Filename: filepath.Join(dir, filepath.Base(os.Args[0])+".log"),
+		Filename: filepath.Join(BinDir + "/log", filepath.Base(os.Args[0])+".log"),
 		MaxSize:  5, //MBytes
 		//MaxAge: 1, //day
 		MaxBackups: 50,

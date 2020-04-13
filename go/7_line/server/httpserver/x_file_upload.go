@@ -11,7 +11,7 @@ package httpserver
 //)
 //
 //type fileUpIn struct {
-//	MID      string `form:"mid"`
+//	Mid      string `form:"mid"`
 //	FilePath string `form:"path"`
 //	Size     int    `form:"size"`
 //}
@@ -24,9 +24,9 @@ package httpserver
 //		return
 //	}
 //
-//	pongC, ok := model.PongM[fi.MID]
+//	pongC, ok := model.PongM[fi.Mid]
 //	if !ok {
-//		respJSAlert(c, 400, "主机不在活动状态,id:"+fi.MID)
+//		respJSAlert(c, 400, "主机不在活动状态,id:"+fi.Mid)
 //		return
 //	}
 //
@@ -39,13 +39,13 @@ package httpserver
 //	logrus.Debugf("content-length=%s, fi.Size=%d",c.GetHeader("Content-Length"),fi.Size)
 //
 //
-//	model.FileUpDataM[fi.MID] = make(chan *grpcchannel.FileDataUp)
+//	model.FileUpDataM[fi.Mid] = make(chan *grpcchannel.FileDataUp)
 //	pth := []byte(fi.FilePath)
 //	pongC <- grpcchannel.Pong{Action: "file_up", Data: []byte(pth)}
 //
 //	for i := 0; i < 100; i++ {
 //		time.Sleep(time.Millisecond * 10)
-//		dataC, ok := model.FileUpDataM[fi.MID]
+//		dataC, ok := model.FileUpDataM[fi.Mid]
 //		if !ok {
 //			continue
 //		}

@@ -15,7 +15,7 @@ import (
 )
 
 type fsIn struct {
-	MID string `form:"mid" binding:"required"`
+	Mid string `form:"mid" binding:"required"`
 }
 
 var regPatt = regexp.MustCompile(`^(.*)(:[0-9]+)$`)
@@ -28,15 +28,15 @@ func filesystem(c *gin.Context) {
 		return
 	}
 
-	if !isHostPickedUp(fi.MID) {
+	if !isHostPickedUp(fi.Mid) {
 		respJSAlert(c, 500, "主机未勾住")
 		return
 	}
 
 	host := regPatt.ReplaceAllString(c.Request.Host, "$1")
 	//如果已经存在文件系统反代，就重定向
-	logrus.Debugf("RPxyConnResM[%s]=%+v", fi.MID, model.RPxyConnResM[fi.MID])
-	for pLabel, _ := range model.RPxyConnResM[fi.MID] {
+	logrus.Debugf("RPxyConnResM[%s]=%+v", fi.Mid, model.RPxyConnResM[fi.Mid])
+	for pLabel, _ := range model.RPxyConnResM[fi.Mid] {
 		if strings.HasPrefix(pLabel, "filesystem") {
 			ss := strings.Split(pLabel, ":")
 			if len(ss) != 2 {
@@ -50,13 +50,13 @@ func filesystem(c *gin.Context) {
 	port1 := ":" + strconv.Itoa(int(connection.RandomAvaliblePort()))
 	port2 := ":" + strconv.Itoa(int(connection.RandomAvaliblePort()))
 
-	pongC, ok := model.PongM[fi.MID]
+	pongC, ok := model.PongM[fi.Mid]
 	if !ok {
-		respJSAlert(c, 400, "主机不在活动状态,id:"+fi.MID)
+		respJSAlert(c, 400, "主机不在活动状态,id:"+fi.Mid)
 		return
 	}
 
-	err = listen2Side(fi.MID, "filesystem", port1, port2, 3)
+	err = listen2Side(fi.Mid, "filesystem", port1, port2, 3)
 	if err != nil {
 		respJSAlert(c, 500, "创建bridge listener 失败:"+err.Error())
 		return

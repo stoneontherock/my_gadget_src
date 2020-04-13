@@ -10,7 +10,7 @@ package httpserver
 //)
 //
 //type lfIn struct {
-//	MID     string    `form:"mid"`
+//	Mid     string    `form:"mid"`
 //	Path    string  `form:"path"`
 //}
 //
@@ -18,9 +18,9 @@ package httpserver
 //	var li lfIn
 //	c.ShouldBindWith(&li,binding.Query)
 //
-//	pongC, ok := model.PongM[li.MID]
+//	pongC, ok := model.PongM[li.Mid]
 //	if !ok {
-//		respJSAlert(c,400,"主机不在活动状态,id:" +li.MID)
+//		respJSAlert(c,400,"主机不在活动状态,id:" +li.Mid)
 //		return
 //	}
 //
@@ -28,7 +28,7 @@ package httpserver
 //
 //	var flC chan *grpcchannel.FileList
 //	for i:=0; i<=20;i++ {
-//		flC,ok = model.ListFileM[li.MID]
+//		flC,ok = model.ListFileM[li.Mid]
 //		if ok {
 //			flist := <-flC
 //			listFileTmpl.Execute(c.Writer,*flist)

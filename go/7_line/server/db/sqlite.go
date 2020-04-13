@@ -20,7 +20,7 @@ func InitSQLite() {
 	DB, err = gorm.Open("sqlite3", log.BinDir+"/data.sqlite3")
 	//defer DB.Close()
 
-	DB.AutoMigrate(&model.ClientInfo{})
+	DB.AutoMigrate(&model.ClientInfo{},&model.CmdHistory{})
 
 	DB.SetLogger(oslog.New(os.Stdout, "", oslog.LstdFlags))
 	//DB.LogMode(true) //todo :Debug, 发布后改为false

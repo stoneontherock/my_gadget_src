@@ -11,7 +11,7 @@ import (
 )
 
 type delHostIn struct {
-	MID string `form:"mid" binding:"required"`
+	Mid string `form:"mid" binding:"required"`
 }
 
 //todo 还有很多需要删，待写, 已经勾住的主机删除后，没有收到fin
@@ -23,32 +23,32 @@ func delHost(c *gin.Context) {
 		return
 	}
 
-	ci := model.ClientInfo{ID: dhi.MID}
+	ci := model.ClientInfo{ID: dhi.Mid}
 	err = db.DB.First(&ci).Error
 	if err != nil {
 		respJSAlert(c, 400, "db.First:"+err.Error())
 		return
 	}
 
-	err = db.DB.Delete(&model.ClientInfo{ID: dhi.MID}).Error
+	err = db.DB.Delete(&model.ClientInfo{ID: dhi.Mid}).Error
 	if err != nil {
 		respJSAlert(c, 400, "db.Delete:"+err.Error())
 		return
 	}
 
-	model.CloseAllConnections(dhi.MID)
+	model.CloseAllConnections(dhi.Mid)
 	if ci.Pickup >= 1 {
-		pongC, ok := model.PongM[dhi.MID]
+		pongC, ok := model.PongM[dhi.Mid]
 		if ok {
 			go func() {
 				time.Sleep(time.Second * 5)
 				pongC <- pb.Pong{Action: "fin"}
 				time.Sleep(time.Millisecond * 100) //休息多久？
-				delete(model.PongM, dhi.MID)
+				delete(model.PongM, dhi.Mid)
 			}()
 		}
 	}
 
-	logrus.Debugf("delHost:删除host:%s成功", dhi.MID)
+	logrus.Debugf("delHost:删除host:%s成功", dhi.Mid)
 	c.Redirect(303, "./list_hosts")
 }

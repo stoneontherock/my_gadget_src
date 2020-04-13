@@ -14,7 +14,7 @@ import (
 )
 
 type rproxyIn struct {
-	MID        string `form:"mid" binding:"required"` // binding:"hexadecimal"`
+	Mid        string `form:"mid" binding:"required"` // binding:"hexadecimal"`
 	NumOfConn2 int32  `form:"num_of_conn2"`           // binding:"gte=1"`
 	Port1      string `form:"port1"`                  //binding:"numeric"`
 	Addr3      string `form:"addr3"`                  // binding:"tcp_addr"`
@@ -29,7 +29,7 @@ func rProxy(c *gin.Context) {
 		return
 	}
 
-	if !isHostPickedUp(ri.MID) {
+	if !isHostPickedUp(ri.Mid) {
 		respJSAlert(c, 500, "主机未勾住")
 		return
 	}
@@ -37,13 +37,13 @@ func rProxy(c *gin.Context) {
 	//如果port1为空，则列出当前mid的rproxy
 	if ri.Port1 == "" {
 		data := struct {
-			MID    string
+			Mid    string
 			Labels []string
 		}{
-			MID: ri.MID,
+			Mid: ri.Mid,
 		}
 
-		if rp, ok := model.RPxyConnResM[ri.MID]; ok {
+		if rp, ok := model.RPxyConnResM[ri.Mid]; ok {
 			for label, _ := range rp {
 				//logrus.Debugf("**** label:%s", label)
 				data.Labels = append(data.Labels, label)
@@ -66,28 +66,28 @@ func rProxy(c *gin.Context) {
 
 	port2 := ":" + strconv.Itoa(int(connection.RandomAvaliblePort()))
 
-	pongC, ok := model.PongM[ri.MID]
+	pongC, ok := model.PongM[ri.Mid]
 	if !ok {
-		respJSAlert(c, 400, "主机不在活动状态,id:"+ri.MID)
+		respJSAlert(c, 400, "主机不在活动状态,id:"+ri.Mid)
 		return
 	}
 
-	err = listen2Side(ri.MID, ri.Label, port1, port2, int(ri.NumOfConn2))
+	err = listen2Side(ri.Mid, ri.Label, port1, port2, int(ri.NumOfConn2))
 	if err != nil {
 		respJSAlert(c, 500, "创建bridge listener 失败:"+err.Error())
 		return
 	}
 
 	rpr := pb.RPxyResp{Port2: port2, Addr3: ri.Addr3, NumOfConn2: ri.NumOfConn2}
-	data, err := json.Marshal(&rpr)
+	bs, err := json.Marshal(&rpr)
 	if err != nil {
 		respJSAlert(c, 500, "序列化到pong data失败:"+err.Error())
 		return
 	}
 
-	pongC <- pb.Pong{Action: "rpxy", Data: data}
+	pongC <- pb.Pong{Action: "rpxy", Data: bs}
 
-	c.Redirect(303, "./rpxy?mid="+ri.MID)
+	c.Redirect(303, "./rpxy?mid="+ri.Mid)
 }
 
 func listen2Side(mid, label, port1, port2 string, numOfConn2 int) error {

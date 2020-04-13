@@ -57,6 +57,46 @@ const (
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>line</title>
+    <style>
+        #cmdHisBtn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 5px;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+        }
+
+        #cmdHis {
+            position: relative;
+            display: inline-block;
+        }
+
+        #linkList {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        }
+
+        #linkList a {
+            color: black;
+            padding: 2px;
+            text-decoration: none;
+            display: block;
+        }
+
+        #linkList a:hover {background-color: #f1f1f1}
+
+        #cmdHis:hover #linkList {
+            display: block;
+        }
+
+        #cmdHis:hover #cmdHisBtn {
+            background-color: #3e8e41;
+        }
+    </style>
     <script>
         function BindEnter(obj)
         {
@@ -73,12 +113,12 @@ const (
 <body onkeydown="BindEnter(event)">
 {{ $data := . -}}
 <header>
-	<a href="/line/list_hosts">返回主机管理界面</a>
+    <a href="/line/list_hosts">返回主机管理界面</a>
 </header>
 
-<article>
-    <form action="/line/cmd" method="GET">
-        <input type="hidden"  name="mid" value="{{$data.MID}}" />
+<article id="cmdArticle">
+    <form id="inputCmdForm" action="/line/cmd" method="GET">
+        <input type="hidden"  name="mid" value="{{$data.Mid}}" />
         <input type="text" name="timeout" value="15" />秒执行超时<br/>
         <input type="checkbox" name="inShell" value="true" checked/>在shell中执行<br/>
         <textarea  rows="5" cols="100" name="cmd" placeholder='输入命令，敲回车。linux支持多行'></textarea> <br />
@@ -86,16 +126,27 @@ const (
         <br />
     </form>
 
+    <div id="cmdHis">
+        <button id="cmdHisBtn">命令历史</button>
+        <div id="linkList">
+            {{- range $index,$ch := $data.CmdHistory -}}
+                <a href="/line/cmd?mid={{$data.Mid}}&{{$ch.QueryString}}">{{$ch.Cmd}}</a>
+            {{end}}
+        </div>
+    </div>
+
+
+
     {{- with $data.Stdout -}}
         <h3>stdout:</h3>
-        <xmp>  {{- $data.Stdout -}} </xmp>
+        <pre>  {{- $data.Stdout -}} </pre>
         <br />
     {{end}}
 
     {{- with $data.Stderr -}}
         <hr>
         <h3>stderr:</h3>
-        <xmp> {{- $data.Stderr -}} </xmp>
+        <pre> {{- $data.Stderr -}} </pre>
     {{end}}
 </article>
 </body>
@@ -121,7 +172,7 @@ const (
 
 <article>
     <form action="/line/rpxy" method="GET">
-        <input type="hidden"  name="mid" value="{{- $data.MID -}}" />
+        <input type="hidden"  name="mid" value="{{- $data.Mid -}}" />
         line客户端和服务端预分配的连接数:<input type="text" name="num_of_conn2" value="1" placeholder='值大点，连接的速度会快一些'/><br />
         用户侧端口:<input type="text" name="port1" placeholder='用户访问端端口号'/><br />
         目标机地址:<input type="text" name="addr3" placeholder='客户端需要反代的tcp地址'/><br />
@@ -140,7 +191,7 @@ const (
 	              		 <td class="col1">{{- $lab -}}</td>
 						 <td class="col2"> 
 							<form action="/line/del_rproxied" method="GET">
-                        		<input type="hidden"  name="mid" value="{{- $data.MID -}}" />
+                        		<input type="hidden"  name="mid" value="{{- $data.Mid -}}" />
                         		<input type="hidden"  name="label" value="{{- $lab -}}" />
 								<input type="submit" value="✖️" />
 		                    </form>
