@@ -17,11 +17,10 @@ var DB *gorm.DB
 
 func InitSQLite() {
 	var err error
-	os.Remove(log.BinDir + "/data.sqlite3")
 	DB, err = gorm.Open("sqlite3", log.BinDir+"/data.sqlite3")
 	//defer DB.Close()
 
-	DB.AutoMigrate(&model.ClientInfo{}, &model.CmdHistory{})
+	DB.AutoMigrate(model.ClientInfo{}, model.CmdHistory{})
 
 	if model.LogLevel == "debug" {
 		DB.SetLogger(oslog.New(os.Stdout, "", oslog.LstdFlags))
@@ -31,6 +30,7 @@ func InitSQLite() {
 	err = DB.DB().Ping()
 	panicerr.Handle(err, "InitSQLite:Ping()")
 
+	DB.Model(&model.ClientInfo{}).Update("pickup", -1)
 	go checkAlive()
 }
 
