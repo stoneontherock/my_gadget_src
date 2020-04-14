@@ -79,9 +79,7 @@ func command(c *gin.Context) {
 				respJSAlert(c, 400, "等待执行结果超时")
 				tk.Stop()
 			case out := <-cmdOutC:
-				if len(out.Stderr) == 0 {
-					storeToDB(&ci)
-				}
+				storeToDB(&ci)
 				cmdOutTmpl.Execute(c.Writer, &cmdOutHTTPResp{Mid: ci.Mid, Stdout: out.Stdout, Stderr: out.Stderr, CmdHistory: getCmdHistory(ci.Mid)})
 			}
 			return
@@ -126,4 +124,22 @@ func getCmdHistory(mid string) []model.CmdHistory {
 
 	logrus.Debugf("getCmdHistory:%v", chl)
 	return chl
+}
+
+
+func delCmdHistory(c *gin.Context) {
+	id := struct { Id int32 `form:id binding:"required"` }
+	err := c.ShouldBindQuery(&id, binding.Form)
+	if err != nil {
+		respJSAlert(c, 400, "参数错误:"+err.Error())
+		return
+	}
+
+	err = db.DB.Delete(&model.CmdHistory{ID:id.Id}).Error
+	if err != nil {
+		respJSAlert(c, 400, "删除命令记录失败:"+err.Error())
+		return
+	}
+
+	c.Status(200)
 }
