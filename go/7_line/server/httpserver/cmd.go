@@ -125,21 +125,3 @@ func getCmdHistory(mid string) []model.CmdHistory {
 	logrus.Debugf("getCmdHistory:%v", chl)
 	return chl
 }
-
-
-func delCmdHistory(c *gin.Context) {
-	id := struct { Id int32 `form:id binding:"required"` }
-	err := c.ShouldBindQuery(&id, binding.Form)
-	if err != nil {
-		respJSAlert(c, 400, "参数错误:"+err.Error())
-		return
-	}
-
-	err = db.DB.Delete(&model.CmdHistory{ID:id.Id}).Error
-	if err != nil {
-		respJSAlert(c, 400, "删除命令记录失败:"+err.Error())
-		return
-	}
-
-	c.Status(200)
-}

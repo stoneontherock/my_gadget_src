@@ -88,10 +88,6 @@ const (
             display: block;
         }
 
-	#linkList span{
-            float:right;
-        }
-
         #linkList a:hover {background-color: #f1f1f1}
 
         #cmdHis:hover #linkList {
@@ -113,19 +109,6 @@ const (
                 obj.returnValue = false;
             }
         }
-
-	function delCmdHistory(id) {
-          let req = new XMLHttpRequest();
-
-          req.onreadystatechange=function(){
-            if (req.readyState==4){ 
-                if (req.status!=200){
-                    window.alert(req.responseText);
-                }
-            }
-         }
-        req.open("GET","/line/del_cmd_history?id="+id,true);
-        req.send();
     </script>
 </head>
 <body onkeydown="BindEnter(event)">
@@ -149,7 +132,7 @@ const (
         <button id="cmdHisBtn">命令历史</button>
         <div id="linkList">
             {{- range $index,$ch := $data.CmdHistory -}}
-                <a href="/line/cmd?mid={{$data.Mid}}&{{$ch.QueryString}}">{{$ch.Cmd}}</a><span onclick="delCmdHistory({{$ch.ID}})">✖️</span>
+                <a href="/line/cmd?mid={{$data.Mid}}&{{$ch.QueryString}}">{{$ch.Cmd}}</a>
             {{end}}
         </div>
     </div>
