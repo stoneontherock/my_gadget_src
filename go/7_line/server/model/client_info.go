@@ -1,6 +1,8 @@
 package model
 
-import "html/template"
+import (
+	"html/template"
+)
 
 type ClientInfo struct {
 	ID         string `gorm:"varchar(37)"`
@@ -20,16 +22,10 @@ type CmdHistory struct {
 	Mid         string `gorm:"varchar(37)"`
 	Cmd         template.HTML
 	QueryString string
-	Timeout     int32
+	UpdateAt    int32
 }
 
-//func (ci *ClientInfo) BeforeCreate(scope *gorm.Scope) (err error) {
-//	//scope.SetColumn("CreateAt", time.Now().Unix())
-//	scope.SetColumn("UpdateAt", time.Now().Unix())
-//	return nil
-//}
 //
-//func (ci *ClientInfo) BeforeUpdate(scope *gorm.Scope) (err error) {
-//	scope.SetColumn("UpdateAt", time.Now().Unix())
-//	return nil
+//func (ch *CmdHistory) BeforeUpdate(scope *gorm.Scope) error {
+//	return scope.SetColumn("UpdatedAt", time.Now().Unix())
 //}

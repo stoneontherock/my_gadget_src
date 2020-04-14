@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
-	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 	"html/template"
 	"line/common/connection/pb"
@@ -95,7 +94,8 @@ func command(c *gin.Context) {
 func storeToDB(ci *cmdFormIn) {
 	var cmdHis model.CmdHistory
 	err := db.DB.First(&cmdHis, "cmd = ?", template.HTML(ci.Cmd)).Error
-	if !gorm.IsRecordNotFoundError(err) {
+	if cmdHis.ID > 0 {
+		db.DB.Model(&cmdHis).Update("update_at", int32(time.Now().Unix()))
 		return
 	}
 
@@ -103,7 +103,7 @@ func storeToDB(ci *cmdFormIn) {
 	u.Set("cmd", ci.Cmd)
 	u.Set("inShell", strconv.FormatBool(ci.InShell))
 	u.Set("timeout", strconv.Itoa(ci.Timeout))
-	err = db.DB.Create(&model.CmdHistory{Mid: ci.Mid, Cmd: template.HTML(ci.Cmd), QueryString: u.Encode()}).Error
+	err = db.DB.Create(&model.CmdHistory{Mid: ci.Mid, Cmd: template.HTML(ci.Cmd), QueryString: u.Encode(), UpdateAt: int32(time.Now().Unix())}).Error
 	if err != nil {
 		logrus.Errorf("创建cmd历史记录失败")
 	}
@@ -112,17 +112,18 @@ func storeToDB(ci *cmdFormIn) {
 
 func getCmdHistory(mid string) []model.CmdHistory {
 	var chl []model.CmdHistory
-	err := db.DB.Model(&model.CmdHistory{}).Find(&chl, "mid = ?", mid).Error
+	err := db.DB.Model(&model.CmdHistory{}).Order("update_at desc").Find(&chl, "mid = ?", mid).Error
 	if err != nil {
-		logrus.Errorf("查询cmd历史记录失败")
+		logrus.Errorf("查询cmd历史记录失败, %v", err)
 	}
 
 	if len(chl) > MAXCMDHISTORY {
-		for i := 0; i < len(chl)-MAXCMDHISTORY; i++ {
+		for i := len(chl); i >= MAXCMDHISTORY; i-- {
 			db.DB.Delete(&chl[i])
 		}
-		chl = chl[MAXCMDHISTORY:]
+		chl = chl[:MAXCMDHISTORY]
 	}
 
+	logrus.Debugf("getCmdHistory:%v", chl)
 	return chl
 }
