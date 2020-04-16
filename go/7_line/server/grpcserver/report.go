@@ -103,6 +103,7 @@ func (s *grpcServer) Report(ping *pb.Ping, stream pb.Channel_ReportServer) error
 			err = stream.Send(&pong)
 			if err != nil {
 				logrus.Warnf("Report:stream.Send: id:%s err=%v", ping.Mid, err)
+				pongC <- pb.Pong{Action: "fin"} //使用sendFin是不行了，因为stream已经断开，所以需要发fin的新的goroutine
 				return fmt.Errorf("服务端Report:stream.Send(&pong) %v", err)
 			}
 		}
