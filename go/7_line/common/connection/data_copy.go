@@ -12,14 +12,14 @@ import (
 func CopyData(src, dst net.Conn, dir string, serverCloseSocket bool) {
 	n, err := io.Copy(dst, src)
 	if err != nil {
-		logrus.Errorf("copyData:io.Copy:dir=%s, err=%v  n=%d B, src=%p,dst=%p", dir, err, n, src, dst)
+		logrus.Warnf("copyData:io.Copy:dir=%s, err=%v  n=%d B, src=%p,dst=%p", dir, err, n, src, dst)
 		err = src.(*net.TCPConn).Close()
 		if err != nil {
-			logrus.Errorf("copyData: src.Close() dir=%s, err=%v  src=%p,dst=%p", dir, err, src, dst)
+			logrus.Warnf("copyData: src.Close() dir=%s, err=%v  src=%p,dst=%p", dir, err, src, dst)
 		}
 		err = dst.(*net.TCPConn).Close()
 		if err != nil {
-			logrus.Errorf("copyData: dst.Close() dir=%s, err=%v  src=%p,dst=%p", dir, err, src, dst)
+			logrus.Warnf("copyData: dst.Close() dir=%s, err=%v  src=%p,dst=%p", dir, err, src, dst)
 		}
 	}
 
@@ -27,21 +27,21 @@ func CopyData(src, dst net.Conn, dir string, serverCloseSocket bool) {
 
 	err = src.(*net.TCPConn).CloseWrite()
 	if err != nil {
-		logrus.Errorf("copyData: src.CloseWrite() dir=%s, err=%v  src=%p,dst=%p", dir, err, src, dst)
+		logrus.Warnf("copyData: src.CloseWrite() dir=%s, err=%v  src=%p,dst=%p", dir, err, src, dst)
 	}
 	err = dst.(*net.TCPConn).CloseRead()
 	if err != nil {
-		logrus.Errorf("copyData: dst.CloseRead() dir=%s, err=%v  src=%p,dst=%p", dir, err, src, dst)
+		logrus.Warnf("copyData: dst.CloseRead() dir=%s, err=%v  src=%p,dst=%p", dir, err, src, dst)
 	}
 
 	if serverCloseSocket {
 		err = src.(*net.TCPConn).Close()
 		if err != nil {
-			logrus.Errorf("copyData: src.Close() dir=%s, err=%v  src=%p,dst=%p", dir, err, src, dst)
+			logrus.Warnf("copyData: src.Close() dir=%s, err=%v  src=%p,dst=%p", dir, err, src, dst)
 		}
 		err = dst.(*net.TCPConn).Close()
 		if err != nil {
-			logrus.Errorf("copyData: dst.Close() dir=%s, err=%v  src=%p,dst=%p", dir, err, src, dst)
+			logrus.Warnf("copyData: dst.Close() dir=%s, err=%v  src=%p,dst=%p", dir, err, src, dst)
 		}
 	}
 }

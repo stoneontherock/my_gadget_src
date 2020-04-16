@@ -2,6 +2,7 @@ package grpcserver
 
 import (
 	"errors"
+	"fmt"
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 	"line/common/connection/pb"
@@ -12,19 +13,10 @@ import (
 )
 
 func (s *grpcServer) Report(ping *pb.Ping, stream pb.Channel_ReportServer) error {
-	needFin := true
 	defer func() {
-		if needFin {
-			sendFin(stream) //关闭当前stream
-		}
+		model.CloseAllConnections(ping.Mid)
+		sendFin(stream) //关闭当前stream
 	}()
-
-	//不存在chan, 就初始化 pong chan
-	pongC, ok := model.PongM[ping.Mid]
-	if !ok {
-		pongC = make(chan pb.Pong)
-		model.PongM[ping.Mid] = pongC
-	}
 
 	ci := model.ClientInfo{ID: ping.Mid}
 	err := db.DB.First(&ci).Error
@@ -33,7 +25,7 @@ func (s *grpcServer) Report(ping *pb.Ping, stream pb.Channel_ReportServer) error
 		return err
 	}
 
-	logrus.Debugf("ci:%+v", ci)
+	logrus.Debugf("Report: ci=%+v", ci)
 
 	if ci.LastReport == 0 {
 		//无则创建
@@ -59,20 +51,19 @@ func (s *grpcServer) Report(ping *pb.Ping, stream pb.Channel_ReportServer) error
 		}
 	}
 
+	//不存在chan, 就初始化 pong chan
+	pongC, ok := model.PongM[ping.Mid]
+	if !ok {
+		pongC = make(chan pb.Pong)
+		model.PongM[ping.Mid] = pongC
+	}
+
 	if ci.StartAt != ping.StartAt {
 		err := db.DB.Delete(&model.ClientInfo{ID: ping.Mid}).Error
 		if err != nil {
-			logrus.Errorf("Report:删除:%v", err)
+			logrus.Errorf("Report:删除ClientInfo id=%s, err=%v", ping.Mid, err)
 		}
-
-		if ci.Pickup == 2 {
-			go func() {
-				model.CloseAllConnections(ping.Mid)
-				pongC <- pb.Pong{Action: "fin"} //这里的sendFin是为了关闭已经失效的stream
-			}()
-		}
-
-		return errors.New("startAt标记已经变更")
+		return errors.New("Report:服务端检测到startAt标记已经变更")
 	}
 
 	if ci.Pickup <= 0 {
@@ -90,9 +81,8 @@ func (s *grpcServer) Report(ping *pb.Ping, stream pb.Channel_ReportServer) error
 	if ci.Pickup == 1 {
 		ChangePickup(ping.Mid, 2)
 		clientLifetime := int32(tmout/1e9) + ci.Interval
-		logrus.Debugf("tmout=%d clientLiftime=%d", tmout, clientLifetime)
+		logrus.Debugf("id=%s tmout=%d clientLiftime=%d", ping.Mid, tmout, clientLifetime)
 		stream.Send(&pb.Pong{Action: "lifetime", Data: []byte(strconv.Itoa(int(clientLifetime)))})
-		needFin = false
 	}
 
 	tk := time.NewTicker(tmout)
@@ -102,31 +92,18 @@ func (s *grpcServer) Report(ping *pb.Ping, stream pb.Channel_ReportServer) error
 		case <-tk.C:
 			logrus.Infof("Report: %s超时,发fin", ping.Mid)
 			ChangePickup(ping.Mid, -1)
-			model.CloseAllConnections(ping.Mid)
-			needFin = true
 			return nil
 		case pong, ok := <-pongC:
 			if !ok || pong.Action == "fin" {
-				logrus.Debugf("pongC通道关闭或者收到fin,ok=%v, action=%s", ok, pong.Action)
-				needFin = true
+				logrus.Debugf("Report: pongC通道关闭或者收到fin, id=%s, ok=%v, action=%s", ping.Mid, ok, pong.Action)
 				return nil
 			}
 
 			logrus.Infof("Report: id:%s收到pong, action:%s", ping.Mid, pong.Action)
 			err = stream.Send(&pong)
 			if err != nil {
-				logrus.Warnf("Report:stream.Send:%v", err)
-				needFin = false
-				return nil
-			}
-
-			//cmd的pong特殊处理
-			if pong.Action == "cmd" {
-				logrus.Debugf("Report:创建cmd响应chan...")
-				if _, ok := model.CmdOutM[ping.Mid]; !ok {
-					model.CmdOutM[ping.Mid] = make(chan pb.CmdOutput)
-					logrus.Debugf("Report:创建cmd响应chan...done")
-				}
+				logrus.Warnf("Report:stream.Send: id:%s err=%v", ping.Mid, err)
+				return fmt.Errorf("服务端Report:stream.Send(&pong) %v", err)
 			}
 		}
 	}

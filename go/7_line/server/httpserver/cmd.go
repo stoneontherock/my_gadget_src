@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/sirupsen/logrus"
@@ -49,44 +50,34 @@ func command(c *gin.Context) {
 		return
 	}
 
+	pongC, ok := model.PongM[ci.Mid]
+	if !ok {
+		respJSAlert(c, 400, fmt.Sprintf("key=%s对应PongM映射没有值,主机不在活动状态"+ci.Mid))
+		return
+	}
+	ch, ok := model.CmdOutM[ci.Mid]
+
+	logrus.Debugf("command:发送pongC, cmd=%s ...", ci.Cmd)
 	data, err := json.Marshal(&sharedmodel.CmdPong{Cmd: ci.Cmd, InShell: ci.InShell, Timeout: ci.Timeout})
 	if err != nil {
 		respJSAlert(c, 400, "json.Marshal:"+err.Error())
 		return
 	}
-
-	pongC, ok := model.PongM[ci.Mid]
-	if !ok {
-		respJSAlert(c, 400, "主机不在活动状态,id:"+ci.Mid)
-		return
-	}
-
-	ch, ok := model.CmdOutM[ci.Mid]
-
-	logrus.Debugf("command:发送pongC...")
 	pongC <- pb.Pong{Action: "cmd", Data: data}
 	logrus.Debugf("command:发送pongC done, cmdout ch addr:%p, ok:%t", ch, ok)
-	//time.Sleep(time.Millisecond)
-
-	var cmdOutC chan pb.CmdOutput
-	for i := 0; i < ci.Timeout*100; i++ { //这里的100和下面的毫秒数相关
-		time.Sleep(time.Millisecond * 10)
-		cmdOutC, ok = model.CmdOutM[ci.Mid]
-		if ok {
-			tk := time.NewTicker(time.Second * time.Duration(ci.Timeout+5))
-			select {
-			case <-tk.C:
-				respJSAlert(c, 400, "等待执行结果超时")
-				tk.Stop()
-			case out := <-cmdOutC:
-				storeToDB(&ci)
-				cmdOutTmpl.Execute(c.Writer, &cmdOutHTTPResp{Mid: ci.Mid, Stdout: out.Stdout, Stderr: out.Stderr, CmdHistory: getCmdHistory(ci.Mid)})
-			}
-			return
-		}
+	if _, ok := model.CmdOutM[ci.Mid]; !ok {
+		model.CmdOutM[ci.Mid] = make(chan pb.CmdOutput)
 	}
 
-	respJSAlert(c, 400, "等待cmdOutC超时")
+	tk := time.NewTicker(time.Second * time.Duration(ci.Timeout+5))
+	select {
+	case <-tk.C:
+		respJSAlert(c, 400, "等待执行结果超时")
+		tk.Stop()
+	case out := <-model.CmdOutM[ci.Mid]:
+		storeToDB(&ci)
+		cmdOutTmpl.Execute(c.Writer, &cmdOutHTTPResp{Mid: ci.Mid, Stdout: out.Stdout, Stderr: out.Stderr, CmdHistory: getCmdHistory(ci.Mid)})
+	}
 }
 
 func storeToDB(ci *cmdFormIn) {

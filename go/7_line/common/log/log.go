@@ -23,16 +23,18 @@ func InitLog(level string) {
 	logrus.SetLevel(lvl)
 
 	//格式
-	fmtr := new(logrus.TextFormatter)
-	fmtr.FullTimestamp = true                   // 显示完整时间
-	fmtr.TimestampFormat = "01-02 15:04:05.000" // 时间格式
-	fmtr.DisableTimestamp = false               // 禁止显示时间
-	fmtr.DisableColors = true                   // 禁止颜色显示
-	logrus.SetFormatter(fmtr)
+	fmtr := logrus.TextFormatter{
+		FullTimestamp:    true,
+		TimestampFormat:  "01-02 15:04:05.000", // 时间格式
+		DisableTimestamp: false,                // 禁止显示时间
+		DisableColors:    true,                 // 禁止颜色显示
+	}
+	logrus.SetFormatter(&fmtr)
 
+	//writer
 	jack := &lumberjack.Logger{
-		Filename: filepath.Join(BinDir+"/log", filepath.Base(os.Args[0])+".log"),
-		MaxSize:  5, //MBytes
+		Filename: filepath.Join(BinDir+"/log", filepath.Base(os.Args[0])+".log"), //路径不存在会自己创建
+		MaxSize:  5,                                                              //MBytes
 		//MaxAge: 1, //day
 		MaxBackups: 50,
 		LocalTime:  true,
