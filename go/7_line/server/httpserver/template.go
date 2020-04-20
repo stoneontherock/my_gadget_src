@@ -176,9 +176,9 @@ const (
     <form action="/line/rpxy" method="GET">
         <input type="hidden"  name="mid" value="{{- $data.Mid -}}" />
         line客户端和服务端预分配的连接数:<input type="text" name="num_of_conn2" value="1" placeholder='值大点，连接的速度会快一些'/><br />
-        用户侧端口:<input type="text" name="port1" placeholder='用户访问端端口号'/><br />
-        目标机地址:<input type="text" name="addr3" placeholder='客户端需要反代的tcp地址'/><br />
-		标签:<input type="text" name="label" placeholder='给这条反代链路起个名'/><br />
+        用户侧端口:<input type="text" name="port1" required placeholder='用户访问端端口号'/><br />
+        目标机地址:<input type="text" name="addr3" required placeholder='客户端需要反代的tcp地址'/><br />
+		标签:<input type="text" name="label" required placeholder='给这条反代链路起个名'/><br />
         <input type="submit" value="执行反向代理" />
         <br />
     </form>

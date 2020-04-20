@@ -107,7 +107,7 @@ func getCmdHistory(mid string) []model.CmdHistory {
 	}
 
 	if len(chl) > MAXCMDHISTORY {
-		for i := len(chl); i >= MAXCMDHISTORY; i-- {
+		for i := len(chl) - 1; i >= MAXCMDHISTORY; i-- {
 			db.DB.Delete(&chl[i])
 		}
 		chl = chl[:MAXCMDHISTORY]
