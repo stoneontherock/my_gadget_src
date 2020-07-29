@@ -164,6 +164,20 @@ const (
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>line</title>
+    <style>
+        .sp {
+            display: inline-block;
+            width: 230px;
+            background-color: #EEEFFF;
+        }
+        #exec{
+            display: inline-block;
+            width: 240px;
+        }
+        #sub {
+            float:right;
+        }
+    </style>
 </head>
 <body>
 {{ $data := . -}}
@@ -175,28 +189,27 @@ const (
 <article>
     <form action="/line/rpxy" method="GET">
         <input type="hidden"  name="mid" value="{{- $data.Mid -}}" />
-        line客户端和服务端预分配的连接数:<input type="text" name="num_of_conn2" value="1" placeholder='值大点，连接的速度会快一些'/><br />
-        用户侧端口:<input type="text" name="port1" required placeholder='用户访问端端口号'/><br />
-        目标机地址:<input type="text" name="addr3" required placeholder='客户端需要反代的tcp地址'/><br />
-		标签:<input type="text" name="label" required placeholder='给这条反代链路起个名'/><br />
-        <input type="submit" value="执行反向代理" />
-        <br />
+        <span class="sp">客户端和服务端预分配的连接数</span><input type="text" name="num_of_conn2" value="2" placeholder='值大点，初始连接的速度会快一些'/><br />
+        <span class="sp">公网端口</span><input type="number" name="port1" min="45535" max="65535" placeholder='服务端分配的端口'/><br />
+        <span class="sp">内网被转发的IP:Port</span><input type="text" name="addr3" required placeholder='内网主机或客户端所在主机'/><br />
+        <span class="sp">标签</span><input type="text" name="label" required placeholder='给这条转发链路起个名'/><br /><br />
+        <span id="exec"><input id="sub"  type="submit" value="执行内网穿透" /></span>
     </form>
     <hr>
 	{{- with $data.Labels -}}
-	<h2>已经反向代理的主机列表</h2> <br/>
+	<h2>已经做了端口转发的链路标签</h2> <br/>
 	<table id="rpxy table">
 	    <thead style="background-color: #EEEEFF;"><th style="text-align:left;">标签:端口号</th><th style="text-align:right">操作</th></thead>
 	    <tbody>
 	          {{- range $index,$lab := $data.Labels -}}
 					<tr>
-	              		 <td class="col1">{{- $lab -}}</td>
+	              		 		 <td class="col1">{{- $lab -}}</td>
 						 <td class="col2"> 
 							<form action="/line/del_rproxied" method="GET">
-                        		<input type="hidden"  name="mid" value="{{- $data.Mid -}}" />
-                        		<input type="hidden"  name="label" value="{{- $lab -}}" />
+                        					<input type="hidden"  name="mid" value="{{- $data.Mid -}}" />
+                        					<input type="hidden"  name="label" value="{{- $lab -}}" />
 								<input type="submit" value="✖️" />
-		                    </form>
+		                    			</form>
 						 </td>
 					</tr>
 	          {{- end -}}
@@ -285,21 +298,21 @@ const (
                 <td><span class="osInfoSpan briefSpan">{{$rec.OsInfo}}</span><span class="hoverSpan">{{$rec.OsInfo}}</span></td>
                 <td>{{$rec.Interval}}秒</td>  
                 <td>{{ if eq $rec.Pickup 1 }}
-                        正在勾起...
+                        正在捕获...
                     {{ else if eq $rec.Pickup 2 }}
                         <span class="timeFormat">{{$rec.Lifetime}}</span>释放
                     {{ else }}
-                        未被勾住
+                        未被捕获
                     {{ end }}
                 </td>
 		
                 <td><form class="opBtn" action="/line/del_host" method="GET">
                         <input type="hidden"  name="mid" value="{{$rec.ID}}" />
-                        <input type="submit" value="丢弃" />
+                        <input type="submit" value="删除" />
                     </form>
 
                 {{ if lt $rec.Pickup 1 }}
-	                <button class="opBtn" onclick="pickup({{$rec.ID}})">勾住</button>
+	                <button class="opBtn" onclick="pickup({{$rec.ID}})">捕获</button>
                 {{end}}
 
                 {{ if ge $rec.Pickup 2 }}
@@ -309,7 +322,7 @@ const (
 		</form>                
                 <form class="opBtn" action="/line/rpxy" method="GET">
                         <input type="hidden"  name="mid" value="{{$rec.ID}}" />
-                        <input type="submit" value="反代" />
+                        <input type="submit" value="内网穿透" />
                 </form>
                 
                 <form class="opBtn" action="/line/filesystem" method="GET">
