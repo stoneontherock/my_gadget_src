@@ -197,9 +197,9 @@ const (
     </form>
     <hr>
 	{{- with $data.Labels -}}
-	<h2>已经做了端口转发的链路标签</h2> <br/>
+	<h2>已执行了内网穿透的链路</h2> <br/>
 	<table id="rpxy table">
-	    <thead style="background-color: #EEEEFF;"><th style="text-align:left;">标签:端口号</th><th style="text-align:right">操作</th></thead>
+	    <thead style="background-color: #EEEEFF;"><th style="text-align:left;">标签:公网端口号</th><th style="text-align:right">操作</th></thead>
 	    <tbody>
 	          {{- range $index,$lab := $data.Labels -}}
 					<tr>
