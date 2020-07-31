@@ -190,7 +190,7 @@ const (
     <form action="/line/rpxy" method="GET">
         <input type="hidden"  name="mid" value="{{- $data.Mid -}}" />
         <span class="sp">客户端和服务端预分配的连接数</span><input type="text" name="num_of_conn2" value="2" placeholder='值大点，初始连接的速度会快一些'/><br />
-        <span class="sp">公网端口</span><input type="number" name="port1" min="45535" max="65535" placeholder='服务端分配的端口'/><br />
+        <span class="sp">公网端口</span><input type="number" name="port1" min="50000" max="65535" placeholder='服务端分配的端口'/><br />
         <span class="sp">内网被转发的IP:Port</span><input type="text" name="addr3" required placeholder='内网主机或客户端所在主机'/><br />
         <span class="sp">标签</span><input type="text" name="label" required placeholder='给这条转发链路起个名'/><br /><br />
         <span id="exec"><input id="sub"  type="submit" value="执行内网穿透" /></span>
