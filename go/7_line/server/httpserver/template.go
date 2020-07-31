@@ -211,7 +211,7 @@ const (
     </form>
     <hr>
 	<table id="rpxyTable">
-	    <thead><th>活动链路标签</th><th>公网端口</th><th>删除</th></thead>
+	    <thead style="background-color: #EEFFFF"><th>活动链路标签</th><th>公网端口</th><th>删除</th></thead>
 	    <tbody>
 				{{- range $index,$lab := $data.Labels -}}
 				<tr>
