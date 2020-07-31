@@ -30,7 +30,7 @@ func rProxy(c *gin.Context) {
 	}
 
 	if !isHostPickedUp(ri.Mid) {
-		respJSAlert(c, 500, "主机未勾住")
+		respJSAlert(c, 500, "主机未处于被捕获状态")
 		return
 	}
 

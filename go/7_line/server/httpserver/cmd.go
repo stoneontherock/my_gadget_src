@@ -41,7 +41,7 @@ func command(c *gin.Context) {
 	}
 
 	if !isHostPickedUp(ci.Mid) {
-		respJSAlert(c, 500, "主机未勾住")
+		respJSAlert(c, 500, "主机未处于被捕获状态")
 		return
 	}
 
@@ -52,7 +52,7 @@ func command(c *gin.Context) {
 
 	pongC, ok := model.PongM[ci.Mid]
 	if !ok {
-		respJSAlert(c, 400, fmt.Sprintf("key=%s对应PongM映射没有值,主机不在活动状态",ci.Mid))
+		respJSAlert(c, 400, fmt.Sprintf("key=%s对应PongM映射没有值,主机不在活动状态", ci.Mid))
 		return
 	}
 	ch, ok := model.CmdOutM[ci.Mid]
