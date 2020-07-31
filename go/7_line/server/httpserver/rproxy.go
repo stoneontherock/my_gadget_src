@@ -62,6 +62,15 @@ func rProxy(c *gin.Context) {
 		return
 	}
 
+	if rp, ok := model.RPxyConnResM[ri.Mid]; ok {
+		for labelPort, _ := range rp {
+			if strings.HasPrefix(labelPort, ri.Label+":") {
+				respJSAlert(c, 500, "标签已经被使用,label="+ri.Label)
+				return
+			}
+		}
+	}
+
 	port1 := ":" + ri.Port1
 	if !connection.IsPortAvalible(port1) {
 		respJSAlert(c, 400, "port1不可用:")
