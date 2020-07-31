@@ -8,7 +8,8 @@ import (
 
 type delRpxyIn struct {
 	Mid   string `form:"mid"`
-	Label string `form:"label"` //label:port
+	Label string `form:"label"` //label
+	Port  string `form:"port"`
 }
 
 func del_rproxied(c *gin.Context) {
@@ -19,7 +20,7 @@ func del_rproxied(c *gin.Context) {
 		return
 	}
 
-	model.CloseConnections(di.Label, di.Mid)
+	model.CloseConnections(di.Label+":"+di.Port, di.Mid)
 
 	c.Redirect(303, "./rpxy?mid="+di.Mid)
 }

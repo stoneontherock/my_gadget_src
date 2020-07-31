@@ -28,6 +28,7 @@ func rProxy(c *gin.Context) {
 		respJSAlert(c, 400, "参数错误:"+err.Error())
 		return
 	}
+	ri.Addr3 = strings.ReplaceAll(ri.Addr3, "：", ":")
 
 	if !isHostPickedUp(ri.Mid) {
 		respJSAlert(c, 500, "主机未处于被捕获状态")
@@ -39,14 +40,17 @@ func rProxy(c *gin.Context) {
 		data := struct {
 			Mid    string
 			Labels []string
+			Ports  []string
 		}{
 			Mid: ri.Mid,
 		}
 
 		if rp, ok := model.RPxyConnResM[ri.Mid]; ok {
-			for label, _ := range rp {
+			for labelPort, _ := range rp {
 				//logrus.Debugf("**** label:%s", label)
-				data.Labels = append(data.Labels, label)
+				lp := strings.Split(labelPort, ":")
+				data.Labels = append(data.Labels, lp[0])
+				data.Ports = append(data.Ports, lp[1])
 			}
 		}
 
@@ -111,22 +115,22 @@ func listen2Side(mid, label, port1, port2 string, numOfConn2 int) error {
 		model.RPxyConnResM[mid] = make(map[string][]interface{})
 	}
 
-	pLabel := label + port1
-	model.RPxyConnResM[mid][pLabel] = append(model.RPxyConnResM[mid][pLabel], taddr2.String())
-	go listen(taddr1, conn1Ch, mid, pLabel)
-	go listen(taddr2, conn2Pool, mid, pLabel)
+	labelPort := label + port1
+	model.RPxyConnResM[mid][labelPort] = append(model.RPxyConnResM[mid][labelPort], taddr2.String())
+	go listen(taddr1, conn1Ch, mid, labelPort)
+	go listen(taddr2, conn2Pool, mid, labelPort)
 
 	return nil
 }
 
-func listen(addr *net.TCPAddr, connCh chan<- *net.TCPConn, mid, label string) {
+func listen(addr *net.TCPAddr, connCh chan<- *net.TCPConn, mid, labelPort string) {
 	lis, err := net.ListenTCP("tcp", addr)
 	if err != nil {
 		logrus.Errorf("listen:监听失败:%s. err:%v", addr.String(), err)
 		return
 	}
 	logrus.Debugf("listen:监听成功,%s, listener引用的内存地址:%p", addr, lis)
-	model.RPxyConnResM[mid][label] = append(model.RPxyConnResM[mid][label], lis)
+	model.RPxyConnResM[mid][labelPort] = append(model.RPxyConnResM[mid][labelPort], lis)
 
 	for {
 		conn, err := lis.AcceptTCP()
@@ -139,7 +143,7 @@ func listen(addr *net.TCPAddr, connCh chan<- *net.TCPConn, mid, label string) {
 		}
 
 		logrus.Debugf("listen:连接到来,%s->%s 连接引用的内存地址%p", conn.RemoteAddr(), addr, conn)
-		model.RPxyConnResM[mid][label] = append(model.RPxyConnResM[mid][label], conn)
+		model.RPxyConnResM[mid][labelPort] = append(model.RPxyConnResM[mid][labelPort], conn)
 		connCh <- conn
 	}
 }

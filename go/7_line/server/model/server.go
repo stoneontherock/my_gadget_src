@@ -19,16 +19,16 @@ var CmdOutM = make(map[string]chan pb.CmdOutput)
 var RPxyConn2M = make(map[string]chan *net.TCPConn)
 var RPxyConn1M = make(map[string]chan *net.TCPConn)
 
-var RPxyConnResM = make(map[string]map[string][]interface{}) //key0: mid, key1:label, interface{}对应*net.TCPListener或*net.TCPConn
+var RPxyConnResM = make(map[string]map[string][]interface{}) //key0: mid, key1:label:Port, interface{}对应*net.TCPListener或*net.TCPConn
 
 //var ListFileM = make(map[string]chan *grpcchannel.FileList)
 //
 //var FileUpDataM = make(map[string]chan *grpcchannel.FileDataUp)
 
-func CloseConnections(label, mid string) {
+func CloseConnections(labelPort, mid string) {
 	//logrus.Debugf("***** label=%s RPxyLisAndConnM[%s]=%v", label, mid, model.RPxyConnResM[mid])
-	for key, ifaces := range RPxyConnResM[mid] {
-		if label != key {
+	for lp, ifaces := range RPxyConnResM[mid] {
+		if labelPort != lp {
 			continue //label匹配不上
 		}
 
@@ -52,7 +52,7 @@ func CloseConnections(label, mid string) {
 			}
 		}
 
-		delete(RPxyConnResM[mid], key)
+		delete(RPxyConnResM[mid], lp)
 		if len(RPxyConnResM[mid]) == 0 {
 			delete(RPxyConnResM, mid)
 		}

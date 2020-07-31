@@ -36,9 +36,9 @@ func filesystem(c *gin.Context) {
 	host := regPatt.ReplaceAllString(c.Request.Host, "$1")
 	//如果已经存在文件系统反代，就重定向
 	logrus.Debugf("RPxyConnResM[%s]=%+v", fi.Mid, model.RPxyConnResM[fi.Mid])
-	for pLabel, _ := range model.RPxyConnResM[fi.Mid] {
-		if strings.HasPrefix(pLabel, "filesystem") {
-			ss := strings.Split(pLabel, ":")
+	for labelPort, _ := range model.RPxyConnResM[fi.Mid] {
+		if strings.HasPrefix(labelPort, "filesystem") {
+			ss := strings.Split(labelPort, ":")
 			if len(ss) != 2 {
 				continue
 			}

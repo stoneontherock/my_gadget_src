@@ -177,6 +177,20 @@ const (
         #sub {
             float:right;
         }
+	#pubPort {
+            display: inline-block;
+            width: 150px;
+	}
+	#rpxyTable, #rpxyTable th, #rpxyTable td {
+            border-collapse: collapse;
+            border: 3px solid #EEEFFF;
+        }
+        #rpxyTable thead {
+            background-color: #EEEEFF;
+        }
+        #rpxyTable th,#rpxyTable td {
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -190,32 +204,32 @@ const (
     <form action="/line/rpxy" method="GET">
         <input type="hidden"  name="mid" value="{{- $data.Mid -}}" />
         <span class="sp">客户端和服务端预分配的连接数</span><input type="text" name="num_of_conn2" value="2" placeholder='值大点，初始连接的速度会快一些'/><br />
-        <span class="sp">公网端口</span><input type="number" name="port1" min="50000" max="65535" placeholder='服务端分配的端口'/><br />
+        <span class="sp">公网端口</span><input id="pubPort" type="number" name="port1" min="50000" max="65535" placeholder='服务端分配的端口'/><br />
         <span class="sp">内网被转发的IP:Port</span><input type="text" name="addr3" required placeholder='内网主机或客户端所在主机'/><br />
         <span class="sp">标签</span><input type="text" name="label" required placeholder='给这条转发链路起个名'/><br /><br />
         <span id="exec"><input id="sub"  type="submit" value="执行内网穿透" /></span>
     </form>
     <hr>
-	{{- with $data.Labels -}}
-	<h2>已执行了内网穿透的链路</h2> <br/>
-	<table id="rpxy table">
-	    <thead style="background-color: #EEEEFF;"><th style="text-align:left;">标签:公网端口号</th><th style="text-align:right">操作</th></thead>
+	<table id="rpxyTable">
+	    <thead><th>活动链路标签</th><th>公网端口</th><th>删除</th></thead>
 	    <tbody>
-	          {{- range $index,$lab := $data.Labels -}}
-					<tr>
-	              		 		 <td class="col1">{{- $lab -}}</td>
-						 <td class="col2"> 
-							<form action="/line/del_rproxied" method="GET">
-                        					<input type="hidden"  name="mid" value="{{- $data.Mid -}}" />
-                        					<input type="hidden"  name="label" value="{{- $lab -}}" />
-								<input type="submit" value="✖️" />
-		                    			</form>
-						 </td>
-					</tr>
-	          {{- end -}}
+				{{- range $index,$lab := $data.Labels -}}
+				<tr>
+					<td class="col1">{{- $lab -}}</td>
+					{{ $port := index $data.Ports $index }}
+					<td class="col2">{{- $port -}}</td>
+					<td class="col3"> 
+						<form action="/line/del_rproxied" method="GET">
+							<input type="hidden"  name="mid" value="{{- $data.Mid -}}" />
+							<input type="hidden"  name="label" value="{{- $lab -}}" />
+							<input type="hidden"  name="port" value="{{- $port -}}" />
+							<input type="submit" value="✖️" />
+						</form>
+					</td>
+				</tr>
+				{{- end -}}
 	    </tbody>
 	</table>
-	{{- end -}}
 </article>
 </body>
 </html>
