@@ -384,14 +384,26 @@ const (
 </html>
 `
 	LOGIN_HTML = `
-<html>
+<!doctype html>
+<html lang="zh">
 <head>
- <meta charset="UTF-8">
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>line</title>
+    <style>
+        .sp {
+            display: inline-block;
+            width: 50px;
+            background-color: #EEEFFF;
+        }
+    </style>
 </head>
 <body>
 <form action="/line/login" method="POST">
-	用户名<input type="text"  name="user" required /><br/>
-	密  码<input type="password"  name="pv" required /><br/>
+    <span class="sp">用户名</span><input type="text"  name="user" required /><br/>
+    <span class="sp">密&nbsp;&nbsp;&nbsp;码</span><input type="password"  name="pv" required /><br/>
     <input type="submit" value="登录" />
 </form>
 </body>
