@@ -156,15 +156,14 @@ const (
 `
 
 	ADD_RPXY_HTML = `
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>line</title>
-    <style>
+ <head> 
+  <meta charset="UTF-8" /> 
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" /> 
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" /> 
+  <title>line</title> 
+  <style>
         .sp {
             display: inline-block;
             width: 230px;
@@ -191,68 +190,81 @@ const (
         #rpxyTable th,#rpxyTable td {
             text-align: center;
         }
-    </style>
-</head>
-<body>
-{{ $data := . -}}
-<header>
-    <a href="/line/list_hosts">返回主机管理界面</a>
-    <hr>
-</header>
-
-<article>
-    <form action="/line/rpxy" method="GET">
-        <input type="hidden"  name="mid" value="{{- $data.Mid -}}" />
-        <span class="sp">客户端和服务端预分配的连接数</span><input type="text" name="num_of_conn2" value="2" placeholder='值大点，初始连接的速度会快一些'/><br />
-        <span class="sp">公网端口</span><input id="pubPort" type="number" name="port1" min="50000" max="65535" placeholder='服务端分配的端口'/><br />
-        <span class="sp">内网被转发的IP:Port</span><input type="text" name="addr3" required placeholder='内网主机或客户端所在主机'/><br />
-        <span class="sp">标签</span><input type="text" name="label" required placeholder='给这条转发链路起个名'/><br /><br />
-        <span id="exec"><input id="sub"  type="submit" value="执行内网穿透" /></span>
-    </form>
-    <hr>
-	<table id="rpxyTable">
-	    <thead style="background-color: #EEFFFF"><th>活动链路标签</th><th>公网端口</th><th>删除</th></thead>
-	    <tbody>
-				{{- range $index,$lab := $data.Labels -}}
-				<tr>
-					<td class="col1">{{- $lab -}}</td>
-					{{ $port := index $data.Ports $index }}
-					<td class="col2">{{- $port -}}</td>
-					<td class="col3"> 
-						<form action="/line/del_rproxied" method="GET">
-							<input type="hidden"  name="mid" value="{{- $data.Mid -}}" />
-							<input type="hidden"  name="label" value="{{- $lab -}}" />
-							<input type="hidden"  name="port" value="{{- $port -}}" />
-							<input type="submit" value="✖️" />
-						</form>
-					</td>
-				</tr>
-				{{- end -}}
-	    </tbody>
-	</table>
-</article>
-</body>
+    </style> 
+ </head> 
+ <body>
+   {{ $data := . -}} 
+  <header> 
+   <a href="/line/list_hosts">返回主机管理界面</a> 
+   <hr /> 
+  </header> 
+  <article> 
+   <form action="/line/rpxy" method="GET"> 
+    <input type="hidden" name="mid" value="{{- $data.Mid -}}" /> 
+    <span class="sp">客户端和服务端预分配的连接数</span>
+    <input type="text" name="num_of_conn2" value="2" placeholder="值大点，初始连接的速度会快一些" />
+    <br /> 
+    <span class="sp">公网端口</span>
+    <input id="pubPort" type="number" name="port1" min="50000" max="65535" placeholder="服务端分配的端口" />
+    <br /> 
+    <span class="sp">内网被转发的IP:Port</span>
+    <input type="text" name="addr3" required="" placeholder="内网主机或客户端所在主机" />
+    <br /> 
+    <span class="sp">标签</span>
+    <input type="text" name="label" required="" placeholder="给这条转发链路起个名" />
+    <br />
+    <br /> 
+    <span id="exec"><input id="sub" type="submit" value="执行内网穿透" /></span> 
+   </form> 
+   <hr /> 
+   <table id="rpxyTable">
+    {{- with $data.Ports -}} 
+    <thead style="background-color: #EEFFFF">
+     <tr>
+      <th>活动链路标签</th>
+      <th>公网端口</th>
+      <th>删除</th>
+     </tr>
+    </thead>
+    {{- end -}} 
+    <tbody>
+      {{- range $index,$lab := $data.Labels -}} 
+     <tr> 
+      <td class="col1">{{- $lab -}}</td> {{ $port := index $data.Ports $index }} 
+      <td class="col2">{{- $port -}}</td> 
+      <td class="col3"> 
+       <form action="/line/del_rproxied" method="GET"> 
+        <input type="hidden" name="mid" value="{{- $data.Mid -}}" /> 
+        <input type="hidden" name="label" value="{{- $lab -}}" /> 
+        <input type="hidden" name="port" value="{{- $port -}}" /> 
+        <input type="submit" value="✖️" /> 
+       </form> </td> 
+     </tr> {{- end -}} 
+    </tbody> 
+   </table> 
+  </article>  
+ </body>
 </html>
 `
 
 	LIST_HOSTS_HTML = `
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>line</title>
-	<style>
+    <style>
         #主机列表{
             border-collapse: collapse;
             border: 3px solid #EEEFFF;
-			white-space: nowrap;
+            white-space: nowrap;
         }
 
         #主机列表 th,#主机列表 td{
             border: 3px solid #EEEFFF;
-			white-space: nowrap;
+            white-space: nowrap;
         }
 
         .midSpan{
@@ -282,104 +294,124 @@ const (
         }
 
         .briefSpan:hover~.hoverSpan{
-                border: 1px solid grey;
-                padding: 2px;
-                display: block;
+            border: 1px solid grey;
+            padding: 2px;
+            display: block;
         }
 
         .opBtn {
             display: inline-block;
         }
-	</style>
+    </style>
 </head>
 <body>
 {{ $data := . -}}
 <header>
-	<div style="width=100%;text-align:right"><a href="/line/logout">退出</a></div>
+    <div style="width=100%;text-align:right">
+        <a href="/line/logout">退出</a>
+    </div>
 </header>
-
 <article>
-    <hr>
+    <hr />
     <table id="主机列表">
-        <thead style="background-color: #EEFFFF;"><th>机器ID</th><th>启动时间</th><th>公网IP</th><th>内核</th><th>OS信息</th><th>心跳</th><th>状态</th><th>操作</th></thead>
+        <thead style="background-color: #EEFFFF;">
+        <tr>
+            <th>机器ID</th>
+            <th>启动时间</th>
+            <th>公网IP</th>
+            <th>内核</th>
+            <th>OS信息</th>
+            <th>心跳</th>
+            <th>状态</th>
+            <th>操作</th>
+        </tr>
+        </thead>
         <tbody>
         {{- range $index,$rec := $data -}}
             <tr>
                 <td><span class="midSpan briefSpan">{{$rec.ID}}</span><span class="hoverSpan">{{$rec.ID}}</span></td>
-                <td><span class="timeFormat">{{$rec.StartAt}}</span></td>  
+                <td><span class="timeFormat">{{$rec.StartAt}}</span></td>
                 <td>{{$rec.WanIP}}</td>
                 <td>{{$rec.Kernel}}</td>
                 <td><span class="osInfoSpan briefSpan">{{$rec.OsInfo}}</span><span class="hoverSpan">{{$rec.OsInfo}}</span></td>
-                <td>{{$rec.Interval}}秒</td>  
-                <td>{{ if eq $rec.Pickup 1 }}
-                        正在捕获...
-                    {{ else if eq $rec.Pickup 2 }}
-                        <span class="timeFormat">{{$rec.Lifetime}}</span>释放
-                    {{ else }}
-                        未被捕获
-                    {{ end }}
+                <td><span id="hb_{{$rec.ID}}">{{$rec.Interval}}</span>秒</td>
+                <td>
+                    <span id="state_{{$rec.ID}}">
+                        {{ if eq $rec.Pickup 1 }}
+                            捕获中....
+                        {{ else if eq $rec.Pickup 2 }}
+                            <span class="timeFormat">{{$rec.Lifetime}}</span>释放
+                        {{ else }}
+                            未被捕获
+                        {{ end }}
+                    </span>
                 </td>
-		
-                <td><form class="opBtn" action="/line/del_host" method="GET">
-                        <input type="hidden"  name="mid" value="{{$rec.ID}}" />
+                <td>
+                    <form class="opBtn" action="/line/del_host" method="GET">
+                        <input type="hidden" name="mid" value="{{$rec.ID}}" />
                         <input type="submit" value="删除" />
                     </form>
-
-                {{ if lt $rec.Pickup 1 }}
-	                <button class="opBtn" onclick="pickup({{$rec.ID}})">捕获</button>
-                {{end}}
-
-                {{ if ge $rec.Pickup 2 }}
-                <form class="opBtn" action="/line/cmd" method="GET">
-                        <input type="hidden"  name="mid" value="{{$rec.ID}}" />
-                        <input type="submit" value="命令" />
-		</form>                
-                <form class="opBtn" action="/line/rpxy" method="GET">
-                        <input type="hidden"  name="mid" value="{{$rec.ID}}" />
-                        <input type="submit" value="内网穿透" />
-                </form>
-                
-                <form class="opBtn" action="/line/filesystem" method="GET">
-                        <input type="hidden"  name="mid" value="{{$rec.ID}}" />
-                        <input type="submit" value="文件浏览" />
-                </form>
-                {{end}}
+                    {{ if lt $rec.Pickup 1 }}
+                        <button class="opBtn" onclick="pickup({{$rec.ID}})">捕获</button>
+                    {{end}}
+                    {{ if ge $rec.Pickup 2 }}
+                        <form class="opBtn" action="/line/cmd" method="GET">
+                            <input type="hidden" name="mid" value="{{$rec.ID}}" />
+                            <input type="submit" value="命令" />
+                        </form>
+                        <form class="opBtn" action="/line/rpxy" method="GET">
+                            <input type="hidden" name="mid" value="{{$rec.ID}}" />
+                            <input type="submit" value="内网穿透" />
+                        </form>
+                        <form class="opBtn" action="/line/filesystem" method="GET">
+                            <input type="hidden" name="mid" value="{{$rec.ID}}" />
+                            <input type="submit" value="文件浏览" />
+                        </form>
+                    {{end}}
                 </td>
             </tr>
         {{end}}
         </tbody>
     </table>
-    <hr>
+    <hr />
 </article>
-
 <script>
-	function pickup(mid) {
+    function pickup(mid) {
         let dur = prompt("捕获多少分钟后释放？",30);
-        let req = new XMLHttpRequest();
+        let after = document.getElementById("hb_"+mid).innerHTML;
+        setTimeout(function(){
+            location.href = "/line/list_hosts";
+        },after*1000+2000);
 
+        let req = new XMLHttpRequest();
         req.onreadystatechange=function(){
-            if (req.readyState==4){ 
+            if (req.readyState==4){
                 if (req.status!=200){
-            	    window.alert(req.responseText);
+                    window.alert(req.responseText);
                 }
-                location="/line/list_hosts";
             }
         }
         req.open("GET","/line/change_pickup?pickup=1&timeout="+dur+"&mid="+mid,true);
         req.send();
+        document.getElementById("state_"+mid).innerHTML = "捕获中...";
     }
-    
+
     window.onload =  function() {
         let tfs = document.getElementsByClassName("timeFormat");
         for (i=0;i<tfs.length;i++) {
             let ut = new Date(tfs[i].innerText * 1000);
-	    let h = ut.getHours();
-            let m = ut.getMinutes();
-            tfs[i].innerText = ut.getDate()+"日"+(h>9?h:"0"+h)+":"+(m>9?m:"0"+m);
+            let m = zeroPrefix(ut.getMonth());
+            let d = zeroPrefix(ut.getDate());
+            let H = zeroPrefix(ut.getHours());
+            let M = zeroPrefix(ut.getMinutes());
+            tfs[i].innerText = m+"-"+d+" "+H+":"+M;
         }
     }
-</script>
 
+    function zeroPrefix(n){
+        return (n>9?n:"0"+n)
+    }
+</script>
 </body>
 </html>
 `
