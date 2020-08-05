@@ -346,13 +346,13 @@ const (
                         {{ end }}
                     </span>
                 </td>
-                <td>
+                <td id="opSetTd_{{$rec.ID}}">
                     <form class="opBtn" action="/line/del_host" method="GET">
                         <input type="hidden" name="mid" value="{{$rec.ID}}" />
                         <input type="submit" value="删除" />
                     </form>
                     {{ if lt $rec.Pickup 1 }}
-                        <button class="opBtn" onclick="pickup({{$rec.ID}})">捕获</button>
+                        <button id="pickupBtn_{{$rec.ID}}" class="opBtn" onclick="pickup({{$rec.ID}})">捕获</button>
                     {{end}}
                     {{ if ge $rec.Pickup 2 }}
                         <form class="opBtn" action="/line/cmd" method="GET">
@@ -382,6 +382,11 @@ const (
         setTimeout(function(){
             location.href = "/line/list_hosts";
         },after*1000+2000);
+
+        //单击后，删除"捕获按钮"
+		let td = document.getElementById("opSetTd_"+mid);
+		let pickupBtn = document.getElementById("pickupBtn_"+mid);
+        td.removeChild(pickupBtn);
 
         let req = new XMLHttpRequest();
         req.onreadystatechange=function(){
