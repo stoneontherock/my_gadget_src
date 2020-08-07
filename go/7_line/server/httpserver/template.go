@@ -403,7 +403,7 @@ const (
 
     window.onload =  function() {
         let tfs = document.getElementsByClassName("timeFormat");
-        for (i=0;i<tfs.length;i++) {
+        for (let i=0;i<tfs.length;i++) {
             let ut = new Date(tfs[i].innerText * 1000);
             let m = zeroPrefix(ut.getMonth());
             let d = zeroPrefix(ut.getDate());
