@@ -31,7 +31,7 @@ func releaseHost(c *gin.Context) {
 		return
 	}
 
-	err = grpcserver.ChangePickup(dhi.Mid,-1)
+	err = grpcserver.ChangePickup(dhi.Mid, -1)
 	if err != nil {
 		respJSAlert(c, 500, "ChangePickup:"+err.Error())
 		return

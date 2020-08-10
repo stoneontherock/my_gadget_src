@@ -29,6 +29,9 @@ func rProxy(c *gin.Context) {
 		return
 	}
 	ri.Addr3 = strings.ReplaceAll(ri.Addr3, "：", ":")
+	if !strings.Contains(ri.Addr3, ":") {
+		ri.Addr3 = "127.0.0.1:" + ri.Addr3
+	}
 
 	if !isHostPickedUp(ri.Mid) {
 		respJSAlert(c, 500, "主机未处于被捕获状态")

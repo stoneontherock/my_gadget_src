@@ -27,8 +27,11 @@ func init() {
 	}
 
 	ReportInterval, _ = strconv.ParseUint(os.Getenv("LINE_REPORT_INTERVAL"), 10, 0)
-	if ReportInterval < 30 {
+	if ReportInterval == 0 {
 		ReportInterval = 30
+	}
+	if ReportInterval < 15 {
+		ReportInterval = 15
 	}
 
 	var err error

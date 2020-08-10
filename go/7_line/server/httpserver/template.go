@@ -205,9 +205,9 @@ const (
     <input type="text" name="num_of_conn2" value="2" placeholder="值大点，初始连接的速度会快一些" />
     <br /> 
     <span class="sp">公网端口</span>
-    <input id="pubPort" type="number" name="port1" min="50000" max="65535" placeholder="服务端分配的端口" />
+    <input id="pubPort" type="number" name="port1" min="50000" max="65535" placeholder="端口号>=50000" />
     <br /> 
-    <span class="sp">内网被转发的IP:Port</span>
+    <span class="sp">内网被映射的<span style="color:#007ed9">Port</span>或<span style="color:#007ed9">IP:Port</span></span>
     <input type="text" name="addr3" required="" placeholder="内网主机或客户端所在主机" />
     <br /> 
     <span class="sp">标签</span>
