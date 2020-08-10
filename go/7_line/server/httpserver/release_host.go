@@ -6,6 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"line/common/connection/pb"
 	"line/server/db"
+	"line/server/grpcserver"
 	"line/server/model"
 	"time"
 )
@@ -15,7 +16,7 @@ type delHostIn struct {
 }
 
 //todo 还有很多需要删，待写, 已经勾住的主机删除后，没有收到fin
-func delHost(c *gin.Context) {
+func releaseHost(c *gin.Context) {
 	var dhi delHostIn
 	err := c.ShouldBindWith(&dhi, binding.Form)
 	if err != nil {
@@ -30,9 +31,9 @@ func delHost(c *gin.Context) {
 		return
 	}
 
-	err = db.DB.Delete(&model.ClientInfo{ID: dhi.Mid}).Error
+	err = grpcserver.ChangePickup(dhi.Mid,-1)
 	if err != nil {
-		respJSAlert(c, 400, "db.Delete:"+err.Error())
+		respJSAlert(c, 500, "ChangePickup:"+err.Error())
 		return
 	}
 

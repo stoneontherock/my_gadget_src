@@ -335,10 +335,10 @@ const (
                 <td>{{$rec.Kernel}}</td>
                 <td><span class="osInfoSpan briefSpan">{{$rec.OsInfo}}</span><span class="hoverSpan">{{$rec.OsInfo}}</span></td>
                 <td><span id="hb_{{$rec.ID}}">{{$rec.Interval}}</span>秒</td>
-                <td>
+                <td class="stateTd" data-mid="{{$rec.ID}}">
                     <span id="state_{{$rec.ID}}">
                         {{ if eq $rec.Pickup 1 }}
-                            捕获中....
+                            捕获中...
                         {{ else if eq $rec.Pickup 2 }}
                             <span class="timeFormat">{{$rec.Lifetime}}</span>释放
                         {{ else }}
@@ -347,14 +347,11 @@ const (
                     </span>
                 </td>
                 <td id="opSetTd_{{$rec.ID}}">
-                    <form class="opBtn" action="/line/del_host" method="GET">
-                        <input type="hidden" name="mid" value="{{$rec.ID}}" />
-                        <input type="submit" value="删除" />
-                    </form>
-                    {{ if lt $rec.Pickup 1 }}
-                        <button id="pickupBtn_{{$rec.ID}}" class="opBtn" onclick="pickup({{$rec.ID}})">捕获</button>
-                    {{end}}
-                    {{ if ge $rec.Pickup 2 }}
+                    {{ if eq $rec.Pickup 2 }}
+	                    <form class="opBtn" action="/line/release_host" method="GET">
+	                        <input type="hidden" name="mid" value="{{$rec.ID}}" />
+	                        <input type="submit" value="释放" />
+	                    </form>
                         <form class="opBtn" action="/line/cmd" method="GET">
                             <input type="hidden" name="mid" value="{{$rec.ID}}" />
                             <input type="submit" value="命令" />
@@ -367,7 +364,11 @@ const (
                             <input type="hidden" name="mid" value="{{$rec.ID}}" />
                             <input type="submit" value="文件浏览" />
                         </form>
-                    {{end}}
+			{{ else if eq $rec.Pickup 1 }}
+				请等待状态改变...
+			{{ else }} 
+				<button id="pickupBtn_{{$rec.ID}}" class="opBtn" onclick="pickup({{$rec.ID}})">捕获</button>
+                    {{ end }}
                 </td>
             </tr>
         {{end}}
@@ -378,28 +379,31 @@ const (
 <script>
     function pickup(mid) {
         let dur = prompt("捕获多少分钟后释放？",30);
-        let after = document.getElementById("hb_"+mid).innerHTML;
-        setTimeout(function(){
-            location.href = "/line/list_hosts";
-        },after*1000+2000);
 
-        //单击后，删除"捕获按钮"
-		let td = document.getElementById("opSetTd_"+mid);
-		let pickupBtn = document.getElementById("pickupBtn_"+mid);
-        td.removeChild(pickupBtn);
+	let chgReq = new XMLHttpRequest();
+        chgReq.open("GET","/line/change_pickup?pickup=1&timeout="+dur+"&mid="+mid,true);
+        chgReq.send();
+	location.href = "/line/list_hosts";
+    }
 
-        let req = new XMLHttpRequest();
-        req.onreadystatechange=function(){
-            if (req.readyState==4){
-                if (req.status!=200){
-                    window.alert(req.responseText);
-                }
+	function refreshState(mid){
+		//console.log("refresh:"+mid);
+  		let stateReq = new XMLHttpRequest();
+        stateReq.onreadystatechange=function(){
+            if (stateReq.readyState==4){
+                if (stateReq.status!=200){
+                    window.alert(stateReq.responseText);
+                }else{
+					if (stateReq.responseText == "true") {
+						location.href = "/line/list_hosts";
+					}
+				}
             }
         }
-        req.open("GET","/line/change_pickup?pickup=1&timeout="+dur+"&mid="+mid,true);
-        req.send();
-        document.getElementById("state_"+mid).innerHTML = "捕获中...";
-    }
+
+	stateReq.open("GET","/line/get_state?mid="+mid,true);
+        stateReq.send();
+	}
 
     window.onload =  function() {
         let tfs = document.getElementsByClassName("timeFormat");
@@ -410,6 +414,17 @@ const (
             let H = zeroPrefix(ut.getHours());
             let M = zeroPrefix(ut.getMinutes());
             tfs[i].innerText = m+"-"+d+" "+H+":"+M;
+        }
+
+        let stateTds = document.getElementsByClassName("stateTd");
+        for (let i=0;i<stateTds.length;i++) {
+			let stateTxt = stateTds[i].getElementsByTagName("span")[0].innerText
+            if (stateTxt == "捕获中...") {
+				let mid = stateTds[i].getAttribute('data-mid');
+				setInterval(function(){
+					refreshState(mid);
+				},1500);
+			}
         }
     }
 

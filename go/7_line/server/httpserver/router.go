@@ -29,11 +29,12 @@ func newEngine() *gin.Engine {
 	{
 		c.GET("", listHosts)
 		c.GET("/list_hosts", listHosts)
-		c.GET("/del_host", delHost)
+		c.GET("/release_host", releaseHost)
 
 		c.GET("/cmd", command)
 
 		c.GET("/change_pickup", pickup)
+		c.GET("/get_state", getHostState)
 
 		c.GET("/rpxy", rProxy)
 		//c.GET("/list_rproxied", list_rproxied)    //功能冗余
