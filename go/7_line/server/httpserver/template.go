@@ -207,7 +207,7 @@ const (
     <span class="sp">公网端口</span>
     <input id="pubPort" type="number" name="port1" min="50000" max="65535" placeholder="端口号>=50000" />
     <br /> 
-    <span class="sp">内网被映射的<span style="color:#007ed9">Port</span>或<span style="color:#007ed9">IP:Port</span></span>
+    <span class="sp">内网被映射的<span style="color:#007ed9">端口</span>或<span style="color:#007ed9">IP:端口</span></span>
     <input type="text" name="addr3" required="" placeholder="内网主机或客户端所在主机" />
     <br /> 
     <span class="sp">标签</span>
