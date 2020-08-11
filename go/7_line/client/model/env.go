@@ -30,8 +30,8 @@ func init() {
 	if ReportInterval == 0 {
 		ReportInterval = 30
 	}
-	if ReportInterval < 15 {
-		ReportInterval = 15
+	if ReportInterval < 5 {
+		ReportInterval = 5
 	}
 
 	var err error

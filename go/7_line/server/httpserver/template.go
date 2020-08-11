@@ -426,6 +426,8 @@ const (
 				},1500);
 			}
         }
+   
+        setTimeout(function(){ location.href="/line/list_hosts"; },60000); 
     }
 
     function zeroPrefix(n){

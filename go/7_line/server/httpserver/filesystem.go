@@ -76,6 +76,6 @@ func filesystem(c *gin.Context) {
 	if c.Request.TLS != nil {
 		scheme = "https://"
 	}
-	home := "/filesystem?home=" + url.QueryEscape(scheme+dm+":"+port+"/line/list_hosts")
+	home := "/filesystem?home=" + url.QueryEscape(scheme+dm+":"+port)
 	c.Redirect(303, "http://"+host+port1+home)
 }

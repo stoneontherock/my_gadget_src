@@ -7,9 +7,10 @@ import (
 )
 
 type delRpxyIn struct {
-	Mid   string `form:"mid"`
-	Label string `form:"label"` //label
-	Port  string `form:"port"`
+	Mid               string `form:"mid"`
+	Label             string `form:"label"` //label
+	Port              string `form:"port"`
+	RedirectListHosts bool   `form:"redirect_list_hosts"`
 }
 
 func del_rproxied(c *gin.Context) {
@@ -22,5 +23,9 @@ func del_rproxied(c *gin.Context) {
 
 	model.CloseConnections(di.Label+":"+di.Port, di.Mid)
 
+	if di.RedirectListHosts {
+		c.Redirect(303, "./list_hosts")
+		return
+	}
 	c.Redirect(303, "./rpxy?mid="+di.Mid)
 }

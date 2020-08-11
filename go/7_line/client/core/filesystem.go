@@ -133,14 +133,16 @@ func fs(rootDir string) func(wr http.ResponseWriter, req *http.Request) {
 	}
 }
 
-var homeURL string
+var homeSite string
+var fsPubPort string
 
 func listFS(wr http.ResponseWriter, req *http.Request, path string) {
 	if req.URL.Path == "/" {
 		home, _ := url.QueryUnescape(req.FormValue("home"))
 		if home != "" {
-			homeURL = home
+			homeSite = home
 		}
+		_, fsPubPort, _ = net.SplitHostPort(req.Host)
 	}
 
 	fi, err := os.Stat(path)
@@ -262,10 +264,13 @@ func renderHTMLErr(wr http.ResponseWriter, errStr string) {
 }
 
 type fsList struct {
-	Home  string
-	Path  string
-	Dirs  []os.FileInfo
-	Files []os.FileInfo
+	Mid       string
+	IsNT      bool
+	HomeSite  string
+	FsPubPort string
+	Path      string
+	Dirs      []os.FileInfo
+	Files     []os.FileInfo
 }
 
 type fiList []os.FileInfo
@@ -299,14 +304,15 @@ func renderHTMLDir(wr http.ResponseWriter, path string, fis []os.FileInfo) {
 		}
 	}
 
-	var fl fsList
-	fl.Home = homeURL
-	fl.Path = winSlash + filepath.ToSlash(path)
-	//if fl.Path == "/" {
-	//	fl.Path = "." //修复根目录作为web root时url不可用的bug
-	//}
-	fl.Files = fs[:f]
-	fl.Dirs = ds[:d]
+	var fl = fsList{
+		Mid:       staticInfo.MachineID,
+		IsNT:      runtime.GOOS == "windows",
+		HomeSite:  homeSite,
+		FsPubPort: fsPubPort,
+		Path:      winSlash + filepath.ToSlash(path),
+		Files:     fs[:f],
+		Dirs:      ds[:d],
+	}
 
 	//排序,目录在前,文件在后
 	sort.Sort(fiList(fl.Files))
@@ -409,9 +415,13 @@ const (
       </abbr>
   </form>
   <br />
-  <a href="{{$data.Home}}"><b>&#8634; 返回主机管理界面</b></a><br />
+  <a href="{{$data.HomeSite}}/line/list_hosts"><b>&#8634; 返回主机管理界面</b></a><br />
   <a href="/filesystem"><b>&#8634; 返回web根目录</b></a><br />
   <a href="/filesystem/{{dirName $data.Path}}"><b>&#8634; 返回上层目录</b></a>
+  {{ if $data.IsNT }}
+    <br />
+	<a href="{{$data.HomeSite}}/line/del_rproxied?redirect_list_hosts=true&label=filesystem&mid={{$data.Mid}}&port={{$data.FsPubPort}}"><b>&#8644 切换盘符</b></a><br />
+  {{ end }}
   <div style="color: #104E8B"><span style="font-weight: bold">当前目录:</span> {{$data.Path}}</div>
 </header>
 

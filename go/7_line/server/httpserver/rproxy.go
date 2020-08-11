@@ -102,7 +102,6 @@ func rProxy(c *gin.Context) {
 	}
 
 	pongC <- pb.Pong{Action: "rpxy", Data: bs}
-
 	c.Redirect(303, "./rpxy?mid="+ri.Mid)
 }
 
