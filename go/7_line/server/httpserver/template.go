@@ -214,7 +214,7 @@ const (
     <input type="text" name="label" required="" placeholder="给这条转发链路起个名" />
     <br />
     <br /> 
-    <span id="exec"><input id="sub" type="submit" value="执行内网穿透" /></span> 
+    <span id="exec"><input id="sub" type="submit" value="执行内网映射" /></span> 
    </form> 
    <hr /> 
    <table id="rpxyTable">
@@ -358,7 +358,7 @@ const (
                         </form>
                         <form class="opBtn" action="/line/rpxy" method="GET">
                             <input type="hidden" name="mid" value="{{$rec.ID}}" />
-                            <input type="submit" value="内网穿透" />
+                            <input type="submit" value="内网映射" />
                         </form>
                         <form class="opBtn" action="/line/filesystem" method="GET">
                             <input type="hidden" name="mid" value="{{$rec.ID}}" />
