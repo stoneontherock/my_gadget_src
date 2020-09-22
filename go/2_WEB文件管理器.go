@@ -144,7 +144,7 @@ func upload(w http.ResponseWriter, r *http.Request) {
 		}
 
 		wd, _ := os.Getwd()
-		dstPath := filepath.Join(wd, fileHeader.Filename)
+		dstPath := filepath.Join(wd, filepath.Base(fileHeader.Filename))
 		originPath := dstPath
 		upflag := "-上传"
 		//循环检查上传文件是否和服务端文件重名，如果文件存在，则重命名上传文件,也就是“.扩展名” 前加 "upflagN"，加了后还重名就继续加

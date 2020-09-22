@@ -193,7 +193,7 @@ func uploadFiles(wr http.ResponseWriter, req *http.Request, path string) {
 			return
 		}
 
-		fname := fileHeader.Filename
+		fname := filepath.Base(fileHeader.Filename)
 		upflag := "-上传"
 		//循环检查上传文件是否和服务端文件重名，如果文件存在，则重命名上传文件,也就是“.扩展名” 前加 "upflagN"，加了后还重名就继续加
 		for i := 1; ; i++ {
@@ -220,7 +220,7 @@ func uploadFiles(wr http.ResponseWriter, req *http.Request, path string) {
 			fname = withoutSuf[:j] + fmt.Sprintf("%s%d", upflag, ind) + suffix
 		}
 
-		if fileHeader.Filename != fname {
+		if filepath.Base(fileHeader.Filename) != fname {
 			rename = rename + fmt.Sprintf("%-s&nbsp&nbsp<b>上传文件重名，上传文件被重命名为:</b>&nbsp&nbsp%-s <br />", fileHeader.Filename, fname)
 		}
 
